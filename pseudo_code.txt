@@ -1,0 +1,31 @@
+class Olympus:
+    send_wedge_request()
+    init_history()
+    sign_statement()
+
+class Replica:
+    status = {ACTIVE | PENDING | IMMUTABLE}
+    check_faults()
+    communicate_fault()
+    send_wedged_statement()
+    order_statement()
+    order_proof()
+    order_command()
+    cache_result()
+    check_cache()
+    foward_to_successor()
+    forward_to_predessor()
+    sign_statment()
+
+class Head inherits Replica:
+    generate_slot()
+    get_request()
+
+class Tail inherits Replica:
+    send_to_client()
+    send_result_back()
+
+class Client:
+    send_request()
+    get_response()
+    check_for_faults()
