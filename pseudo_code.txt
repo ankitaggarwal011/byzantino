@@ -1,7 +1,13 @@
+class Crypto:
+    create_sign()
+    sign()
+
 class Olympus:
+    init_config()
     send_wedge_request()
     init_history()
     sign_statement()
+    get_request_from_client()
 
 class Replica:
     status = {ACTIVE | PENDING | IMMUTABLE}
@@ -16,14 +22,17 @@ class Replica:
     foward_to_successor()
     forward_to_predessor()
     sign_statment()
+    send_result_to_client()
+    do_checkpointing()
+    set_running_state()
+    get_running_state()
 
 class Head inherits Replica:
     generate_slot()
     get_request()
 
 class Tail inherits Replica:
-    send_to_client()
-    send_result_back()
+    send_result_to_peers()
 
 class Client:
     send_request()
