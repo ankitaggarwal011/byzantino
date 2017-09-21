@@ -1,6 +1,6 @@
 class Crypto:
     create_sign()
-    sign()
+    sign("SHA 256")
 
 class Olympus:
     init_config()
@@ -8,11 +8,16 @@ class Olympus:
     init_history()
     sign_statement()
     get_request_from_client()
+    send_message_to_replica("catch-up")
+
+    # Yes, during reconfiguration, the running state of the object needs to be copied and sent to the replicas in the new configuration.  
+    # checkpointing introduces some complication to this.  since the paper provides little detail about it, I just added to project.txt a long 
+    # comment about how to do this.  search for "COMMENTS ON STATE TRANSFER
 
 class Replica:
     status = {ACTIVE | PENDING | IMMUTABLE}
     check_faults()
-    communicate_fault()
+    notify_olympus_about_fault()
     send_wedged_statement()
     order_statement()
     order_proof()
@@ -26,10 +31,22 @@ class Replica:
     do_checkpointing()
     set_running_state()
     get_running_state()
+    send_message_to_olympus("caught-up")
+    recent_history() # history after checkpoint
+    discard_history() # only after getting checkpoint proof
+    get_checkpoint_proof() # if yes, discard history before this checkpoint
+                           # checkpoint proof should be a part of the wedged statement of the replica
+
+    # The slot number is global and not per client. 
+    # One shuttle supports one operation, by which I mean it does not support multiple operations(one per each client).
 
 class Head inherits Replica:
     generate_slot()
     get_request()
+    init_checkpoint_proof()
+
+    # One more comment about checkpointing, it's fine to initiate checkpoints at fixed intervals, for example, every N slots for some N specified 
+    # when the configuration is created, this reduces the need for coordination during checkpointing.
 
 class Tail inherits Replica:
     send_result_to_peers()
@@ -38,3 +55,21 @@ class Client:
     send_request()
     get_response()
     check_for_faults()
+    # In more detail, as discussed today during office hours, when the client receives a result r and result proof rp, it computes X = 
+    # crytographic_hash(r), and accepts the result if there are at least t+1 result statements in rp that have valid signatures by distinct 
+    # replicas in the current configuration, and that all contain cryptographic hash X.
+
+    # I think it makes sense for the client to indicate in the request message whether it is the initial transmission or a retransmission of that 
+    # request.  in relation to my comment on request identifiers, this might be unnecessary if we were adopting the "strong" approach that 
+    # requires clients to include sequence numbers in requests, but recall that we are adopting the weaker approach that does not require the use 
+    # of sequence numbers in requests.
+
+    # I agree.  if the client receives one valid result for a request, I think it can simply ignore subequent results for that request.
+
+    # The descriptions below of the dictionary object and operation, the configuration file, and fault injection should not influence your 
+    # pseudocode (that's why they appear under PHASE 2 not under PHASE 1).the pseudocode should work for a generic object and operations, like 
+    # the description in the paper.  it should not contain pseudocode for reading config files or for failure injection.  client pseudocode can 
+    # simply use a statement like "get next request from application"; it does not need to generate requests
+
+    send_request_to_olympus("get_config" or "reconfig") # with proof of misbehavior if the client gets malformed response from tail,
+                              # or two different result statements claim different hashes for same request
