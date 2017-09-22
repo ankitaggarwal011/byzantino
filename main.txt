@@ -1,17 +1,21 @@
 client = Client() # initialize the client
-client.execute_operation()
+for each request in generate_random_requests(1..N): # generate N random requests from client
+    client.execute_operation()
 
-# Make sure this method or equivalent is in Olympus.txt
-olympus.init_config(num_replicas):
-    head = Replica(1)
-    tail = Replica(num_replicas)
-    for each replica_id in range [2, num_replicas):
-        Replica(replica_id) # initialize all replicas
-    return head, tail, rest of replicas
+olympus = Olympus(T) # initialize the Olympus with tolerance against T faults
+replicas = olympus.init_config()
 
-olympus = Olympus() #initialize the Olympus
-head, tail, rest of replicas = olympus.init_config(num_replicas) # number of replicas in the current configuration
+head = replicas[0]
+tail = replicas[2 * T] # Assuming 2 * T + 1 replicas for tolerance against T faults
+rest_of_replicas = replicas[1:2 * T]
 
 -- head.receive() # receive handler for head
 
 -- head.init_checkpointing() # init_checkpointing handler for head
+
+-- head.check_timeout() # checking timeout handler for head
+
+-- tail.check_timeout() # checking timeout handler for tail
+
+for each replica in rest_of_replicas:
+    -- replica.check_timeout() # checking timeout handler for rest of the replicas

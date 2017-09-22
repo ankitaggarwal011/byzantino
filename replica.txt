@@ -23,34 +23,36 @@ Replica:
     # result_cache = {} # key-value store to cache result against particular request id
     # checkpoint_proof => list of hashed running states of each replica along the chain
     # timer => creates a timer for the current replica
-    # t => current timer
 
     replica_id # id of the current replica
     state = {ACTIVE | PENDING | IMMUTABLE}
     running_state # current state of the replica in the given configuration
     history = [] # history of the current replica, contains the list of order proofs for all operations since the last checkpoint
 
+    send(event message, receiver, ...):
+        # sends the event message to the receiver with the given variable arguments
+        # It is assumed that the programming language and compiler exposes an implementation of a similar method for 
+        # inter-process communication among different nodes
+
     start_timer():
         return timer()
 
-    cancel_timer(t):
-        t.cancel()
+    cancel_timer(current_timer):
+        current_timer.cancel()
 
     init_request(request_id, o):
         if replica_id == head:
             s = get_slot_number()
             request_shuttle = [] # initialize request shuttle
             order_command(s, o, request_shuttle)
-            t = start_timer() # start timer to check for timeout
+            current_timer = start_timer() # start timer to check for timeout
 
     init_checkpointing():
         if slot_number / 100 is integer: # for every 100 slots
+            clear_cache()
             checkpoint_proof = [hash(running_state)]
             checkpoint = slot_number
             send("checkpointing", replica_id + 1, checkpoint, checkpoint_proof)
-
-    send(event message, receiver, ...):
-        # sends the event message to the receiver with the given variable arguments
     
     apply_operation(o): 
         result = o(running_state) # running_state is modified to new running_state
@@ -66,10 +68,10 @@ Replica:
     order_command(s, o, request_shuttle):
         for each previous replica r_p:
             if not check_H(request_shuttle.order_proof of r_p, public key of r_p):
-                send("invalid_signature", olympus) # notify olympus if any of the previous replica is incorrectly signed
+                send("reconfiguration", olympus) # notify olympus if any of the previous replica is incorrectly signed
                 return
         if not is_valid_proof(s, o, request_shuttle.order_proof):
-            send("inconsistent_slot", olympus) # notify olympus if the operation described against a specific slot number is not unique in the 
+            send("reconfiguration", olympus) # notify olympus if the operation described against a specific slot number is not unique in the 
                                            # order-proofs of previous replicas
             return
         request_shuttle.order_proof = request_shuttle.order_proof + H([s, o], replica_private_key)
@@ -84,7 +86,7 @@ Replica:
                 send_result_to_client(request_id_args) # request_id_args => request_id_args passed from the variable arguments
             else if statement == "wedge request":
                 state = IMMUTABLE # change state to IMMUTABLE
-                send("wedged statement", olympus, history, checkpoint_proof, running_state)
+                send("wedged statement", olympus, history, checkpoint_proof, hash(running_state))
             else if statement == "catch up":
                 catch_up(set_of_operations_to_apply)
             else if statement == "get_running_state":
@@ -112,7 +114,7 @@ Replica:
         send("result shuttle", replica_id - 1, request_id, result_shuttle)
 
     receive_result_shuttle_from_successor(request_id, request_shuttle):
-        cancel_timer(t)
+        cancel_timer(current_timer)
         result_cache[request_id] = (result_shuttle.r, result_shuttle.result_proof) # result_shuttle.r => result provided by predecessor
 
     forward_request_shuttle_to_successor(request_shuttle):
@@ -126,6 +128,11 @@ Replica:
         if request_id in result_cache:
             return True
         return False
+
+    clear_cache():
+        if slot_number / 100 is an integer:
+            result_cache = {} # clear cache for every 100 slots, other cache management techniques can also
+                              # be applied to enhance implementation performance
 
     send_result_to_client(request_id):
         if check_cache(request_id):
@@ -141,6 +148,11 @@ Replica:
         for each operation o_c in set_of_operations_to_apply:
             result = o_c(running_state) # running_state will be modified to the new_running_state
         send("caught up", olympus)
+
+    check_timeout():
+        if current_timer.has_ended(): # if the timer has finished, send reconfiguration request to the olympus
+            send("reconfiguration", olympus)
+
 
 Result_Shuttle:
     # Convention: o => operation to be performed as a part of client request
