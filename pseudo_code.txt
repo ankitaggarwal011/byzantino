@@ -75,7 +75,7 @@ Object Client:
     # The descriptions below of the dictionary object and operation, the configuration file, and fault injection should not influence your
     # pseudocode (that's why they appear under PHASE 2 not under PHASE 1).the pseudocode should work for a generic object and operations, like
     # the description in the paper.  it should not contain pseudocode for reading config files or for failure injection.  client pseudocode can
-    # simply use a statement like "get next request from application"; it does not need to generate requests
+    # simply use a statement like "get next request from application" it does not need to generate requests
 
     send_request_to_olympus("get_config" or "reconfig") # with proof of misbehavior if the client gets malformed result from tail,
                               # or two different result statements claim different hashes for same request

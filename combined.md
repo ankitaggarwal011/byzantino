@@ -1,16 +1,18 @@
------------------------------------------------------------
+## Client Object
+```py
+
 Client:
     # client state variables
     Olympus
     T = T                    # Max number of tolerated failures in system
-    timeout = x seconds;     # client's timeout for queries
+    timeout = x seconds     # client's timeout for queries
     replicas = []            # replica IDs in the current configuration
     replica_public_keys = {} # mapping of replica ID vs its public key
 
     # client methods
      request_configuration():
-        send_message(Olympus, 'get_configuration');
-        wait(onMessageReceived('configuration'), timeout);
+        send('get_configuration') to Olympus
+        wait(on_message_received('configuration'), timeout)
 
 
      on_message_received('configuration', replicas, replica_public_keys):
@@ -22,27 +24,27 @@ Client:
 
      execute_operation(o):
         # o is the operation that the client wants to execute
-        request_configuration();
+        request_configuration()
         # we assume that configuration is updated through Olympus
         request_id = generate_request_id()
         head = replicas[0]
-        send_message(head, 'request', o, request_id)
+        send('request', o, request_id) to head
         wait(on_message_received('result'), timeout)
         handle_request_retry(request_id, o)
 
      on_message_received('result', result, result_proofs, o):
         # On receiving a result, check if the result hash is correct for atleast (T + 1) replicas so that atleast one is honest
         # Assumption: result_proofs from each replica r' are in the same order as replicas
-        verifiedCount = 0
+        verified_count = 0
         for i from 1 to size(replicas):
             if verify_signature(<o, hash(result)>, result_proofs[i], replica_public_keys[i]) == true:
-                verifiedCount += 1
+                verified_count += 1
 
-        if verifiedCount >= T + 1:
-            print('Operation successful', o);
+        if verified_count >= T + 1:
+            print('Operation successful', o)
         else
-            print('Operation failure', o);
-            send_message(Olympus, 'request_reconfiguration_client', result, result_proofs, o)
+            print('Operation failure', o)
+            send(Olympus, 'request_reconfiguration_client', result, result_proofs, o)
         # client operation successful
         exit
 
@@ -52,20 +54,33 @@ Client:
         execute_operation(o)
     }
 
+
      handle_request_retry(request_id, o):
         # now we will retry our request by sending to all replicas in the chain, not just the head
         for i from 1 to size(replicas) in parallel:
-            send_message(replica[i], 'request', o, request_id)
+            send('request', o, request_id) to replica[i]
             wait (on_message_received('result' || 'retry_error'), timeout)
 
 
      verify_signature(message, signature, key):
         # this Crypto function determines if the signature computed for message is valid with specified key
         # Standard implementations can be found in Crypto libraries
+```
 
------------------------------------------------------------
-
+## Olympus Object
+```py
 Olympus:
+    # Assumptions: generate_keys() is a function that initializes and returns a public-private key pair
+    # Standard implementations can be found in Crypto libraries for most languages
+
+    # Assumptions: wait_aggregate(N, func) is a function that waits till a nested function func is called n times
+    # It aggregates all func operands as lists and returns them as tuples
+
+    # Assumption: wait_for_message is a function that blockingly waits for a message and copies arguments into result
+
+    # Assumption: hash utility function that calculates hash of the given data
+
+    # Olympus state variables
     T                        # maximum number of failures that can be tolerated by system
     num_replicas = 2T + 1    # total replicas must be 2T + 1 to maintain consistency guarantees
     replicas = []            # replica objects
@@ -73,96 +88,100 @@ Olympus:
     replica_private_keys = [] # private keys of replicas
     timeout
 
-    init(num_failures_tolerated, timeout_value):
-        T = num_failures_tolerated
-        timeout = timeout_value
-        init_replicas(null, null)
-        return replicas
+    # Olympus constructor
+    Olympus (T_value):
+        T = T_value
+        num_replicas = 2T + 1
+
+
+    # Olympus methods
+
+
+    init():
+        init_replicas([], [])  # since this is the first initialization of config, there is no history or state for replicas
+        return replicas        # returns the replicas state variable
+
 
     init_replicas(running_state, history):
         for i from 1 to num_replicas:
             <replica_public_keys[i], replica_private_keys[i]> = generate_keys()
-            replica[i] = generate_replica(i, running_state, history, replicas, replica_public_keys, replica_private_keys)
+            replica[i] = generate_replica(i, running_state, history, replicas, replica_public_keys, replica_private_keys[i])
 
 
+    generate_replica(i, running_state, history, replicas, replica_public_keys, single_private_key):
+        r = Replica(replica_public_keys, single_private_key)
+        replicas[i] = r
+        r.state = ACTIVE
+        send('init_hist', running_state, history) to r
+
+    # This is the message received by Olympus from clients asking for configuration
     on_message_received('get_configuration', requester):
-        send_message(requester, 'configuration', replicas, replica_public_keys)
+        send('configuration', replicas, replica_public_keys) to requester
 
-    on_message_received('request_reconfiguration_client', result, resultProofs, o):
+
+    on_message_received('request_reconfiguration_client', result, result_proofs, o):
         # when Olympus receives an external reconfiguration request, i.e. from the client, it needs to verify
-        # the proofs sent for reconfiguration. Hence, we do a signature verification for (T+1) responseProofs again
-        verifiedCount = 0
+        # the proofs sent for reconfiguration. Hence, we do a signature verification for (T+1) result_proofs again
+        verified_count = 0
         for i from 1 to num_replicas:
             if verify_signature(<o, hash(result)>, result_proofs[i], replica_public_keys[i]) == true:
-                verifiedCount += 1
+                verified_count += 1
 
-        if verifiedCount >= T + 1:
+        if verified_count >= T + 1:
             # Reconfiguration request is invalid
-            exit
-
-        begin_reconfiguration();
+            log ('Neglecting reconfiguration request', o)
+            return
+        begin_reconfiguration()
 
 
     begin_reconfiguration():
         for i = 1 to num_replicas in parallel:
-            send_message(replicas[i], 'wedge_request')
+            send('wedge_request') to replica[i]
 
         <histories, checkpoint_proofs, hashed_running_states> =
-        wait_aggregate(num_replicas, on_message_received('wedge', history, checkpoint_proof, hash_running_state), timeout)
+        wait_aggregate(num_replicas, on_message_received('wedge', history, checkpoint_proof, hash_running_state))
         # now we make at most T quorum attempts, each with a size of T + 1, and attempt to find a valid history
         for i from 1 to T:
-            quorum_range = range = range (i to i + T + 1)
-            quorum_result = is_valid_quorum(histories (i, i + T + 1), quorum_range)
-            if quorum_result.first == true:
-                # now, we need to get a valid running state from
+            quorum_range = range (i to i + T + 1)
+            quorum_result_pair = is_valid_quorum(histories (i, i + T + 1), quorum_range)
+            if quorum_result_pair.first == true:
+                # now, we need to get a valid running state from our quorum, and match it against the hash we got while checking validity
                 for i in quorum_range:
-                    send_message(replica[i], 'get_running_state')
+                    send('get_running_state') to replica[i]
                     rs = wait_for_message('running_state', rs)
-                    if (hash(rs) == quorum_result_second):
+                    if (hash(rs) == quorum_result_pair.second):   # this means that the running state hash computed earlier while validating quorum,
+                                                                  # matches the one sent by the currently queried replica. This means we can now reconfigure.
                         init_replicas(rs, lh)
-                        break
-                break
+                        return
+        return
 
 
+    # function that returns a tuple of boolean validity of quorum and hash of result
     is_valid_quorum(histories, indices):
-        for each <i,j> in indices:
-            for <si, oi> in histories[i]:
-                <sj, oj> = histories[j].find(<si, \*>)
-                if oi != oj:
+        for each <i,j> in indices:                      # proceed for each pair <i,j> in indices, nested loop
+            for <si, oi> in histories[i]:               # for each tuple <si,oi> in history[i]
+                <sj, oj> = histories[j].find(<si, *>)  # find a tuple <sj, oj> in history[j] such that s = si, o = anything
+                if oi != oj:                            # if oi and oj don't match, the history is invalid due to a possible failure
                     return <false, null>
-        # the quorum is valid uptil this point. Now we ask each replica to catch up
+        # the quorum is valid up to this point. Now we ask each replica to catch up.
         lh = max(histories)
         for i in indices:
-            send_message(replicas[i], 'catch_up', lh - histories[i]);
-        hashed_running_states = wait_aggregate(on_message_received('caught_up', hashed_running_state))
-        if unique(hashed_running_states) > 1:
+            send('catch_up', lh - histories[i]) to replica[i]
+        hashed_running_states = wait_aggregate(size(indices), on_message_received('caught_up', hashed_running_state))
+        unique_running_states = unique(hashed_running_states)
+        if  size(unique_running_state) > 1:
             # all hashes must be the same for a valid quorum
             return <false, null>
-        return <true, ch>
+        return <true, unique_running_states[0]>
 
-    get_quorum_indices():
-        #randomly generate quorum of sixe T+1
-        values = range (1 to 2T + 1)
-        shuffle(values)
-        return values(1,T+1)
-
-    generate_replica(i, running_state, history, replicas, replica_public_keys, replica_private_keys):
-        r = replica.new(replica_public_keys, replica_private_keys)
-        replicas[i] = r
-        send_message(r, 'init_hist', running_state, history)
 
     on_message_received('request_reconfiguration_replica'):
         # this tion is triggered when a replica triggers a reconfiguration
-        # in this case, Olympus doesn't need to verify anything. It trusts the replica's
-        request
+        # in this case, Olympus doesn't need to verify anything. It trusts the replica's request
         begin_reconfiguration()
-        # Assumption: The slot number is global and not per client.
-        slot_number = 0 # initialize slot number
 
-        get_slot_number():
-            slot_number = slot_number + 1
-            return slot_number
 
+```
 -----------------------------------------------------------
 
 Replica:
@@ -212,7 +231,7 @@ Replica:
             clear_cache()
             checkpoint_proof = [hash(running_state)]
             checkpoint = slot_number
-            send("checkpointing", replica_id + 1, checkpoint, checkpoint_proof)
+            send("checkpointing", checkpoint, checkpoint_proof) to replica_id + 1,
 
     apply_operation(o):
         result = o(running_state) # running_state is modified to new running_state
