@@ -1,0 +1,91 @@
+Olympus:
+    T                        # maximum number of failures that can be tolerated by system
+    num_replicas = 2T + 1    # total replicas must be 2T + 1 to maintain consistency guarantees
+    replicas = []            # replica objects
+    replica_public_keys = [] # public keys of replicas
+    replica_private_keys = [] # private keys of replicas
+    timeout
+
+    init(num_failures_tolerated, timeout_value):
+        T = num_failures_tolerated
+        timeout = timeout_value
+        init_replicas(null, null)
+        return replicas
+
+    init_replicas(running_state, history):
+        for i from 1 to num_replicas:
+            <replica_public_keys[i], replica_private_keys[i]> = generate_keys()
+            replica[i] = generate_replica(i, running_state, history, replicas, replica_public_keys, replica_private_keys)
+
+
+    on_message_received('get_configuration', requester):
+        send_message(requester, 'configuration', replicas, replica_public_keys)
+
+    on_message_received('request_reconfiguration_client', result, resultProofs, o):
+        # when Olympus receives an external reconfiguration request, i.e. from the client, it needs to verify
+        # the proofs sent for reconfiguration. Hence, we do a signature verification for (T+1) responseProofs again
+        verifiedCount = 0
+        for i from 1 to num_replicas:
+            if verify_signature(<o, hash(result)>, result_proofs[i], replica_public_keys[i]) == true:
+                verifiedCount += 1
+
+        if verifiedCount >= T + 1:
+            # Reconfiguration request is invalid
+            exit
+
+        begin_reconfiguration();
+
+
+    begin_reconfiguration():
+        for i = 1 to num_replicas in parallel:
+            send_message(replicas[i], 'wedge_request')
+
+        <histories, checkpoint_proofs, hashed_running_states> =
+        wait_aggregate(num_replicas, on_message_received('wedge', history, checkpoint_proof, hash_running_state), timeout)
+        # now we make at most T quorum attempts, each with a size of T + 1, and attempt to find a valid history
+        for i from 1 to T:
+            quorum_range = range = range (i to i + T + 1)
+            quorum_result = is_valid_quorum(histories (i, i + T + 1), quorum_range)
+            if quorum_result.first == true:
+                # now, we need to get a valid running state from
+                for i in quorum_range:
+                    send_message(replica[i], 'get_running_state')
+                    rs = wait_for_message('running_state', rs)
+                    if (hash(rs) == quorum_result_second):
+                        init_replicas(rs, lh)
+                        break
+                break
+
+
+    is_valid_quorum(histories, indices):
+        for each <i,j> in indices:
+            for <si, oi> in histories[i]:
+                <sj, oj> = histories[j].find(si, *)
+                if oi != oj:
+                    return <false, null>
+        # the quorum is valid uptil this point. Now we ask each replica to catch up
+        lh = max(histories)
+        for i in indices:
+            send_message(replicas[i], 'catch_up', lh - histories[i]);
+        hashed_running_states = wait_aggregate(on_message_received('caught_up', hashed_running_state))
+        if unique(hashed_running_states) > 1:
+            # all hashes must be the same for a valid quorum
+            return <false, null>
+        return <true, ch>
+
+    get_quorum_indices():
+        #randomly generate quorum of sixe T+1
+        values = range (1 to 2T + 1)
+        shuffle(values)
+        return values(1,T+1)
+
+    generate_replica(i, running_state, history, replicas, replica_public_keys, replica_private_keys):
+        r = replica.new(replica_public_keys, replica_private_keys)
+        replicas[i] = r
+        send_message(r, 'init_hist', running_state, history)
+
+    on_message_received('request_reconfiguration_replica'):
+        # this tion is triggered when a replica triggers a reconfiguration
+        # in this case, Olympus doesn't need to verify anything. It trusts the replica's
+        request
+        begin_reconfiguration()
