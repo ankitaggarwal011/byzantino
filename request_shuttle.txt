@@ -1,0 +1,10 @@
+Request_Shuttle:
+    # Convention: s => monotonically increasing slot number for client request, assigned by head
+    # Convention: o => operation to be performed as a part of client request
+    # Assumption: we don't need to keep a separate slot member variable, replicas
+    # handling request shuttle can automatically infer it from the orderProofs
+
+    requestId: # Unique Identifier for client request
+    orderProofs = []  # list of tuple signatures:  Sign(<s,o, replica_id> using private key of replica_id)
+    resultProofs = [] # list of tuple signatures for the result at each replica that has processed shuttle
+                      # : Sign(<o, hash(result)> using private key of replica_id)

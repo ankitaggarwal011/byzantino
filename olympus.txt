@@ -5,16 +5,23 @@ Olympus:
     replica_public_keys = [] # public keys of replicas
     replica_private_keys = [] # private keys of replicas
     timeout
-    func init(running_state, history):
+
+    init(num_failures_tolerated, timeout_value):
+        T = num_failures_tolerated
+        timeout = timeout_value
+        init_replicas(null, null)
+        return replicas
+
+    init_replicas(running_state, history):
         for i from 1 to num_replicas:
             <replica_public_keys[i], replica_private_keys[i]> = generate_keys()
             replica[i] = generate_replica(i, running_state, history, replicas, replica_public_keys, replica_private_keys)
 
 
-    func on_message_received('get_configuration', requester):
+    on_message_received('get_configuration', requester):
         send_message(requester, 'configuration', replicas, replica_public_keys)
 
-    func on_message_received('request_reconfiguration_client', result, resultProofs, o):
+    on_message_received('request_reconfiguration_client', result, resultProofs, o):
         # when Olympus receives an external reconfiguration request, i.e. from the client, it needs to verify
         # the proofs sent for reconfiguration. Hence, we do a signature verification for (T+1) responseProofs again
         verifiedCount = 0
@@ -29,7 +36,7 @@ Olympus:
         begin_reconfiguration();
 
 
-    func begin_reconfiguration():
+    begin_reconfiguration():
         for i = 1 to num_replicas in parallel:
             send_message(replicas[i], 'wedge_request')
 
@@ -45,15 +52,15 @@ Olympus:
                     send_message(replica[i], 'get_running_state')
                     rs = wait_for_message('running_state', rs)
                     if (hash(rs) == quorum_result_second):
-                        init(rs, lh)
+                        init_replicas(rs, lh)
                         break
                 break
 
 
-    func is_valid_quorum(histories, indices):
+    is_valid_quorum(histories, indices):
         for each <i,j> in indices:
             for <si, oi> in histories[i]:
-                <sj, oj> = histories[j].find(si, *);
+                <sj, oj> = histories[j].find(si, *)
                 if oi != oj:
                     return <false, null>
         # the quorum is valid uptil this point. Now we ask each replica to catch up
@@ -66,23 +73,19 @@ Olympus:
             return <false, null>
         return <true, ch>
 
-    func get_quorum_indices():
+    get_quorum_indices():
         #randomly generate quorum of sixe T+1
         values = range (1 to 2T + 1)
         shuffle(values)
         return values(1,T+1)
 
-    func generate_replica(i, running_state, history, replicas, replica_public_keys, replica_private_keys):
+    generate_replica(i, running_state, history, replicas, replica_public_keys, replica_private_keys):
         r = replica.new(replica_public_keys, replica_private_keys)
         replicas[i] = r
-        sendMessage(r, 'init_hist', running_state, history)
+        send_message(r, 'init_hist', running_state, history)
 
-
-    func reconfigure()
-    func on_message_received('')
-    init_config()
-    send_wedge_request()
-    init_history()
-    sign_statement()
-    get_request_from_client()
-    send_message_to_replica("catch-up")
+    on_message_received('request_reconfiguration_replica'):
+        # this tion is triggered when a replica triggers a reconfiguration
+        # in this case, Olympus doesn't need to verify anything. It trusts the replica's
+        request
+        begin_reconfiguration()

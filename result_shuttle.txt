@@ -1,0 +1,7 @@
+Result_Shuttle:
+    # Convention: o => operation to be performed as a part of client request
+    # Assumption: result of applying operation o to each replica is the same
+
+    r # result after applying operation to the running state of the tail
+    completedResultProofs = [] # list of tuple signatures for the result at each replica
+                               #: Sign(<o, hash(result)> using private key of replica_id)
