@@ -20,9 +20,9 @@ Client:
 
 
     # client initialization
-    Client(T_value, olympus, client_timeout): # Create a new client with specified value of T, Olympus and timeout
+    Client(T_value, Olympus, client_timeout): # Create a new client with specified value of T, Olympus and timeout
         T = timeout_value
-        Olympus = olympus
+        Olympus = Olympus
         timeout = client_timeout
 
 

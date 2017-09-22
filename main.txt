@@ -1,8 +1,9 @@
-olympus = Olympus(T) # initialize the Olympus with tolerance against T faults
-replicas = olympus.init()
+replica_timeout = X seconds
+Olympus = Olympus(T, replica_timeout) # initialize the Olympus with tolerance against T faults
+replicas = Olympus.init()
 
 client_timeout = X seconds   # timeout value for client requests
-client = Client(T, olympus, client_timeout) # initialize the client
+client = Client(T, Olympus, client_timeout) # initialize the client
 for each request in generate_random_requests(1..N): # generate N random requests from client
     client.execute_operation()
 

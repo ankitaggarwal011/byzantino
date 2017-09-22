@@ -17,7 +17,7 @@ Olympus:
     replicas = []            # replica objects
     replica_public_keys = [] # public keys of replicas
     replica_private_keys = [] # private keys of replicas
-    timeout
+    
 
     # Olympus constructor
     Olympus (T_value):
@@ -40,7 +40,7 @@ Olympus:
 
 
     generate_replica(i, running_state, history, replicas, replica_public_keys, single_private_key):
-        r = Replica(replica_public_keys, single_private_key)
+        r = Replica(replicas, replica_public_keys, single_private_key)
         replicas[i] = r
         r.state = ACTIVE
         send('init_hist', running_state, history) to r
@@ -107,9 +107,38 @@ Olympus:
 
 
     on_message_received('request_reconfiguration_replica'):
-        # this tion is triggered when a replica triggers a reconfiguration
+        # this function is triggered when a replica triggers a reconfiguration
         # in this case, Olympus doesn't need to verify anything. It trusts the replica's request
         begin_reconfiguration()
+
+
+```
+
+## Request Shuttle Object
+```py
+Request_Shuttle:
+    # Convention: s => monotonically increasing slot number for client request, assigned by head
+    # Convention: o => operation to be performed as a part of client request
+
+    # Assumption: we don't need to keep a separate slot member variable, replicas
+    # handling request shuttle can automatically infer it from order_proofs
+
+    # Assumption: according to BCR algorithm, order proof tuples also contain configuration C as a param.
+    # However, we have omitted configuration C because we are not reusing replicas across configurations,
+    # and hence configurations are independent and not required here
+
+    # request shuttle state variables
+    request_id: # Unique Identifier for client request: can be timestamp, UUID etc
+    order_proofs = []  # list of tuple signatures:  Sign(<s,o, replica_id> using private key of replica_id)
+    result_proofs = [] # list of tuple signatures for the result at each replica that has processed shuttle
+                      # : Sign(<o, hash(result)> using private key of replica_id)
+
+
+    # request shuttle constructor
+    Request_Shuttle(req_id):
+        request_id = req_id
+        order_proofs = []
+        result_proofs = []
 
 
 ```

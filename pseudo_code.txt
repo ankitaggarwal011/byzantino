@@ -22,7 +22,7 @@ Object Replica:
     status = {ACTIVE | PENDING | IMMUTABLE}
     apply_operation(o)
     check_faults()
-    notify_olympus_about_fault()
+    notify_Olympus_about_fault()
     send_wedged_statement()
     order_statement()
     order_proof()
@@ -36,7 +36,7 @@ Object Replica:
     do_checkpointing()
     set_running_state()
     get_running_state()
-    send_message_to_olympus("caught-up")
+    send_message_to_Olympus("caught-up")
     recent_history() # history after checkpoint
     discard_history() # only after getting checkpoint proof
     get_checkpoint_proof() # if yes, discard history before this checkpoint
@@ -77,5 +77,5 @@ Object Client:
     # the description in the paper.  it should not contain pseudocode for reading config files or for failure injection.  client pseudocode can
     # simply use a statement like "get next request from application" it does not need to generate requests
 
-    send_request_to_olympus("get_config" or "reconfig") # with proof of misbehavior if the client gets malformed result from tail,
+    send_request_to_Olympus("get_config" or "reconfig") # with proof of misbehavior if the client gets malformed result from tail,
                               # or two different result statements claim different hashes for same request
