@@ -1,0 +1,61 @@
+Client:
+    # client state variables
+    Olympus
+    T = T                    # Max number of tolerated failures in system
+    timeout = x seconds;     # client's timeout for queries
+    replicas = []            # replica IDs in the current configuration
+    replica_public_keys = {} # mapping of replica ID vs its public key
+
+    # client methods
+    func request_configuration():
+        send_message(Olympus, 'get_configuration');
+        wait(onMessageReceived('configuration'), timeout);
+
+
+    func on_message_received('configuration', replicas, replica_public_keys):
+        replicas = replicas
+        replica_public_keys = replica_public_keys
+
+
+    func generate_request_id(): returns random monotonic request ID, like timestamp, UUID
+
+    func execute_operation(o):
+        # o is the operation that the client wants to execute
+        request_configuration();
+        # we assume that configuration is updated through Olympus
+        request_id = generate_request_id()
+        head = replicas[0]
+        send_message(head, 'request', o, request_id)
+        wait(on_message_received('result'), timeout)
+        handle_request_retry(request_id, o)
+
+    func on_message_received('result', result, result_proofs, o):
+        # On receiving a result, check if the result hash is correct for atleast (T + 1) replicas so that atleast one is honest
+        # Assumption: result_proofs from each replica r' are in the same order as replicas
+        verifiedCount = 0
+        for i from 1 to size(replicas):
+            if verify_signature(<o, hash(result)>, result_proofs[i], replica_public_keys[i]) == true:
+                verifiedCount += 1
+        if verifiedCount >= T + 1:
+            print('Operation successful', o);
+        else
+            print('Operation failure', o);
+            send_message(Olympus, 'request_reconfiguration_client', result, result_proofs, o)
+        # client operation successful
+        exit
+
+    func on_message_received('retry_error', o) {
+        # This means that re-configuration is taking place in the system. Retry again after a while.
+        wait (retry_timer)
+        execute_operation(o)
+    }
+
+    func handle_request_retry(request_id, o):
+        # now we will retry our request by sending to all replicas in the chain, not just the head
+        for i from 1 to size(replicas) in parallel:
+            send_message(replica[i], 'request', o, request_id)
+            wait (on_message_received('result' || 'retry_error'), timeout)
+
+    func verify_signature(message, signature, key):
+        # this Crypto function determines if the signature computed for message is valid with specified key
+        # Standard implementations can be found in Crypto libraries
