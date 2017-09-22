@@ -1,0 +1,17 @@
+client = Client() # initialize the client
+client.execute_operation()
+
+# Make sure this method or equivalent is in Olympus.txt
+olympus.init_config(num_replicas):
+    head = Replica(1)
+    tail = Replica(num_replicas)
+    for each replica_id in range [2, num_replicas):
+        Replica(replica_id) # initialize all replicas
+    return head, tail, rest of replicas
+
+olympus = Olympus() #initialize the Olympus
+head, tail, rest of replicas = olympus.init_config(num_replicas) # number of replicas in the current configuration
+
+-- head.receive() # receive handler for head
+
+-- head.init_checkpointing() # init_checkpointing handler for head
