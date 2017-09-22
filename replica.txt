@@ -22,18 +22,26 @@ Replica:
     # tail => tail replica of the current configuration
     # result_cache = {} # key-value store to cache result against particular request id
     # checkpoint_proof => list of hashed running states of each replica along the chain
+    # timer => creates a timer for the current replica
+    # t => current timer
 
     replica_id # id of the current replica
     state = {ACTIVE | PENDING | IMMUTABLE}
     running_state # current state of the replica in the given configuration
     history = [] # history of the current replica, contains the list of order proofs for all operations since the last checkpoint
 
+    start_timer():
+        return timer()
+
+    cancel_timer(t):
+        t.cancel()
+
     init_request(request_id, o):
         if replica_id == head:
             s = get_slot_number()
             request_shuttle = [] # initialize request shuttle
             order_command(s, o, request_shuttle)
-            start_timer() # start timer to check for timeout
+            t = start_timer() # start timer to check for timeout
 
     init_checkpointing():
         if slot_number / 100 is integer: # for every 100 slots
@@ -104,7 +112,7 @@ Replica:
         send("result shuttle", replica_id - 1, request_id, result_shuttle)
 
     receive_result_shuttle_from_successor(request_id, request_shuttle):
-        cancel_timer()
+        cancel_timer(t)
         result_cache[request_id] = (result_shuttle.r, result_shuttle.result_proof) # result_shuttle.r => result provided by predecessor
 
     forward_request_shuttle_to_successor(request_shuttle):
