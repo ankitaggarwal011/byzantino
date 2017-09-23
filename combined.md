@@ -41,9 +41,9 @@ Client:
                 verified_count += 1
 
         if verified_count >= T + 1:
-            print('Operation successful', o)
+            log('Operation successful', o)
         else
-            print('Operation failure', o)
+            log('Operation failure', o)
             send('request_reconfiguration_client', result, result_proofs, o) to Olympus
         # client operation successful
         exit
