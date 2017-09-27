@@ -2,17 +2,12 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="9d470788-0889-4f58-8327-6e155a578040" name="Default" comment="">
-      <change type="DELETED" beforePath="$PROJECT_DIR$/Project-part-1-pseudo_code.pdf" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/client.txt" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/main.txt" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/olympus.txt" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/pseudo_code.txt" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/replica.txt" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/request_shuttle.txt" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/result_shuttle.txt" afterPath="" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/Byzantine Chain Replication Part 1.pdf" afterPath="$PROJECT_DIR$/documentation/Byzantine Chain Replication Part 1.pdf" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/First page.pdf" afterPath="$PROJECT_DIR$/documentation/First page.pdf" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/Project-part-1-pseudo_code.md" afterPath="$PROJECT_DIR$/documentation/Project-part-1-pseudo_code.md" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/documentation/parts/client.txt" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/documentation/parts/main.txt" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/documentation/parts/olympus.txt" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/documentation/parts/replica.txt" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/documentation/parts/request_shuttle.txt" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/documentation/parts/result_shuttle.txt" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -27,7 +22,7 @@
         <entry file="file://$PROJECT_DIR$/documentation/chandy-lamport-excercise.txt">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="240">
-              <caret line="16" column="0" lean-forward="false" selection-start-line="16" selection-start-column="0" selection-end-line="16" selection-end-column="0" />
+              <caret line="16" column="0" lean-forward="true" selection-start-line="16" selection-start-column="0" selection-end-line="16" selection-end-column="0" />
               <folding />
             </state>
           </provider>
@@ -188,7 +183,7 @@
     <entry file="file://$PROJECT_DIR$/documentation/chandy-lamport-excercise.txt">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="240">
-          <caret line="16" column="0" lean-forward="false" selection-start-line="16" selection-start-column="0" selection-end-line="16" selection-end-column="0" />
+          <caret line="16" column="0" lean-forward="true" selection-start-line="16" selection-start-column="0" selection-end-line="16" selection-end-column="0" />
           <folding />
         </state>
       </provider>
