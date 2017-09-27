@@ -1,0 +1,16 @@
+Ans 1:
+V -> nodes in graph
+E -> number of edges
+The message complexity is O(|V| * |E|) as in the worst case, every nodes sends a message to all its connected neighbours atleast once.
+Time complexity is O(|V|) as again, every node sends a message to all its connected neighbours at least once, which we assume takes unit time
+
+Ans 2:
+
+A simple solution is to maintain the path from initiator during the flooding phase of our algorithm.
+
+When a process is marked as recorded, it has the path from the initiator passed to it by its neighbour.
+Now, after saving its state, it can simply forward the recorded state back up this path in a directed manner.
+
+In this way, each node forwards the state back to a directed path, and we achieve O(N) dissemination
+
+Group members: Saraj Munjal(111497962, smunjal), Pratik Zambani(111500248, pzambani)
