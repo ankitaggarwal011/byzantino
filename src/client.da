@@ -1,0 +1,21 @@
+class Client(process):
+    def setup(others):
+        self.others = others
+        #do nothing
+
+    def run():
+        send ('ping', to= others)
+
+    def receive(msg=('Ping',), from_=p):
+        output("Received ping from " + p);
+        send(('pong',), to= p)
+
+    def receive(msg=('Pong',), from_=p):
+        output("Received pong from " + p);
+
+
+def main():
+    config(clock= 'Lamport')
+    clients = new(Client, num= 2)
+    for c in clients: setup(c, (clients - {c},))
+    for c in clients: start(c)
