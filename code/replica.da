@@ -1,0 +1,88 @@
+from time import sleep
+
+config(channel is fifo, clock is lamport)
+
+PENDING = 0
+ACTIVE = 1
+IMMUTABLE = 2
+
+class Replica(process):
+    
+    def setup(id):
+        self.status = PENDING
+        self.olympus = None
+        self.replicas = None
+        self.head = None
+    
+    def run():
+        status = ACTIVE
+        await(received(('Complete',)))
+
+    def receive(msg=('Config', olympus_, replicas_)):
+        output("Config received by Replica " + str(id))
+        olympus = olympus_
+        replicas = replicas_
+        head = replicas[0]
+        send(('Config Received',), to=olympus)
+    
+    def receive(msg=('Put', client)):
+        output("Request received by Replica " + str(id))
+        if id == 0:
+            output("Request received from client")
+            send(('Put', client), to=replicas[id + 1])
+        elif id == len(replicas) - 1:
+            output("Sending result to client")
+            send(('Done!',), to=client)
+        else:
+            send(('Put', client), to=replicas[id + 1])
+
+
+class Olympus(process):
+    
+    def setup(num_replicas):
+        self.replicas = list()
+        self.head = None
+        for i in range(num_replicas):
+            replica = new(Replica, args=(i, ))
+            if i == 0:
+                self.head = replica
+            self.replicas.append(replica)
+    
+    def receive(msg=('Config Received',)):
+        output("Config received ack")
+
+    def receive(msg=('Client', client)):
+        output("Olympus has received get config request")
+        send(('Config', head), to=client)
+
+    def run():
+        start(replicas)
+        send(('Config', self, replicas), to=replicas)
+        await(received('Config Received',))
+        await(received(('Complete',)))
+
+class Client(process):
+    
+    def setup(olympus):
+        self.head = None
+    
+    def receive(msg=('Config', head_)):
+        output("Config received ack by client")
+        head = head_
+
+    def run():
+        send(('Client', self), to=olympus)
+        await(received(('Config', head)))
+        send(('Put', self), to=head)
+        output("Message sent to head")
+        await(received(('Done!',)))
+        output("Result received by client")
+        send(('Complete',), to=olympus)
+        send(('Complete',), to=head)
+
+def main():
+    olympus = new(Olympus, args=(3,))
+    client = new(Client, args=(olympus,))
+    start(olympus)
+    sleep(1)
+    start(client)
