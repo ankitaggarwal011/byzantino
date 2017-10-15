@@ -1,0 +1,544 @@
+		          CSE535: Asynchronous Systems               2017-10-14
+	        Scott D. Stoller, Stony Brook University
+
+               Project: Byzantine Chain Replication
+
+======================================================================
+OVERVIEW
+
+The heart of this project is to implement Byzantine chain replication (BCR), as described in
+
+Robbert van Renesse, Chi Ho, and Nicolas Schiper.  Byzantine Chain Replication.  Proceedings of the 16th International Conference on Principles of Distributed Systems (OPODIS 2012), pages 345-359. Springer Verlag, December 2012.
+
+BCR is also described in chapter 5 of Chi Ho's 2011 Ph.D. thesis.  you might find some of the explanations in it useful.  however, it was written earlier, and the details of the algorithm are slightly different.  we will consider the OPODIS 2012 paper to be definitive.  both documents are available on Blackboard under Documents.
+
+======================================================================
+ADVICE [2017-09-15]
+
+your team will read about BCR mostly on its own.  reading and understanding a research paper is an important skill.  constructing small examples is a good way to improve your understanding.
+
+for example, to improve your understanding of the transitions in Fig. 1, choose a specific initial configuration (say, t=1, 3 replicas), start with the initial state (statements=emptyset, rho.history=emptyset for all replicas rho), choose some transition that can be executed in that state, write down the transition and the resulting next state, and repeat.  of course, there are many possibilities.  you don't need to explore all of them.   working through a few typical scenarios should be sufficient.
+
+to improve your understanding of the communication patterns in BCR, draw UML sequence diagrams for a few typical scenarios.
+
+======================================================================
+ASKING QUESTIONS
+
+you are welcome to ask questions.  please ask your questions in the Project forum on Blackboard, during office hours, or at the beginning of class.  ask questions by email only if they require confidentiality.  please do not send questions to the authors of the paper.  I sent them several questions already, which they graciously answered.  we should not bother them with potentially similar questions.  if we cannot figure out answers to your questions, I will ask the authors on our behalf.
+
+please answer questions posted on Blackboard if you can.  it will help your classmates, by providing faster responses.  it will also show me that you understand the paper.
+
+======================================================================
+COMMENTS ON THE PAPER
+
+COMMENTS ON switchConfig TRANSITION IN FIGURE 1 (Section 2)
+
+there are some typos in the definition of hist in the switchConfig transition:
+"h in H" should be "<wedged, h>_* in H"
+"<s, o, v> in h" should be "<s, o, *, *, v> in h"
+"h' in H" should be "<wedged, h'>_* in H"
+"<s, o', v'> in h'" should be "<s, o', *, *, v'> in h'"
+
+notation:
+underscore denotes subscript: x_y means "x subscript y".
+"*" is the "don't care" pattern: the corresponding piece of the matched value is irrelevant.
+
+H is a set of statements, as indicated by the "H subseteq statements" conjunct in the precondition.  H contains only wedged statements, because it has the same size as Q and contains a wedged statement for each replica in Q.  it is sufficient to look at histories in wedged statements, because (as stated in section 3.3) a failure suspicion causes Olympus to send wedge requests to all replicas. [2017-09-17: deleted comment ", so all replicas that should survive into the next configuration C' issue wedge statements in C."]
+
+the textual description of switchConfig on p. 5 mentions "a set H of valid histories"; to be more precise, it should refer to the histories in the wedged statements in H.
+
+the signed order statements <order, s, o>_rho' (where rho' in C') included in the history hist in the inithist statement issued by the oracle in the switchConfig transition are "imaginary", in the sense that, when hist is constructed, the replicas in C' are PENDING and have not actually issued any statements (recall that the sets of replicas in different configurations are considered disjoint, as stated in section 2).  these signed order statements are magically produced as a way of expressing that the replicas in C' accept ordering decisions from earlier configurations.  expressing it in this way has the benefit of uniformity: these new order proofs for those earlier ordering decisions look the same as order proofs that will be created for new ordering decisions in the new configuration.  note that these imaginary signed order statements are not produced in the implementation.
+
+for each slot s, choosing the operation o associated with a maximal-size order proof (i.e., an order proof with the most signed order statements in the last component of the tuple) from any preceding configuration helps ensure that, if all replicas in an earlier configuration accepted the ordering of o in slot s, then the new configuration C' will also accept it.
+
+COMMENTS ON SHUTTLE (Section 3.0) [added 2017-09-18]
+
+Recall from section 3.0: "To reduce the efficacy of trivial Denial-of-Service attacks on the object, Olympus only accepts reconfiguration requests that are sent by replicas in the current configuration or accompanied by a proof of misbehavior."  This implies that reconfiguration requests sent by a replica in the current configuration do not need to be accompanied by a proof of misbehavior, because Olympus will accept the request anyway.  Proofs of misbehavior sent by a replica from a different (earlier) configuration are useful only if some replicas are re-used across configurations.  As mentioned in the comments below on Section 3.3, we adopt a simpler approach in which every reconfiguration replaces all replicas.  therefore, in our version of the algorithm, replicas do not need to send proofs of misbehavior to Olympus.  replicas still need to detect provable misbehavior, in order to trigger sending a reconfiguration request to Olympus.
+
+note: we cannot require reconfiguration requests from replicas in the current configuration to include a proof of misbehavior, because  reconfiguration requests can be triggered by timeouts.
+
+COMMENTS ON FAILURE-FREE CASE (Section 3.2)
+
+the tail should send the result and result proof to the client before sending the result shuttle to its predecessor in the chain.
+
+COMMENTS ON DEALING WITH FAILURES (Section 3.3)
+
+"If a (correct) replica that receives the request has the result shuttle cached, it returns the result along with the result proof to the client.  If the replica is immutable, ..."  The latter sentence should be interpreted as "Else if the replica is immutable, ...".
+
+in order for a replica to determine whether it has a cached result shuttle corresponding to a (retransmitted) client request, it needs to be able to associate them with each other.  the most straightforward way to do this is for the client to include a unique identifier in each request, and for replicas to include this identifier in the result shuttle.
+
+a replica sends a reconfiguration request when a timeout occurs, as described in the paper, or when it detects provable misbehavior by other replicas.  the paper does not discuss how replicas detect provable misbehavior; you should think about this and explicitly discuss it in your submission.  generally, misbehavior is proved by information with valid authentication and invalid or contradictory content, for example, order statements by different replicas for the same slot with different operations.  information with invalid authentication cannot contribute to a proof of misbehavior, because its source is unverifiable (it might have been sent by an intruder rather than a replica).
+
+the example of provable misbehavior in section 2 ("the combination of an <order, s, r>_rho statement and a <wedged,h>_rho statement that does not contain an order proof for <s,r>") is an example of provable misbehavior detected by Olympus (not by a replica).
+
+the paper say that Olympus, after receiving a reconfiguration-request, will "allocate a new configuration C of replicas ...", without specifying how Olympus decides which processes to include in the new configuration.  Chi's thesis presents a somewhat complicated procedure for this, based on an "interrogation protocol".  we will adopt a simpler and safer approach suggested by Robbert Van Renesse.  since it is often impossible to determine with certainty which processes in the current configuration are faulty, Olympus will simply replace all of them with new processes during every reconfiguration, by creating new processes and generating new signature keys for them, and telling the processes in the previous configuration to terminate.  this is more expensive than retaining some processes from the previous configuration, but the cost is acceptable, assuming reconfiguration is infrequent.
+
+note that section 2 suggests that a replica sends a wedged message when a failure is detected or suspected.  however, the more detailed description of the algorithm in section 3 explains that a replica actually sends a reconfiguration request when a timeout occurs or provable misbehavior is detected; the wedged statement is sent later, after Olympus asks for it by sending a wedge request
+
+COMMENTS ON REQUEST IDENTIFIERS [2017-09-19 added this section.]
+
+there are a spectrum of possible approaches to keeping track of which client requests have been executed, which vary in cost and strength of guarantee.
+
+a strong approach is to require that each client includes a sequence number in each request, and for the service to ensure that it executes client requests in order and without gaps.  to do this, the service keeps track of the sequence number of the most recently executed request for each client.  essentially, this information is considered as part of the running state of the replicated object, so the replication algorithms ensures that all replicas agree on it.  the cost is reasonable for services with a limited number of clients.  for services with large numbers of clients, this may be too expensive.
+
+a weaker and less expensive approach is for each client to include a unique ID of any kind (a sequence number, timestamp, random number, etc.) in each request, and for replicas to cache the IDs of recently executed requests together with the result (return value) of the request.  when a replica receives a retransmitted request, it first checks whether that ID appears in the cache.  if so, it simply resends the cached result.  otherwise, the replica assumes the request is new.  the result cache may be a fixed size, with the oldest entries evicted as needed.  this approach is weak because it allows requests to be executed multiple times, if a request is received again after the entry for it in the replica's result cache has been evicted.
+
+note that this is a generic issue in distributed client-server systems.  the choice of approach is application-dependent, and BCR is compatible with any approach.  for consistency, I recommend that we all adopt the "weak" approach above.  this is the approach suggested in the paper, where it talks about caching result shuttles, etc., in section 3.3.
+
+COMMENTS ON HOLES [2017-09-17 added this section]
+
+a slot s is a "hole" if no operation has been assigned to that slot, and an operation has been assigned to a subsequent slot (i.e., a slot with an index larger than s), as in your example. this could occur, for example, if the head is faulty and skips a slot. the specification in section 2 allows holes, as the paper mentions. however, the BCR algorithm does not actually create holes.  to prevent holes, a replica should sign an order statement for a slot only if it has signed order statements for all lower-numbered slots (this is condition is mentioned on p. 97 of Ho's thesis).
+
+[2017-09-21 added the remainder of this section]
+
+suppose a replica has signed order statements for slots <= s and receives a valid shuttle for slot s+2 (or higher).  There are two possibilities: (1) the network dropped or corrupted messages for slot s+1, (2) one of the replica's predecessors in the chain is faulty (e.g., the head assigned non-consecutive slots, or some other predecessor dropped some shuttles).  the replica cannot immediately distinguish between these two cases.
+
+a reasonable, but not essential, reaction is to ask the predecessor to retransmit the shuttle for slot s+1, in order to avoid the cost of reconfiguration in case the problem is temporary interference on the network.  if the replica does not receive the shuttle for s+1, then the client will eventually retransmit one of its unanswered requests, and the system will eventually reconfigure.
+
+suppose the replica simply ignores the shuttle for s+2.  assuming the replicas communicate using a communication protocol (such as TCP) that tries to ensure reliable in-order message delivery (but does not guarantee it in the presence of failures), the missing shuttle for s+1 is very unlikely to arrive later.  with high probability the client will eventually retransmit one of its unanswered requests, and the system will eventually reconfigure.  therefore, ignoring the shuttle merely delays the almost inveitable reconfiguration, and it would be better to request reconfiguration immediately.
+
+COMMENTS ON CHECKPOINTING (section 4.2) [2017-09-20 added this section]
+
+during checkpointing, a replica should not discard the history before the new checkpoint until the replica has received a valid completed checkpoint proof.  the completed checkpoint proof ensures that enough other replicas have taken that checkpoint to convince Olympus of its validity.  if Olympus does not have evidence of validity of the new checkpoint from a quorum of replicas, Olympus will need to use the previous checkpoint during reconfiguration.
+
+COMMENTS ON STATE TRANSFER [2017-09-19 added this section]
+
+when checkpointing is used, during reconfiguration, the running state (of the object) needs to be sent to the new replicas in the new configuration, because the running state cannot be computed from the truncated histories (i.e.,  and the checkpoint proofs.  Ho's thesis does not directly address this, because it considers state transfer before introducing checkpointing.  there are a variety of ways to handle this.  here is a proposal, similar to the history-based  state transfer protocol in Ho's thesis (section 5.4.9).
+
+let Q be a quorum of replicas of the old configuration C from which olympus has received consistent valid histories.  let w be the set of wedged messages received from the replicas in Q.  let w(rho) be the wedged message from replica rho in Q.  for a wedged message m, let m.history, m.checkptProof, etc., denote the components of the message.  "consistent" means that, for each pair of replicas rho1 and rho2 in Q, for each slot s for which an order proof appears in w(rho1).history and w(rho2).history, the order proofs for s are consistent, i.e., are for the same operation.  this implies that, if we think of each history in w as defining a sequence of <slot, operation> pairs, and if we let LH (for "longest history") denote the longest of these sequences, then all of the other such sequences are prefixes of LH.  in other words, all replicas agree on the slots that their histories have in common, and the only difference is that some replicas (i.e., those closer the the head) may be are farther along than others, i.e., may have ordered more operations.  if the histories are not consistent, then one of the replicas in Q is faulty, and Olympus needs to choose a different quorum.  note that there might be multiple replicas that sent equally long sequences, or there might be only one.
+
+it is tempting to simply copy the running state from some replica rho_L whose wedged message contains the longest history LH.  however, this is unsafe, because rho_L could be faulty and lie about its running state, while sending correct information about everything else.  to ensure safety, we need supporting evidence for the correctness of the running state from every replica in the quorum.  to obtain this evidence, Olympus asks every replica rho in Q to "catch up" to LH and then send Olympus a cryptographic hash of its running state.  in more detail, Olympus sends each replica rho in Q a "catch_up" message containing the sequence of operations catch_up(rho) = LH - w(rho).history (this is the suffix of LH that rho has not executed yet; it may be the empty sequence).  upon receiving this message, rho executes those operations and then computes and sends a cryptographic hash of its resulting running state to Olympus in a "caught_up" message.  Olympus checks that it receives the same cryptographic hash ch in the caught_up messages from all replicas in Q.  if not, one of the replicas in Q is faulty, and Olympus needs to choose a different quorum.
+
+now Olympus sends a "get_running_state" message to some replica rho in Q (it doesn't matter which one), and rho replies with a "running_state" message containing its running state S.  Olympus computes the cryptographic hash of S and compares it with ch.  if they differ, Olympus requests the running state from another replica in Q.  if they are equal, Olympus includes S in its inithist message as the initial running state of the new configuration.  note that each replica in the new configuration initializes its history to be the empty sequence.
+
+note: validation of the checkpoint proof during reconfiguration is included to guide selection of the checkpoint used as the starting point for catch-up using the longest consistent history LH.  for example, if checkpoint is taken every 100 slots, and Olympus receives a valid complete checkpoint proof for slot 100, and only incomplete or invalid checkpoint proofs for slot 200, then it should use slot 100 as the starting point of LH.  I am not certain that validation of the checkpoint proof is necessary here.  in the absence of being certain that it is unnecessary, it is safer to include it.
+
+note: if the running state is large, this approach can be optimized as follows. Olympus asks some replica rho in Q to send its running state directly to the replicas in the new configuration.  Olympus includes ch (not the entire running state) in its inithist message.  the replicas in the new configuration validate the running state received from the old replica by computing its crytographic hash and comparing it to ch.  with this optimization, we need to worry about rho failing during this process.  this introduces some complications, so we won't bother with it.
+
+note: advantages of this approach are (1) a replica does not need to create and save a copy of its running state when it takes a checkpoint, and (2) Olympus never applies operations to update a running state (e.g., if the running state is in a DBMS, Olympus does not need to run a copy of the DBMS).  if we require replicas to save their state at checkpoints, and if we assume that Olympus can apply operations to update the state, then the following simpler protocol is possible.  each replica includes its most recent saved checkpoint state in its wedged message.  Olympus computes the cryptographic hashes of these states to check that they are consistent with the crytographic hash in the checkpoint proof.  Olympus brings this checkpoint state up-to-date by applying all of the operations in LH, and uses the resulting state as the initial running state of the new configuration.  note that histories in wedged messages in w contain only operations applied after the last checkpoint, so Olympus applies all operations in LH to bring the checkpoint state up-to-date.
+
+======================================================================
+SIGNATURES
+
+your pseudocode and implementation should deviate from the description of HMAC Shuttle in the paper by using public-key cryptography, instead of vectors of HMACs, for all signatures by clients and replicas.  furthermore, Olympus can create all public and private keys for clients and replicas and send them to the relevant processes.  this implies that you do not need to use the Diffie-Hellman key-exchange protocol mentioned in section 4.1.
+
+======================================================================
+PHASE 0: TEAM FORMATION
+
+find exactly one teammate.  exactly one member of each team should send a message to stoller@cs.stonybrook.edu containing the names and email addresses of both team members.  if you cannot find a teammate, don't panic.  just send a message stating this, and I will find a teammate for you.  every team will have exactly two members.  the only possible exception is that, if the number of students in the class is odd, I will choose one person with no teammate and either add them to a team or ask them to work alone.
+
+======================================================================
+PHASE 1: PSEUDO-CODE
+
+write complete pseudo-code for the HMAC Shuttle protocol including checkpointing (as described in section 4.2).  this includes pseudo-code for clients, replicas, and Olympus.  use public-key cryptography for signatures, as mentioned above.  [2017-09-17: revised this paragraph to reflect that pseudocode does not include use of witness replicas.]
+
+the pseudo-code should be explained by an appropriate combination of accompanying text and in-line explanatory comments.
+
+keep the pseudo-code at a high level of abstraction; in other words, omit implementation details.  do not omit algorithm details!  for example, the pseudo-code should clearly specify exactly what information is contained in each message, but not necessarily the exact data structures used to represent the information.  it should specify exactly what validity tests are applied to each message, but not necessarily the exact data structures used to implement them efficiently.  a guideline for the expected level of detail is: if two competent programmers independently implement the pseudo-code, they should produce functionally equivalent implementations.
+
+examples of reasonably good pseudo-code:
+
+  pseudo-code for Chord in [Stoica+ 2003] (posted on Blackboard),
+  except that it uses RPC (your pseudocode should use explicit messages)
+
+  pseudo-code for FACADE in my DBSec 2017 paper available at
+  http://www3.cs.stonybrook.edu/~stoller/papers/dbsec2017.pdf
+
+  pseudo-code for leader election algorithms in the excerpt from
+  [Chow and Johnson 1997] (posted on Blackboard), except that it lacks
+  explanatory comments.
+
+  pseudo-code for Practical Byzantine Fault Tolerance in the appendix
+  of [Castro and Liskov 2002] (posted on Blackboard), except that it severely
+  lacks explanatory comments.
+
+examples of high-level data structures (appropriate in pseudo-code): tuples, sequences, sets, maps.  examples of low-level data structures (inappropriate in pseudo-code): doubly-linked lists, hashsets, association lists.
+
+the descriptions below of the dictionary object and operation, the configuration file, and fault injection should not influence your pseudocode (that's why they appear under PHASE 2 not under PHASE 1).
+the pseudocode should work for a generic object and operations, like the description in the paper.  it should not contain pseudocode for reading config files or for failure injection.  client pseudocode can simply use a statement like "get next request from application"; it does not need to generate requests.  [2017-09-18 added this paragraph]
+
+------------------------------------------------------------
+GRADING
+
+grading criteria include correctness, clarity, readability, adequate explanatory comments, and consistency of notation.
+
+======================================================================
+PHASE 2: INITIAL IMPLEMENTATION
+
+Implement the HMAC Shuttle protocol without reconfiguration (this implies that replicas do not need to use timeouts to trigger reconfiguration requests to Olympus, and replicas do not need to detect provable misbehavior to trigger reconfiguration requests to Olympus, and that Olympus and the replicas do not need to implement the reconfiguration algorithm; client should still timeout and re-send request to replicas if timely response is not received), without checkpointing, and without the use of witness replicas.  Olympus should be a single trusted process; it does not need to be replicated in your system.  [2017-09-12: revised this paragraph to postpone timeouts and detection of provable misbehavior to phase 3.]
+
+[2017-10-07] for phase 2, I think it doesn't matter whether you implement client asking Olympus whether config has changed.  it's fine to defer this to phase 3, or implement this and have Olympus respond that the config is unchanged.
+
+[2017-10-12 added this, based on a Blackboard posting]
+in phase 2, replicas still need to detect invalid messages to avoid entering inconsistent states and giving incorrect results to clients!  on detecting inconsistent info in a message (e.g., order stmts with different slot numbers for same request), the replica could just drop the message (or go ahead and send a reconfig request to olympus anyway, even though it will be ignored, since sending it is easy, and you will need to do this eventually in phase 3).
+
+in phase 2, you do not need to modify the alg for the client or server to try to overcome the fact that the system does not yet support reconfiguration and hence might fail to make progress.  indeed, the client might never get a valid response to a request and never move on to the next request.  in phase 2, this is OK.
+
+------------------------------------------------------------
+PROGRAMMING LANGUAGE
+
+The implementation should be in DistAlgo, unless your team receives approval to use a different language.  If your team would like to use a different language, tell me what language you would like to use and why, and we'll discuss it.  From my point of view, it would be interesting to compare implementations in different languages.  From your point of view, DistAlgo is very convenient for prototyping, and using a different language would probably increase the coding effort.
+
+the DistAlgo distribution is at https://sourceforge.net/projects/distalgo/
+
+If you use DistAlgo, your code should use PEP8 styling (https://www.python.org/dev/peps/pep-0008/).  Unjustified deviations from PEP8 styling will lose points.  Tools for checking conformance with PEP8 styling:
+Pychecker script: https://github.com/PyCQA/pycodestyle
+Online Pychecker: http://pep8online.com/
+
+Tips: read carefully the DistAlgo Language Description (doc/language.pdf), the DistAlgo README.md, and the DistAlgo command-line help, produced by "python -m da --help" (it documents many command-line options not mentioned anywhere else).  the examples in da/examples are also helpful for learning DistAlgo.
+
+------------------------------------------------------------
+OBJECT STATE AND OPERATIONS
+
+the implementation does not need to support arbitrary objects and operations.  it should support a dictionary object (stored only in memory) that maps strings to strings with the following operations:
+
+put(key, val)
+get(key)
+slice(key, slice)
+append(key, val)
+
+put and get have their usual meanings.  put always returns 'OK', to indicate that the operation succeeded.  if key is not present in the dictionary, get(key) returns the empty string.
+
+slice(key, slice) updates the value associated with key from its current value val to val[slice] and returns 'OK', if key is present in the dictionary and the attempted slice is valid (e.g., indices are in range), otherwise it performs no updates and returns 'fail'.  append(key,val) appends val to the value currently associated with key and returns 'OK', if key is present in the dictionary, otherwise it performs no updates and returns 'fail'.
+
+------------------------------------------------------------
+HASHES AND SIGNATURES
+
+I recommend that you use PyNaCl, a Python interface to the libsodium cryptography library, for cryptographic hashes and signatures.  it seems to be well-documented and efficient.
+
+https://pypi.python.org/pypi/PyNaCl/
+https://pynacl.readthedocs.io/en/latest/
+
+specifically, I recommend SHA256 for cryptographic hashes
+https://pynacl.readthedocs.io/en/latest/hashing/
+and Ed25519 for signatures
+https://pynacl.readthedocs.io/en/latest/signing/
+
+[2017-10-09: replaced ref. to https://pynacl.readthedocs.io/en/latest/public/
+with ref. to https://pynacl.readthedocs.io/en/latest/signing/]
+
+if you prefer a different cryptography library (and different signature algorithm), that's fine, but please let me know which one (and why).
+
+------------------------------------------------------------
+RUNNING ON MULTIPLE HOSTS
+
+your system needs to be able to run with the processes distributed across two or more different hosts.  the DistAlgo README.md gives an example of how to run a DistAlgo program on multiple hosts.  each host can be a laptop, a PC in the computer lab, a node in some cloud, etc.
+
+If you are interested in using AWS, students can get free promotional AWS credits.  SBU is an AWS educate member institution.  see https://aws.amazon.com/education/
+
+CSE535 students can also get $50 coupons for Google Cloud Platform.
+
+------------------------------------------------------------
+CONFIGURATION
+
+all processes read configuration information from a configuration file whose name is specified on the command line.  for simplicity, all processes read the same configuration file, and each kind of process ignores irrelevant information.  give configuration files meaningful names!  this will help you keep track of them and help graders understand them.
+
+the configuration file contains enough information to specify a test case; thus, a user can run different test cases simply by supplying different configuration files.  this includes specification of the client workload and a failure scenario.
+
+client workload may be a list of specific requests or pseudorandom.  the former is a semicolon-separated list of invocations of the 4 operations listed above; the exact syntax is shown in the example configuration file below.  a pseudorandom workload is specified using the syntax pseudorandom(seed, n), which denotes a sequence containing n pseudorandom requests, with the specified seed for the pseudorandom number generator (for reproducibility).  details of pseudorandom request generation are not standardized: any method that generates a diverse sequence of requests is acceptable.
+
+a failure scenario is a semicolon-separated set (not a sequence, i.e., the order doesn't matter) of trigger,failure pairs for a specified replica.  we do not consider failures of clients or Olympus.  each trigger corresponds to receiving a message of a specified type and has the form message_type(args), as described in detail below. when the event specified by the trigger occurs, the specified failure occurs.  your system should contain fault-injection code that simulates these failures.  try to encapsulate fault-injection code in separate functions as much as possible, to minimize its impact on the readability of the code for the protocol itself.
+
+required failure triggers are listed below, where c >= 0 and m >= 0, i.e., clients c and received messages m are numbered starting from 0.  this message numbering is done independently by each replica (using an auxiliary data structure) for each message type from each client.  the numbering is continuous (not reset) across configurations.
+
+-----
+failure triggers for phases 2 and 3:   [2017-09-12: postponed some triggers to phase 3, and added two triggers related to checkpoints.]
+
+client_request(c, m): receipt of m'th request message directly from client c.  requests received directly from client c are numbered separately from requests of client c received via forwarding by other replicas.
+
+forwarded_request(c, m): receipt of m'th forwarded request message containing a request from client c.
+
+shuttle(c, m): receipt of m'th shuttle message for a request by client c.
+
+result_shuttle(c, m): receipt of m'th result-shuttle message for a request by client c.
+
+-----
+failure triggers for phase 3 only:
+
+wedge_request(m): receipt of m'th wedge-request message. [phase 3 only]
+
+new_configuration(m): receipt of m'th new_configuration message from Olympus.  it doesn't matter whether your implementation actually sends a new_configuration message for the initial configuration; either way, m=0 corresponds to the first configuration change after the initial configuration.
+
+checkpoint(m): receipt of m'th checkpoint message [phase 3 only] [2017-09-12: added this item.]
+
+completed_checkpoint(m): receipt of m'th completed checkpoint message [phase 3 only] [2017-09-12: added this item.]
+
+----
+required failures for phases 2 and 3: [2017-09-12: postponed some failures to phase 3, added drop_result_stmt, and removed omit_send() (use drop() on the receiver-side instead).]
+
+change_operation(): in the next outgoing shuttle message, this replica uses get('x') as the operation in its order statement and result statement, regardless of what the operation should be.
+
+change_result(): in the next outgoing result message (to a client) or result shuttle message, this replica uses the hash of 'OK', instead of the hash of the actual result, in its result statement.
+
+drop_result_stmt(): in the next outgoing result message (to a client) or result shuttle message, omit the head's result statement from the result proof.
+
+-----
+required failures for phase 3 only:  [2017-10-09 inserted "only"]
+
+crash(): immediately call logging.shutdown() (to flush logs to disk) and then os._exit(-1).  you need "import logging" and "import os" for this to work.
+
+truncate_history(): in the next outgoing wedged message, send a truncated history by omitting the last entry. [phase 3 only]
+
+sleep(time): sleep for the specified time, in milliseconds.  this is a timing failure. [phase 3 only]
+
+drop(): drop (i.e., ignore) the incoming message that triggered this failure. [phase 3 only]
+
+-----
+configuration files should have the following format: each row either starts with "#", in which case it is a comment, or contains the name of a configuration parameter, an equals sign, and the value of that configuration parameter.  whitespace around the equals sign is optional and should be ignored.  parameters may appear in the configuration file in any order.
+
+the following example shows the names of configuration parameters that must be supported by your system.  your system may support additional configuration parameters for your own use.
+
+# test case name.  can be used to trigger test case specific code in client,
+# e.g., to generate special request sequences or validate intermediate or
+# final values of object state. [2017-09-12: added this item]
+test_case_name = test1
+
+# number of failures to tolerate.  number of replicas is 2t+1.
+t = 1
+# number of clients
+num_client = 3
+# client timeout, in milliseconds.  if timer expires, resend request
+# to all replicas, as described in section 3.3.
+client_timeout = 3000
+# timeout, in milliseconds, for head and non-head servers, respectively:
+# if timer expires, send reconfiguration request to Olympus, as described
+# in section 3.3.
+head_timeout = 3000
+nonhead_timeout = 3000
+
+# MAPPING OF PROCESSES TO HOSTS
+# to simplify changing the hosts, we first specify a semicolon-separated
+# list of hosts, and then use 0-based indices into that list to specify the
+# host on which each process runs.
+# list of hosts used in this scenario
+hosts = localhost; 192.168.0.3; 192.168.0.4
+# host on which each client runs.  in this example, client 0 runs
+# on host 1, clients 1 and 2 run on host 0.
+client_hosts = 1; 0; 0
+# host on which each replica runs.  same in all configurations.
+replica_hosts = 0; 1; 2
+
+# CLIENT WORKLOAD
+workload[0] = pseudorandom(233,5)
+workload[1] = put('movie','star'); append('movie',' wars'); get('movie')
+workload[2] = put('jedi,'luke skywalker); slice('jedi','0:4'); get('jedi')
+
+# FAILURE SCENARIO
+# failures(c,r) is the failure scenario for replica r in configuration c.
+# configurations are numbered starting with 0.  replicas are numbered by
+# position in the chain, starting from 0.  replicas without a specified
+# failure scenario are failure-free.
+failures[0,0] = client_request(2,1), crash()
+failures[1,2] = result_shuttle(0,1),drop(); shuttle(1,3),omit_send()
+
+here is some code for reading a configuration file.  client workloads and failure scenarios require additional parsing.
+
+with open('config.txt','r') as f:   [2017-10-09 changed .csv to .txt]
+    for line in f:
+        if line[0] != '#':
+          (key,sep,val) = line.partition('=')
+          # if the line does not contain '=', it is invalid and hence ignored
+          if len(sep) != 0:
+              val = val.strip()
+              config[key.strip()] = int(val) if str.isdecimal(val) else val
+print(config)
+
+note: I was reluctant to standardize the configuration file format.  however, students in previous years recommended that demos include new instructor-supplied test cases (which is practical only with a standardized format), because some students were clever at constructing test cases that circumvented the bugs in their systems.
+
+------------------------------------------------------------
+LOGS
+
+each process should generate a comprehensive log file describing initial settings, the content of every message received, the content of every message sent, and details of every significant internal action.  every log entry should contain a real-time timestamp.
+
+the log file should have a self-describing format, in the sense that each value is labeled with a name indicating its meaning.  for example, each component of a message should be labeled to indicate its meaning; do not rely on the reader to know that the first component of the tuple means X, the second component means Y, etc.
+
+each injected failure should be recorded in a log entry containing the exact trigger,failure pair (e.g., "client_request(2,1), crash()") in the configuration file that caused the failure.
+
+if using DistAlgo, the log file should be produced using DistAlgo's built-in support for logging.  See the "Logging output" section of the DistAlgo language description (language.pdf) and the logging-related command-line options (search for "log" in the output of "python -m da --help").
+
+processes may write to individual log files or a common log file (in this case, each log entry should be labeled with the process that produced it).
+
+give log files meaningful names!  a good practice is to use the name of the corresponding configuration file with a small variation (e.g., insert "-log" in the name).
+
+------------------------------------------------------------
+TESTING
+
+[2017-09-12: revised this paragraph.]  testing should be thorough.  the submission should include test cases that demonstrate that all implementation requirements on the grading sheet are satisfied.  these correspond to aspects of the algorithm.  thus, the requests and failure patterns in the test cases collectively should allow a user examining the logs to determine that all of these aspects of the algorithm are implemented correctly, and the system has the expected fault-tolerance for all failures described in the CONFIGURATION section.
+
+[2017-09-12: revised this paragraph.]  in addition to targeted test cases designed to satisfy the above requirements, the submission should contain at least one larger pseudorandom "stress test" involving more clients (around 10) and more requests (around 100).
+
+[2017-10-14: split this from preceding paragraph and revised it.]  passing tests requires more than absence of runtime errors.  it also requires checking that the dictionary has the expected content.  for stress tests, this check should be done programmatically (doing it manually is impractical, because stress tests are large), by having client(s) execute queries at the end of the test to determine the content of the dictionary, check whether the results are as expected, and if not, report an error.  for targeted test cases, I recommend doing this check programmatically, but it can be done manually by examination of the log file if the test case is sufficiently short and simple, although even that will be tedious if you need to repeatedly re-run tests and manually re-check the log files as you modify and debug your system.  for each test case, the programmatic checks, if any, should be described briefly in the entry for the test case in testing.txt (see item (5) below).
+
+[2017-10-14: added this.]  the check can be done in various ways.  for example, each client can maintain a local dictionary that it updates after each request and, at the end, check consistency of the results of queries on its local dictionary and the results of queries to the service; or, each client can use more specialized auxiliary data structures and checks suitable for the test case. since different code is needed to check the results for different test cases, the code may be guarded by an if-statement with a condition on the test_case_name.
+
+[2017-10-14: added this.]  for test cases involving multiple clients, the check can be distributed among the clients, by having each client check whether its requests were handled correctly.  for example, suppose client A issues 100 requests to append 'a', and client B issues 50 requests to append 'b', to the same key.  client A can get the string and check whether it contains 100 'a', and client B can get the string and check whether it contains 100 'b'.  alternatively, a centralized check can be used, by having a parent process create the (other) clients, wait for a message from each child indicating that it finished, and then check the content of the dictionary.
+
+testing should include configurations with t=1 and t=2.
+
+processes should be deployed on two or more different hosts in at least one failure-free test case and at least one test case involving a crash failure.
+
+your submission should contain:
+
+the log files produced by running all test cases.
+
+a file named testing.txt with an entry for each test case.  each entry should include: (1) brief description of the scenario (i.e., the client requests, failure scenario, etc.), (2) the name of the configuration file used to run the test case, (3) other information (if any) needed to run the test case, e.g., that certain files should contain certain content, (4) the name of the log file produced by running the test case, [2017-10-14 added next item], (5) programmatic check of correctness of content of dictionary (if any), (6) the outcome (pass or fail), with a brief explanation of the problem in case of failure.
+
+------------------------------------------------------------
+README
+
+you submission should contain a README with the following sections:
+
+PLATFORM.  describe the software platform(s) used in your testing, including DistAlgo version, Python implementation (normally CPython) and version, operating system, and types of hosts (e.g., laptop (without any VMs), VMs running on VMWare Workstation Player on a laptop, VMs on Google Cloud Compute Engine, VMs on Amazon Web Services EC2).  for testcases involving multiple hosts, specify the platform for each host.  [2017-10-05 added this]
+
+INSTRUCTIONS.  instructions to build and run your system.  the instructions should not rely on an IDE.  provide a detailed sequence of commands, a shell script, or something similar.  include a specific example of the command(s) to run a selected test case.
+
+WORKLOAD GENERATION.  briefly describe your algorithm for pseudorandom client workload generation.
+
+BUGS AND LIMITATIONS.  a list of all known bugs in and limitations of your code.
+
+CONTRIBUTIONS.  a list of contributions of each team member to the current submission.  this should reflect how the work was divided between the team members.  generally, a dozen lines or so is sufficient.
+
+MAIN FILES.  full pathnames of the files containing the main code for clients, replicas, and Olympus.  this will help graders look at the most important code first.
+
+CODE SIZE.  (1a) report the numbers of non-blank non-comment lines of code (LOC) in your system in the following categories: algorithm, other, and total.  "algorithm" is for the algorithm itself and other functionality interleaved with it (fault injection, logging, debugging, etc.).  "other" is for everything that can easily be separated from the algorithm, e.g., configuration and testing.  (1b) report how you obtained the counts (I use CLOC https://github.com/AlDanial/cloc).  (2) give a rough estimate of how much of the "algorithm" code is for the algorithm itself, and how much is for other functionality interleaved with it.
+
+LANGUAGE FEATURE USAGE. report the numbers of list comprehensions, dictionary comprehensions, set comprehensions, aggregations, and quantifications in your code.  the first two are Python features; the others are DistAlgo features.
+
+OTHER COMMENTS.  anything else you want us to know.
+
+------------------------------------------------------------
+GRADING
+
+grading criteria include:
+
+functional correctness
+
+thorough testing, clearly documented in testing.txt and informative log files.
+
+consistency of code and pseudocode
+
+code quality.  this encompasses all aspects of code quality other than functional correctness, including clarity, readability, maintainability, extensibility, and efficiency.  one general measure of clarity is similarity to high-level pseudo-code.  other factors include:
+
+Sufficient comments
+
+Meaningful names for classes, methods, variables, etc.
+
+Consistent coding conventions
+
+Modularity.  The code should be structured in a reasonable way into modules (if appropriate), classes, and functions.
+
+Appropriate use of DistAlgo and Python language features, such as quantification, set comprehension, list comprehension, inheritance, methods, and assertions.  For example, methods, inheritance, and loops should be used to avoid repeating blocks of similar code.
+
+there is sometimes a trade-off between clarity and efficiency.  in many settings, including this class, clarity, readability, maintainability, etc., are more important than minor performance improvements.  therefore, you should eliminate all inefficiencies that can be eliminated without appreciably reducing clarity (by complicating the code), but do not sacrifice clarity for the sake of minor performance improvements.  if you are uncertain whether you are striking the correct balance, you are welcome to ask for guidance, preferably during office hours.
+
+INCENTIVE FOR THOROUGH TESTING
+
+as an incentive for teams to thoroughly test their systems and accurately report the results (especially in the BUGS AND LIMITATIONS section of the README), an additional penalty is imposed for any bugs or limitations we find that are not reported there.  this additional penalty is equal to 50% of the points allocated to the affected functionality.
+
+======================================================================
+PHASE 3: COMPLETE IMPLEMENTATION
+
+extend your implementation from phase 2 with reconfiguration (including use of timeouts and detection of provable misbehavior to trigger reconfiguration) and checkpointing.  [2018-09-12: added timeouts and detection of provable misbehavior.]  [2017-09-11: deleted the rest of this section] [2017-09-17: revised this paragraph to reflect that you do not need to implement witness replicas.]
+
+------------------------------------------------------------
+PERFORMANCE EVALUATION
+
+measure the performance of your implementation; I will probably supply configuration files for this.  for comparison, measure the performance on the same platform of some other DistAlgo programs; I will probably supply variants of the vrpaxos and raft programs in the DistAlgo distribution for this.  details forthcoming.
+
+------------------------------------------------------------
+LOGS, TESTING, README, and GRADING CRITERIA
+
+as in phase 2, comprehensive logs should be produced, testing should be thorough and well documented, and your submission should include a README (with the same structure as specified for phase 2), testing.txt (with the same structure as specified for phase 2), and log files from all testcases.  grading criteria are the same as for phase 2.
+
+======================================================================
+SUBMISSION INSTRUCTIONS
+
+for phase 1, submit the pseudocode as a printout in class and on blackboard by 11:59pm on the due date.
+
+for phases 2 and 3, submit the assignment as an archive file (zip or tar.gz) on blackboard by 11:59pm on the due date.  the archive file should have the following structure and contents:
+
+  README.txt  as described above
+  testing.txt as described above
+  config/     configuration files
+  src/        source code
+  logs/       log files from running all testcases described in testing.txt
+  pseudocode/ current version of pseudocode, consistent with source code
+
+exactly one team member (not both) should submit on blackboard.
+
+============================================================
+DEMO
+
+demos will be held in CS 2217 (same room as TA office hours).  you may run the demo on your laptops, lab PCs, nodes in the cloud, etc.
+
+demos proceed as follows:
+
+1. download your submission from Blackboard.  you must demo the downloaded version, not a version already present on the computer.
+
+2. delete all files produced by compilation, e.g., .pyc files.
+
+3. be prepared to (1) run a sequence of test cases that demonstrate that all requirements on the grading sheet are satisfied, (2) indicate which test case covers each requirement, and (3) point out the most important events in the logs, as evidence that the system operated correctly.  processes should be deployed on two or more different hosts in at least one failure-free test case and at least one test case involving a crash failure.  [2017-09-12: you are responsible for providing sufficient test cases.  during the demo, you can use test cases that were not in your submission, but there is a penalty for that (see grading sheet for details), because the submission should contain thorough test cases.]
+
+4. the TA will supply configuration files for additional test cases and ask you to run them.
+
+rehearse steps 1-3 to ensure they fit in 10 minutes less than the demo timeslot.  the remaining 10 minutes is for instructor-supplied testcases.
+
+all expected activity must be shown clearly in readable and detailed logs, otherwise points will be deducted for inadequate logs in addition to the points deducted for functionality that cannot be adequately evaluated due to inadequate logs.
+
+Only partial credit will be given for functionality not demonstrated during the allocated demo timeslot.
+
+============================================================
+PHASE 2 DEMO SIGNUP [2017-10-10]
+
+each team should sign up for one demo timeslot using one of these google calendar links:
+
+Pratheek Baliga
+https://calendar.google.com/calendar/selfsched?sstoken=UU9UYjgzVjJfVG51fGRlZmF1bHR8ZGE5NGRhMjJiMTRiMjIzNDJhYWIzOGQzOTRiYTM3NmY
+
+Gargi Saha
+https://calendar.google.com/calendar/selfsched?sstoken=UUx4TUlVMzY2SXFJfGRlZmF1bHR8NTlmNWQ3MDQxZDEwYTQ4YTMyYzRmNjY3NGRkYjc0NzY
+
+Sagar Shah
+https://calendar.google.com/calendar/selfsched?sstoken=UUJVV24zQU5rSDNufGRlZmF1bHR8M2Y3MGQ3MTVjYWQ1MjliYWQ0YTM1M2Y0YTZmZjgyMTc
+
+Yu Wang
+https://calendar.google.com/calendar/selfsched?sstoken=UUFQbnlHT0l6VUhRfGRlZmF1bHR8N2MzNTU5ZjkxODQ5ZTk3ZWI4NzU2Njc5MmMzMDQ1NGE
+
+Yu will do 20 demos.  Gargi, Prateek, and Sagar will each do 9.  each of them has offered more timeslots than this, to give you scheduling flexibility.  when one of them notices that they have reached their demo quota, they will delete their remaining timeslots.  if another team happens to sign up with them before they do that, they will delete the appointment and ask the team to sign up with one of the other TAs.
+
+an available timeslot is represented by a gray box labeled "CSE535 demo" or something similar.  a timeslot that you booked is represented by a dark blue rectangle the same size as the grey ones.  ignore the tall blue rectangles, if any.  to book a timeslot, click on it, and fill out the dialog box.  to cancel, delete the event from your own google calendar.
+
+make sure your google calendar is "(GMT-05:00) Eastern Time", as follows.
+navigate to your google calendar, click the gear icon in the upper right, click Settings in the resulting pop-up menu, and check the setting for "Your Current Time Zone".
+
+you must signup for a demo at least 3 days in advance, so the TAs can plan their schedules accordingly.
+
+a later demo does not give more time to work on the project, because you download and run the code you submitted on blackboard.
+
+======================================================================
+SCHEDULE: DUE DATES
+
+sep  8 phase 0: team formation
+sep 22 phase 1: pseudo-code (2 weeks)
+oct 22 phase 2: initial implementation (4 weeks) [2017-10-09 postponed 2 days]
+oct 27 problem set 1 (1 week) DEADLINE STRICTLY ENFORCED
+oct 30  midterm exam
+oct 20 - nov 3 phase 2 demos
+nov 20 phase 3: complete implementation (3 weeks)
+dec  8 problem set 2 (2 weeks, not counting Thanksgiving week)
+nov 20 - dec 8 phase 4 demos
+dec 20 final exam, 2:15pm-5pm (includes 15 minutes for exam administration)
+
+the time interval in parentheses is the amount of time allocated for work
+on that assignment.
+
+======================================================================
+GRADING WEIGHTS (TENTATIVE)
+
+30% phase 1: pseudo-code
+40% phase 2: initial implementation  [2017-09-11: increased by 5%]
+30% phase 3: complete implementation [2017-09-11: decreased by 5%]
+
+these weights are relative to the weight of the project in the course grade.
+
+======================================================================

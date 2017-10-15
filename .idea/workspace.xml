@@ -5,6 +5,7 @@
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/byzantino.iml" />
       <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/misc.xml" />
       <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/modules.xml" />
@@ -47,6 +48,9 @@
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/client.da" afterPath="$PROJECT_DIR$/src/client.da" />
 >>>>>>> Temp commit
+=======
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/documentation/project-15-oct-17.txt" />
+>>>>>>> Committed latest project.txt
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -60,7 +64,7 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="chandy-lamport-excercise.txt" pinned="false" current-in-tab="true">
+      <file leaf-file-name="chandy-lamport-excercise.txt" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/documentation/chandy-lamport-excercise.txt">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="240">
@@ -90,9 +94,22 @@
           </provider>
         </entry>
       </file>
+<<<<<<< HEAD
       <file leaf-file-name=".gitignore" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/.gitignore">
 =======
+=======
+      <file leaf-file-name="project-15-oct-17.txt" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/documentation/project-15-oct-17.txt">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="7695">
+              <caret line="513" column="57" lean-forward="true" selection-start-line="513" selection-start-column="57" selection-end-line="513" selection-end-column="57" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+>>>>>>> Committed latest project.txt
       <file leaf-file-name="LICENSE" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/LICENSE">
 >>>>>>> Trial impl in DA
@@ -150,7 +167,7 @@
         <entry file="file://$PROJECT_DIR$/src/olympus.da">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="300">
-              <caret line="20" column="39" lean-forward="true" selection-start-line="20" selection-start-column="39" selection-end-line="20" selection-end-column="39" />
+              <caret line="20" column="39" lean-forward="false" selection-start-line="20" selection-start-column="39" selection-end-line="20" selection-end-column="39" />
               <folding />
             </state>
           </provider>
@@ -193,6 +210,8 @@
         <option value="$PROJECT_DIR$/src/main.da" />
         <option value="$PROJECT_DIR$/src/olympus.da" />
         <option value="$PROJECT_DIR$/src/client.da" />
+        <option value="$PROJECT_DIR$/documentation/chandy-lamport-excercise.txt" />
+        <option value="$PROJECT_DIR$/documentation/project-15-oct-17.txt" />
       </list>
     </option>
   </component>
@@ -235,6 +254,11 @@
               <item name="byzantino" type="b2602c69:ProjectViewProjectNode" />
               <item name="byzantino" type="462c0819:PsiDirectoryNode" />
               <item name="documentation" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="byzantino" type="b2602c69:ProjectViewProjectNode" />
+              <item name="byzantino" type="462c0819:PsiDirectoryNode" />
+              <item name="sample" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="byzantino" type="b2602c69:ProjectViewProjectNode" />
@@ -361,14 +385,6 @@
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/sample/client.da">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="60">
-          <caret line="4" column="0" lean-forward="true" selection-start-line="4" selection-start-column="0" selection-end-line="4" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/sample/client.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="601">
@@ -801,7 +817,7 @@
 >>>>>>> Temp commit
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="300">
-          <caret line="20" column="39" lean-forward="true" selection-start-line="20" selection-start-column="39" selection-end-line="20" selection-end-column="39" />
+          <caret line="20" column="39" lean-forward="false" selection-start-line="20" selection-start-column="39" selection-end-line="20" selection-end-column="39" />
           <folding />
         </state>
       </provider>
@@ -824,6 +840,14 @@
         <state relative-caret-position="240">
           <caret line="16" column="0" lean-forward="true" selection-start-line="16" selection-start-column="0" selection-end-line="16" selection-end-column="0" />
 >>>>>>> Temp commit
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/documentation/project-15-oct-17.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="7695">
+          <caret line="513" column="57" lean-forward="true" selection-start-line="513" selection-start-column="57" selection-end-line="513" selection-end-column="57" />
           <folding />
         </state>
       </provider>
