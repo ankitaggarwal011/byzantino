@@ -1,6 +1,8 @@
 from nacl.hash import sha256
 from nacl.encoding import HexEncoder
 from nacl.signing import SigningKey, VerifyKey
+from nacl.exceptions import BadSignatureError
+from ast import literal_eval
 
 config(channel = {'reliable', 'fifo'})
 
@@ -44,49 +46,73 @@ class Replica(process):
         output(name + ' have received its private key from Olympus.')
         send(('ACK', name), to = olympus)
     
-    def receive(msg = ('Request', type, request_from, client, request_id, args)):
+    def receive(msg = (sender_id, 'Request', type, request_from, client, request_id, args)):
         output(str(type) + ' request with request id ' + str(request_id) + ' received by ' + name + '.')
-        if request_from == client:
-            if request_id in result_cache:
-                send_(('Operation_result', result_cache[request_id]), client)
-                output('Result sent from cache of ' + name + '.')
-                return
-            elif self != head:
-                send_(('Request', type, self, client, request_id, args), head)
-                return
-        if self == head:
-            result = update_running_state(type, args)
-            slot_number += 1
-            order_proof.append([slot_number, (type, args), id])
-            result_proof = list()
-            result_proof.append([(type, args), calculate_hash(result)])
-            shuttle = (order_proof, result_proof)
-            send_(('Request', type, self, client, request_id, [slot_number, (type, args), shuttle]), replicas[id + 1])
-        else:
-            slot_number, operation, shuttle = args
-            if validate_shuttle(slot_number, operation, shuttle):
-                type, operation_args = operation
-                order_proof, result_proof = shuttle
-                result = update_running_state(type, operation_args)
-                order_proof.append([slot_number, (type, operation_args), id])
-                result_proof.append([(type, operation_args), calculate_hash(result)])
-                shuttle = (order_proof, result_proof)
-                if self == tail:
-                    result_shuttle = [result, result_proof]
-                    send_(('Operation_result', result_shuttle), client)
-                    send_(('Operation_result_' + str(request_id)), client)
-                    send_(('Result_shuttle', self, request_id, result_shuttle), tail)
-                else:
-                    send_(('Request', type, self, client, request_id, [slot_number, (type, operation_args), shuttle]), replicas[id + 1])
+        if status == 0:
+            output(name + ' is in PENDING state.')
+        elif status == 1:
+            output(name + ' is in ACTIVE state.')
+        elif status == 2:
+            output(name + ' is in IMMUTABLE state.')
+        if status == 1: # if replica is ACTIVE
+            if request_from == client:
+                if request_id in result_cache:
+                    send_(('Operation_result', result_cache[request_id]), client)
+                    output('Result sent from cache of ' + name + '.')
+                    return
+                elif self != head:
+                    send_(('Request', type, self, client, request_id, args), head)
+                    return
             else:
-                send(('Reconfiguration', name, None), to = olympus)
+                # Verification of digital signature
+                try:
+                    replica_public_keys[sender_id].verify(args)
+                    args = literal_eval(args.message.decode('utf-8'))
+                except BadSignatureError:
+                    output('Verification of message sent by Replica ' + sender_id + ' has failed.')
+                    return
+            if self == head:
+                result = update_running_state(type, args)
+                slot_number += 1
+                order_proof.append([slot_number, (type, args)])
+                result_proof = list()
+                result_proof.append([(type, args), calculate_hash(result)])
+                shuttle = (order_proof, result_proof)
+                send_(('Request', type, self, client, request_id, [slot_number, (type, args), shuttle]), replicas[id + 1])
+            else:
+                slot_number, operation, shuttle = args
+                if validate_shuttle(slot_number, operation, shuttle):
+                    type, operation_args = operation
+                    order_proof, result_proof = shuttle
+                    result = update_running_state(type, operation_args)
+                    order_proof.append([slot_number, (type, operation_args)])
+                    result_proof.append([(type, operation_args), calculate_hash(result)])
+                    shuttle = (order_proof, result_proof)
+                    if self == tail:
+                        result_shuttle = [result, result_proof]
+                        send_(('Operation_result', result_shuttle), client)
+                        send(('Operation_result_' + str(request_id)), to = client)
+                        send_(('Result_shuttle', self, request_id, result_shuttle), tail)
+                    else:
+                        send_(('Request', type, self, client, request_id, [slot_number, (type, operation_args), shuttle]), replicas[id + 1])
+                else:
+                    send(('Reconfiguration', name, None), to = olympus)
 
-    def receive(msg = ('Result_shuttle', request_from, request_id, result_shuttle)):
+    def receive(msg = (sender_id, 'Result_shuttle', request_from, request_id, result_shuttle)):
+        try:
+            replica_public_keys[sender_id].verify(result_shuttle)
+            result_shuttle = literal_eval(result_shuttle.message.decode('utf-8'))
+        except BadSignatureError:
+            output('Verification of message sent by Replica ' + sender_id + ' has failed.')
+            return
         if validate_result_shuttle(result_shuttle):
             result_cache[request_id] = result_shuttle
             if self != head:
                 send_(('Result_shuttle', self, request_id, result_shuttle), replicas[id - 1])
             output('Result shuttle is at ' + name + '.')
+        else:
+            output('Result shuttle sent by Replica ' + sender_id + ' is not valid.')
+            send(('Reconfiguration', name, None), to = olympus)
 
     def update_running_state(type, args):
         if type == 'put':
@@ -139,8 +165,9 @@ class Replica(process):
         return True
 
     def send_(data, to_):
-        #signed_data = private_key.sign(data)
-        send(data, to = to_)
+        data = [id] + list(data)
+        data[-1] = private_key.sign(str(data[-1]).encode('utf-8'))
+        send(tuple(data), to = to_)
 
 class Olympus(process):
     
@@ -204,7 +231,13 @@ class Client(process):
         output(name + ' received the public keys of replicas from Olympus.')
         send(('ACK', name), to = olympus)
 
-    def receive(msg = ('Operation_result', result_shuttle)):
+    def receive(msg = (sender_id, 'Operation_result', result_shuttle)):
+        try:
+            replica_public_keys[sender_id].verify(result_shuttle)
+            result_shuttle = literal_eval(result_shuttle.message.decode('utf-8'))
+        except BadSignatureError:
+            output('Verification of message sent by Replica ' + sender_id + ' has failed.')
+            return
         result, result_proof = result_shuttle
         if validate_result(result, result_proof):
             output(result + ' received by ' + name + '.')
@@ -257,10 +290,10 @@ class Client(process):
 
     def send_request(type, args, retry):
         if retry:
-            send(('Request', type, self, self, request_id, args), to = head)
+            send((None, 'Request', type, self, self, request_id, args), to = head)
         else:
             request_id += 1
-            send(('Request', type, self, self, request_id, args), to = head)
+            send((None, 'Request', type, self, self, request_id, args), to = head)
 
     def validate_result(result, result_proof):
         hash = calculate_hash(result)
@@ -275,7 +308,7 @@ class Client(process):
         return sha256(val, encoder = HexEncoder)
 
 def main():
-    num_replicas, request_id_counter, time_out = 3, 0, 10
+    num_replicas, request_id_counter, time_out = 5, 0, 10
     olympus = new(Olympus, args=('Olympus', num_replicas))
     start(olympus)
     operations = [('put', ['name', 'ankit']), ('get', ['name']), ('append', ['name', 'aggarwal']), ('get', ['name']), ('slice', ['name', 5]), ('get', ['name'])]
