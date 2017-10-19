@@ -17,6 +17,7 @@ class Replica(process):
         self.result_proof = list()
         self.result_cache = dict()
         self.slot_number = 0
+        self.last_slot_number = 0
         self.olympus = None
         self.replicas = None
         self.head = None
@@ -78,11 +79,6 @@ class Replica(process):
                         send(('Reconfiguration', name, None), to = olympus)
                     return
             else:
-                # forwarded_request failure trigger
-                if client_id not in messages_forwared_request:
-                    messages_forwared_request[client_id] = 0
-                messages_forwared_request[client_id] += 1
-                
                 # Verification of digital signature
                 try:
                     replica_public_keys[sender_id].verify(args)
@@ -91,6 +87,11 @@ class Replica(process):
                     output('Verification of message sent by Replica ' + sender_id + ' has failed.')
                     return
             if self == head:
+                if request_from != client:
+                    # forwarded_request failure trigger
+                    if client_id not in messages_forwared_request:
+                        messages_forwared_request[client_id] = 0
+                    messages_forwared_request[client_id] += 1
                 result = update_running_state(type, args)
                 slot_number += 1
                 order_proof.append([slot_number, (type, args)])
@@ -98,6 +99,7 @@ class Replica(process):
                 result_proof.append([(type, args), calculate_hash(result)])
                 shuttle = (order_proof, result_proof)
                 send_(('Request', type, self, client, request_id, client_id, [slot_number, (type, args), shuttle]), replicas[id + 1])
+                last_slot_number = slot_number
                 if await(received(('Result_shuttle_' + str(request_id)))):
                     pass
                 elif timeout(replica_timeout):
@@ -109,7 +111,8 @@ class Replica(process):
                     messages_shuttle[client_id] = 0
                 messages_shuttle[client_id] += 1
                 
-                if validate_shuttle(slot_number, operation, shuttle):
+                if validate_shuttle(slot_number, last_slot_number, operation, shuttle):
+                    last_slot_number = slot_number
                     type, operation_args = operation
                     order_proof, result_proof = shuttle
                     result = update_running_state(type, operation_args)
@@ -131,13 +134,10 @@ class Replica(process):
                     send(('Reconfiguration', name, None), to = olympus)
 
     def receive(msg = (sender_id, 'Result_shuttle', request_from, request_id, client_id, result_shuttle)):
-        # shuttle and result_shuttle failure trigger
+        # result_shuttle failure trigger
         if client_id not in messages_result_shuttle:
             messages_result_shuttle[client_id] = 0
-        if client_id not in messages_shuttle:
-            messages_shuttle[client_id] = 0
         messages_result_shuttle[client_id] += 1
-        messages_shuttle[client_id] += 1
 
         try:
             replica_public_keys[sender_id].verify(result_shuttle)
@@ -186,7 +186,9 @@ class Replica(process):
             return sha256(str.encode(val), encoder = HexEncoder)
         return sha256(val, encoder = HexEncoder)
 
-    def validate_shuttle(slot_number, operation, shuttle):
+    def validate_shuttle(slot_number, last_slot_number, operation, shuttle):
+        if last_slot_number + 1 != slot_number:
+            return False
         order_proof, result_proof = shuttle
         for i in order_proof:
             if i[0] == slot_number and i[1] != operation:
