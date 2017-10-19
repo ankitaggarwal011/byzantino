@@ -187,7 +187,7 @@ class Replica(process):
         return sha256(val, encoder = HexEncoder)
 
     def validate_shuttle(slot_number, last_slot_number, operation, shuttle):
-        if last_slot_number + 1 <= slot_number:
+        if last_slot_number >= slot_number:
             return False
         order_proof, result_proof = shuttle
         for i in order_proof:
