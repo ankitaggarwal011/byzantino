@@ -72,6 +72,10 @@ class Replica(process):
                     return
                 elif self != head:
                     send_(('Request', type, self, client, request_id, client_id, args), head)
+                    if await(received(('Result_shuttle_' + str(request_id)))):
+                        pass
+                    elif timeout(replica_timeout):
+                        send(('Reconfiguration', name, None), to = olympus)
                     return
             else:
                 # forwarded_request failure trigger
@@ -347,7 +351,7 @@ class Client(process):
         return sha256(val, encoder = HexEncoder)
 
 def main():
-    num_replicas, request_id_counter, client_timeout = 3, 0, 10
+    num_replicas, request_id_counter, client_timeout = 3, 0, 3
     client_id, message_number = 1, 10
     head_timeout, replica_timeout = 3, 3
     replica_failures = [('client_request', client_id, message_number, 'change_operation')]
