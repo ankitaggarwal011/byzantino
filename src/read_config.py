@@ -1,5 +1,5 @@
-from src.config import ClientConfig
-from src.config import ReplicaConfig
+from config import ClientConfig
+from config import ReplicaConfig
 
 
 def parse_config_file(filename):

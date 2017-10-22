@@ -1,8 +1,0 @@
-import sys
-from client import Client
-
-def main():
-    config(channel= 'Fifo', clock= 'Lamport')
-    clients = new(Client, num= 2)
-    for c in clients: c.setup(clients - {c})
-    for c in clients: start(c)
