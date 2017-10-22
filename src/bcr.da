@@ -9,7 +9,7 @@ import read_config
 import sys
 import getopt
 
-config(channel = {'reliable', 'fifo'})
+# config(channel = {'reliable', 'fifo'})
 
 class Replica(process):
     
@@ -518,7 +518,7 @@ def parse_program_args(argv):
 def main():
     def output_wrapper(log):
         output('[TS: ' + str(time()) + ']', log)
-    
+
     # ignore the 1st argument because it will be the program binary path
     if len(sys.argv) < 2:
         output_wrapper('Incorrect argument count. Must specify the input configuration file atleast')

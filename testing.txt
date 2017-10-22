@@ -1,0 +1,5 @@
+python3 -m da --logfile --logfilename=logs/stress_test-log.txt -L output src/bcr.da -i config/stress_test.txt
+python3 -m da --logfile --logfilename=logs/basic_multi_client-log.txt -L output src/bcr.da -i config/basic_multi_client.txt
+python3 -m da --logfile --logfilename=logs/basic_multi_client_with_failures-log.txt -L output src/bcr.da -i config/basic_multi_client_with_failures.txt
+python3 -m da --logfile --logfilename=logs/basic_pseudo_random_workload-log.txt -L output src/bcr.da -i config/basic_pseudo_random_workload.txt
+python3 -m da --logfile --logfilename=logs/basic_pseudo_random_workload_with_failures-log.txt -L output src/bcr.da -i config/basic_pseudo_random_workload_with_failures.txt
