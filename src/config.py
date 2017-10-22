@@ -186,8 +186,8 @@ class FailureScenario:
         self.action_type = FailureActionType.value_of(action_str[:idx])
 
     def __str__(self):
-        return '{}({}), {}()'.format(self.failure_type, ','.join(list(map(lambda i: str(i), self.operands))),
-                                     self.action_type)
+        return '{}({}), {}()'.format(self.failure_type.name, ','.join(list(map(lambda i: str(i), self.operands))),
+                                     self.action_type.name)
 
     __repr__ = __str__
 

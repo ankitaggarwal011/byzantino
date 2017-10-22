@@ -15,6 +15,7 @@ client_running_state = dict()
 class Replica(process):
     
     def setup(id, name, replica_failures, replica_timeout):
+        output("replica failures: " + str(replica_failures))
         self.status = 0 # PENDING
         self.running_state = dict() # supports put, get, slice, and append operations
         self.order_proof = list()
@@ -44,12 +45,13 @@ class Replica(process):
         status = 2 # IMMUTABLE
         output(name + ' is immutable and shutting down.')
     
-    def receive(msg = ('Configuration', olympus_, replicas_, head_, tail_, replica_public_keys_)):
+    def receive(msg = ('Configuration', olympus_, replicas_, head_, tail_, replica_public_keys_, config_number)):
         olympus = olympus_
         replicas = replicas_
         head = head_
         tail = tail_
         replica_public_keys = [VerifyKey(key, encoder = HexEncoder) for key in replica_public_keys_]
+        configuration = config_number
         output(name + ' is configured.')
         send(('ACK', name), to = olympus)
 
@@ -75,8 +77,13 @@ class Replica(process):
                 # client_request failure trigger
                 if client_id not in messages_received_from_client:
                     messages_received_from_client[client_id] = 0
-                messages_received_from_client[client_id] += 1
+                is_trigger, scenario = is_client_request_failure(replica_failures, client_id, messages_received_from_client[client_id])
+                if is_trigger:
+                    # trigger this failure
+                    current_failure_scenario = scenario
+                    output("Replica {}: Trigger client request failure for client_id: {} and message count: {}, scenario: {}".format(name, client_id, messages_received_from_client[client_id], current_failure_scenario));
 
+                messages_received_from_client[client_id] += 1
                 # Verification of digital signature of client
                 try:
                     client_keys[client_id].verify(args)
@@ -231,9 +238,18 @@ class Replica(process):
         data[-1] = private_key.sign(str(data[-1]).encode('utf-8'))
         send(tuple(data), to = to_)
 
+    ## failure trigger methods for replica
+    def is_client_request_failure(replica_failures, client_id, client_message_count):
+        for i, failure in enumerate(replica_failures):
+            oper = failure.operands
+            if failure.failure_type == FailureType.client_request and client_id == oper[0] and client_message_count == oper[1]:
+                return (True, failure)
+
+        return (False, None)
+
 class Olympus(process):
     
-    def setup(name, num_replicas, replica_failures, head_timeout, replica_timeout):
+    def setup(name, num_replicas, all_replica_conf_failures, head_timeout, replica_timeout):
         self.replicas = list()
         self.replica_private_keys = list()
         self.replica_public_keys = list()
@@ -241,8 +257,10 @@ class Olympus(process):
         self.tail = None
         self.private_key = SigningKey.generate()
         self.public_key = self.private_key.verify_key.encode(encoder = HexEncoder)
-        self.configuration = None # default configuration for phase 2
+        self.configuration_number = 0 # default configuration for phase 2
+        all_replica_failures = all_replica_conf_failures.get(self.configuration_number, {})
         for i in range(num_replicas):
+            replica_failures = all_replica_failures.get(i, {})
             if i == 0:
                 replica = new(Replica, args=(i, 'Head', replica_failures, head_timeout))
                 self.head = replica
@@ -273,7 +291,7 @@ class Olympus(process):
 
     def run():
         start(replicas)
-        send(('Configuration', self, replicas, head, tail, replica_public_keys), to = replicas)
+        send(('Configuration', self, replicas, head, tail, replica_public_keys, configuration_number), to = replicas)
         for i in range(len(replicas)):
             send(('Key', replica_private_keys[i]), to = replicas[i])
         await(received(('ACK', None)))
