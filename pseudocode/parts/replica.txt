@@ -111,12 +111,18 @@ Replica:
         else if statement == "result_shuttle":
             result_shuttle = receive_result_shuttle_from_successor(request_id, result_shuttle_args) # result_shuttle_args => result_shuttle passed from the
                                                                                    # variable arguments
-            forward_result_shuttle_to_predessor(request_id, result_shuttle)
+            if validate(result_shuttle):
+                forward_result_shuttle_to_predessor(request_id, result_shuttle)
+            else:
+                send reconfiguration request to Olympus
 
         else if statement == "request_shuttle":
             request_shuttle = receive_request_shuttle_from_predessor(s, o, request_shuttle_args)     # request_shuttle_args => request_shuttle passed from the
                                                                                    # variable arguments
-            forward_request_shuttle_to_successor(request_shuttle)
+            if validate(request_shuttle):
+                forward_request_shuttle_to_successor(request_shuttle)
+            else:
+                send reconfiguration request to Olympus
 
         else if statement == "checkpointing":
             if replica_id < tail:

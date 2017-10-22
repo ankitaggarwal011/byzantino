@@ -4,6 +4,7 @@ from nacl.signing import SigningKey, VerifyKey
 from nacl.exceptions import BadSignatureError
 from ast import literal_eval
 from config import *
+from time import time
 import read_config
 import sys
 import getopt
@@ -12,8 +13,11 @@ config(channel = {'reliable', 'fifo'})
 
 class Replica(process):
     
+    def output_wrapper(log):
+        output('[TS: ' + str(time()) + ']', log)
+    
     def setup(id, name, replica_failures, replica_timeout, olympus_public_key):
-        output('replica failures: ' + str(replica_failures))
+        output_wrapper('replica failures: ' + str(replica_failures))
         self.status = 0 # PENDING
         self.running_state = dict() # supports put, get, slice, and append operations
         self.order_proof = list()
@@ -42,7 +46,7 @@ class Replica(process):
 
     def receive(msg = ('Shutdown'), from_ = olympus):
         status = 2 # IMMUTABLE
-        output(name + ' is immutable and shutting down.')
+        output_wrapper(name + ' is immutable and shutting down.')
     
     def receive(msg = ('Configuration', olympus_, replicas_, head_, tail_, config_data)):
         olympus = olympus_
@@ -51,16 +55,16 @@ class Replica(process):
         tail = tail_
         config_data = verify_data_with_key(config_data, olympus_public_key)
         if config_data == None:
-            output('Verification of message sent by Olympus has failed.')
+            output_wrapper('Verification of message sent by Olympus has failed.')
             return
         replica_public_keys_, configuration = config_data
         replica_public_keys = [VerifyKey(key, encoder = HexEncoder) for key in replica_public_keys_]
-        output(name + ' is configured.')
+        output_wrapper(name + ' is configured.')
         send(('ACK', name), to = olympus)
 
     def receive(msg = ('Key', private_key_), from_ = olympus):
         private_key = private_key_
-        output(name + ' have received its private key from Olympus.')
+        output_wrapper(name + ' have received its private key from Olympus.')
         send(('ACK', name), to = olympus)
 
     def receive(msg = ('Client_keys', client_id, client_public_key)):
@@ -68,13 +72,13 @@ class Replica(process):
         send(('ACK', name), to = olympus)
 
     def receive(msg = (sender_id, 'Request', type, request_from, client, request_id, client_id, args)):
-        output(str(type) + ' request with request id ' + str(request_id) + ' received by ' + name + '.')
+        output_wrapper(str(type) + ' request with request id ' + str(request_id) + ' received by ' + name + '.')
         if status == 0:
-            output(name + ' is in PENDING state.')
+            output_wrapper(name + ' is in PENDING state.')
         elif status == 1:
-            output(name + ' is in ACTIVE state.')
+            output_wrapper(name + ' is in ACTIVE state.')
         elif status == 2:
-            output(name + ' is in IMMUTABLE state.')
+            output_wrapper(name + ' is in IMMUTABLE state.')
         if status == 1: # if replica is ACTIVE
             if request_from == client:
                 # client_request failure trigger
@@ -84,19 +88,19 @@ class Replica(process):
                 if is_trigger:
                     # trigger this failure
                     current_failure_scenario[scenario.action_type] = 1
-                    output('Replica {}: Trigger client request failure for client_id: {} and message count: {}, scenario: {}'.format(name, client_id, messages_received_from_client[client_id], current_failure_scenario));
+                    output_wrapper('Replica {}: Trigger client request failure for client_id: {} and message count: {}, scenario: {}'.format(name, client_id, messages_received_from_client[client_id], current_failure_scenario));
 
                 messages_received_from_client[client_id] += 1
                 
                 # Verification of digital signature of client
                 args = verify_data_with_key(args, client_keys[client_id])
                 if args == None:
-                    output('Verification of message sent by Client ' + str(client_id) + ' has failed.')
+                    output_wrapper('Verification of message sent by Client ' + str(client_id) + ' has failed.')
                     return
 
                 if request_id in result_cache:
                     sign_and_send(('Operation_result', result_cache[request_id]), client)
-                    output('Result sent from cache of ' + name + '.')
+                    output_wrapper('Result sent from cache of ' + name + '.')
                     return
                 elif self != head:
                     sign_and_send(('Request', type, self, client, request_id, client_id, args), head)
@@ -109,7 +113,7 @@ class Replica(process):
                 # Verification of digital signature of replicas
                 args = verify_data_with_key(args, replica_public_keys[sender_id])
                 if args == None:
-                    output('Verification of message sent by Replica ' + str(sender_id) + ' has failed.')
+                    output_wrapper('Verification of message sent by Replica ' + str(sender_id) + ' has failed.')
                     return
 
             if self == head:
@@ -121,7 +125,7 @@ class Replica(process):
                     if is_trigger:
                         # trigger this failure
                         current_failure_scenario[scenario.action_type] = 1
-                        output('Replica {}: Trigger forwarded request failure for client_id: {} and message count: {}, scenario: {}'.format(name, client_id, messages_forwarded_request[client_id], current_failure_scenario));
+                        output_wrapper('Replica {}: Trigger forwarded request failure for client_id: {} and message count: {}, scenario: {}'.format(name, client_id, messages_forwarded_request[client_id], current_failure_scenario));
                     messages_forwarded_request[client_id] += 1
                 result = update_running_state(type, args)
                 slot_number += 1
@@ -151,7 +155,7 @@ class Replica(process):
                 if is_trigger:
                     # trigger this failure
                     current_failure_scenario[scenario.action_type] = 1
-                    output('Replica {}: Trigger shuttle failure for client_id: {} and message count: {}, scenario: {}'.format(name, client_id, messages_shuttle[client_id], current_failure_scenario));
+                    output_wrapper('Replica {}: Trigger shuttle failure for client_id: {} and message count: {}, scenario: {}'.format(name, client_id, messages_shuttle[client_id], current_failure_scenario));
                 messages_shuttle[client_id] += 1
                 if validate_shuttle(args):
                     order_proof, result_proof = args
@@ -196,13 +200,13 @@ class Replica(process):
         if is_trigger:
             # trigger this failure
             current_failure_scenario[scenario.action_type] = 1
-            output('{}: Trigger result shuttle failure for client_id: {} and message count: {}, scenario: {}'.format(name, client_id, messages_result_shuttle[client_id], current_failure_scenario))
+            output_wrapper('{}: Trigger result shuttle failure for client_id: {} and message count: {}, scenario: {}'.format(name, client_id, messages_result_shuttle[client_id], current_failure_scenario))
         messages_result_shuttle[client_id] += 1
         
         # Verification of signature of replicas sending result shuttles
         result_shuttle = verify_data_with_key(result_shuttle, replica_public_keys[sender_id])
         if result_shuttle == None:
-            output('Verification of message sent by Replica ' + str(sender_id) + ' has failed.')
+            output_wrapper('Verification of message sent by Replica ' + str(sender_id) + ' has failed.')
             return
 
         if validate_result_shuttle(result_shuttle):
@@ -218,9 +222,9 @@ class Replica(process):
                     current_failure_scenario[FailureActionType.drop_result_stmt] = 0
                 sign_and_send(('Result_shuttle', self, request_id, client_id, result_shuttle), replicas[id - 1])
                 send(('Result_shuttle_' + str(request_id)), to = replicas[id - 1])
-            output('Result shuttle is at ' + str(name) + '.')
+            output_wrapper('Result shuttle is at ' + str(name) + '.')
         else:
-            output('Result shuttle sent by Replica ' + str(sender_id) + ' is not valid.')
+            output_wrapper('Result shuttle sent by Replica ' + str(sender_id) + ' is not valid.')
             send(('Reconfiguration', name, None), to = olympus)
 
     def update_running_state(type, args):
@@ -296,6 +300,9 @@ class Replica(process):
         return (False, None)
 
 class Olympus(process):
+
+    def output_wrapper(log):
+        output('[TS: ' + str(time()) + ']', log)
     
     def setup(name, num_replicas, all_replica_conf_failures, head_timeout, replica_timeout):
         self.replicas = list()
@@ -326,18 +333,18 @@ class Olympus(process):
             self.replica_public_keys.append(verify_key)
     
     def receive(msg = ('ACK', sender)):
-        output('ACK from ' + str(sender) + '.')
+        output_wrapper('ACK from ' + str(sender) + '.')
 
     def receive(msg = ('Get_configuration', client, client_name, client_id, client_public_key)):
         client_keys[client_id] = VerifyKey(client_public_key, encoder = HexEncoder)
         send(('Configuration', replicas, head), to = client)
         send(('Keys', replica_public_keys), to = client)
         send(('Client_keys', client_id, client_public_key), to = replicas)
-        output('Configuration sent to ' + str(client_name) + '.')
+        output_wrapper('Configuration sent to ' + str(client_name) + '.')
 
     def receive(msg = ('Reconfiguration', sender, proof_of_misbehavior)):
-        output('Reconfiguration request received from ' + str(sender) + '.')
-        output('No reconfiguration mechanism implemented yet.')
+        output_wrapper('Reconfiguration request received from ' + str(sender) + '.')
+        output_wrapper('No reconfiguration mechanism implemented yet.')
         # Reconfigure and send new configuration to client and replicas
 
     def sign_and_send(data, to_):
@@ -361,6 +368,9 @@ class Olympus(process):
         await(received(('Shutdown')))
 
 class Client(process):
+
+    def output_wrapper(log):
+        output('[TS: ' + str(time()) + ']', log)
     
     def setup(client_id, olympus, request_id, client_timeout, operations, num_failures):
         self.name = 'Client ' + str(client_id)
@@ -375,19 +385,19 @@ class Client(process):
     def receive(msg = ('Configuration', replicas_, head_), from_ = olympus):
         replicas = replicas_
         head = head_
-        output(name + ' is configured.')
+        output_wrapper(name + ' is configured.')
         send(('ACK', name), to = olympus)
 
     def receive(msg = ('Keys', replica_public_keys_), from_ = olympus):
         replica_public_keys = [VerifyKey(key, encoder = HexEncoder) for key in replica_public_keys_]
-        output(name + ' received the public keys of replicas from Olympus.')
+        output_wrapper(name + ' received the public keys of replicas from Olympus.')
         send(('ACK', name), to = olympus)
 
     def receive(msg = (sender_id, 'Operation_result', result_shuttle)):
         # Verification of signature of replicas
         result_shuttle = verify_data_with_key(result_shuttle, replica_public_keys[sender_id])
         if result_shuttle == None:
-            output('Verification of message sent by Replica ' + str(sender_id) + ' has failed.')
+            output_wrapper('Verification of message sent by Replica ' + str(sender_id) + ' has failed.')
             return
 
         result, result_proof = result_shuttle
@@ -396,7 +406,7 @@ class Client(process):
             if result != 'fail' or result != '':
                 update_client_running_state(client_running_state_sync, result_proof[0][0][0], result_proof[0][0][1]) 
                 # updating state from the tail response
-            output(str(result) + ' received by ' + str(name) + '.')
+            output_wrapper(str(result) + ' received by ' + str(name) + '.')
         if is_reconfiguration_required:
             # send reconfiguration request to Olympus with proof of misbehavior
             send(('Reconfiguration', name, result_shuttle), to = olympus)
@@ -425,10 +435,10 @@ class Client(process):
                 if await(received(('Operation_result_' + str(request_id)))):
                     break
                 elif timeout(client_timeout):
-                    output('Timeout: Retrying.')
+                    output_wrapper('Timeout: Retrying.')
                     retry = 1
-        output('Local running state of client after the given set of operations: ' + str(client_running_state) + '.')
-        output('Running state of client at the server (assuming no conflicting keys from other clients) after the given set of operations: ' + str(client_running_state_sync) + '.')
+        output_wrapper('Local running state of client after the given set of operations: ' + str(client_running_state) + '.')
+        output_wrapper('Running state of client at the server (assuming no conflicting keys from other clients) after the given set of operations: ' + str(client_running_state_sync) + '.')
         await(received('Shutdown'))
 
     def update_client_running_state(running_state, type, args):
@@ -468,7 +478,7 @@ class Client(process):
     # returns a tuple of booleans (is_valid_result_shuttle, send_reconfiguration_request)
     def validate_result(result, result_proof):
         if len(result_proof) < num_failures + 1:
-            output('Number of result proofs received are less than the majority (failures + 1).')
+            output_wrapper('Number of result proofs received are less than the majority (failures + 1).')
             return (False, True)
 
         # ASSUMPTION: client checks all result proofs for validating correctness of response.
@@ -479,7 +489,7 @@ class Client(process):
             if hash == i[1]:
                 majority += 1
         if majority < num_failures + 1:
-            output('Number of correct result proofs received are less than the majority (failures + 1).')
+            output_wrapper('Number of correct result proofs received are less than the majority (failures + 1).')
             return (False, True)
         elif majority < 2 * num_failures + 1:
             return (True, True)
@@ -492,28 +502,31 @@ class Client(process):
 
 def parse_program_args(argv):
    inputfile = ''
-   outputfile = ''
+   output_wrapperfile = ''
    try:
       opts, args = getopt.getopt(argv,'hi:o:',['ifile=','ofile='])
    except getopt.GetoptError:
-      output('Error in parsing arguments')
+      output_wrapper('Error in parsing arguments')
       return None
    for opt, arg in opts:
       if opt in ('-i', '--ifile'):
          inputfile = arg
       elif opt in ('-o', '--ofile'):
-         outputfile = arg
-   return [inputfile, outputfile]
+         output_wrapperfile = arg
+   return [inputfile, output_wrapperfile]
 
 def main():
+    def output_wrapper(log):
+        output('[TS: ' + str(time()) + ']', log)
+    
     # ignore the 1st argument because it will be the program binary path
     if len(sys.argv) < 2:
-        output('Incorrect argument count. Must specify the input configuration file atleast')
+        output_wrapper('Incorrect argument count. Must specify the input configuration file atleast')
         return
 
     [infile, outfile]  = parse_program_args(sys.argv[1:])
     if infile == None:
-        output('Must specify input configuration file!')
+        output_wrapper('Must specify input configuration file!')
         sys.exit(2)
 
     config_dict = read_config.parse_config_file(infile)
@@ -521,7 +534,7 @@ def main():
     client_config = ClientConfig(config_dict)
     replica_config = ReplicaConfig(config_dict)
 
-    output('Running BCR simulation for test case: ' + global_config.test_case_name)
+    output_wrapper('Running BCR simulation for test case: ' + global_config.test_case_name)
     #client_id, message_number = 1, 10
     #head_timeout, replica_timeout = 3, 3
     olympus = new(Olympus, args=('Olympus', replica_config.num_replica, replica_config.failures, replica_config.head_timeout, replica_config.nonhead_timeout))
