@@ -77,7 +77,7 @@ class Replica(process):
                 # client_request failure trigger
                 if client_id not in messages_received_from_client:
                     messages_received_from_client[client_id] = 0
-                is_trigger, scenario = is_client_request_failure(replica_failures, client_id, messages_received_from_client[client_id])
+                is_trigger, scenario = check_failure(replica_failures, client_id, messages_received_from_client[client_id], FailureType.client_request)
                 if is_trigger:
                     # trigger this failure
                     current_failure_scenario = scenario
@@ -116,6 +116,11 @@ class Replica(process):
                     # forwarded_request failure trigger
                     if client_id not in messages_forwared_request:
                         messages_forwared_request[client_id] = 0
+                    is_trigger, scenario = check_failure(replica_failures, client_id, messages_forwared_request[client_id], FailureType.forwarded_request)
+                    if is_trigger:
+                        # trigger this failure
+                        current_failure_scenario = scenario
+                        output("Replica {}: Trigger forwarded request failure for client_id: {} and message count: {}, scenario: {}".format(name, client_id, messages_forwared_request[client_id], current_failure_scenario));
                     messages_forwared_request[client_id] += 1
                 result = update_running_state(type, args)
                 slot_number += 1
@@ -133,6 +138,11 @@ class Replica(process):
                 # shuttle failure trigger
                 if client_id not in messages_shuttle:
                     messages_shuttle[client_id] = 0
+                is_trigger, scenario = check_failure(replica_failures, client_id, messages_shuttle[client_id], FailureType.shuttle)
+                if is_trigger:
+                    # trigger this failure
+                    current_failure_scenario = scenario
+                    output("Replica {}: Trigger shuttle failure for client_id: {} and message count: {}, scenario: {}".format(name, client_id, messages_shuttle[client_id], current_failure_scenario));
                 messages_shuttle[client_id] += 1
                 
                 if validate_shuttle(args):
@@ -162,6 +172,11 @@ class Replica(process):
         # result_shuttle failure trigger
         if client_id not in messages_result_shuttle:
             messages_result_shuttle[client_id] = 0
+        is_trigger, scenario = check_failure(replica_failures, client_id, messages_result_shuttle[client_id], FailureType.result_shuttle)
+        if is_trigger:
+            # trigger this failure
+            current_failure_scenario = scenario
+            output("Replica {}: Trigger result shuttle failure for client_id: {} and message count: {}, scenario: {}".format(name, client_id, messages_result_shuttle[client_id], current_failure_scenario));
         messages_result_shuttle[client_id] += 1
 
         try:
@@ -239,10 +254,10 @@ class Replica(process):
         send(tuple(data), to = to_)
 
     ## failure trigger methods for replica
-    def is_client_request_failure(replica_failures, client_id, client_message_count):
+    def check_failure(replica_failures, source_id, source_message_count, required_type):
         for i, failure in enumerate(replica_failures):
             oper = failure.operands
-            if failure.failure_type == FailureType.client_request and client_id == oper[0] and client_message_count == oper[1]:
+            if failure.failure_type == required_type and source_id == oper[0] and source_message_count == oper[1]:
                 return (True, failure)
 
         return (False, None)
@@ -378,7 +393,7 @@ class Client(process):
     def send_request(type, args, retry):
         args = private_key.sign(str(args).encode('utf-8'))
         if retry:
-            send((None, 'Request', type, self, self, request_id, client_id, args), to = head)
+            send((None, 'Request', type, self, self, request_id, client_id, args), to = replicas)
         else:
             request_id += 1
             send((None, 'Request', type, self, self, request_id, client_id, args), to = head)
