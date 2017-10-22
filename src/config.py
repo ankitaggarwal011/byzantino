@@ -3,12 +3,20 @@ import random
 import string
 
 
+class GlobalConfig:
+    def __init__(self, dict):
+        self.test_case_name = dict['test_case_name']
+        self.num_client = int(dict['num_client'])
+        self.num_failures = int(dict['t'])
+        self.num_replica = 2 * self.num_failures + 1
+
+
 class ClientConfig:
     def __init__(self, dict):
         self.test_case_name = dict['test_case_name']
-        self.num_client = dict['num_client']
-        self.num_failures = dict['t']
-        self.client_timeout = dict['client_timeout']
+        self.num_client = int(dict['num_client'])
+        self.num_failures = int(dict['t'])
+        self.client_timeout = int(dict['client_timeout'])
         self.hosts = dict['hosts'].split(';')
         for i, host in enumerate(self.hosts):
             self.hosts[i] = host.strip()
@@ -115,10 +123,10 @@ def get_operation_list(command):
 class ReplicaConfig:
     def __init__(self, dict):
         self.test_case_name = dict['test_case_name']
-        self.num_failures = dict['t']
+        self.num_failures = int(dict['t'])
         self.num_replica = 2 * self.num_failures + 1
-        self.head_timeout = dict['head_timeout']
-        self.nonhead_timeout = dict['nonhead_timeout']
+        self.head_timeout = int(dict['head_timeout'])
+        self.nonhead_timeout = int(dict['nonhead_timeout'])
         self.hosts = dict['hosts'].split(';')
         for i, host in enumerate(self.hosts):
             self.hosts[i] = host.strip()

@@ -3,6 +3,10 @@ from nacl.encoding import HexEncoder
 from nacl.signing import SigningKey, VerifyKey
 from nacl.exceptions import BadSignatureError
 from ast import literal_eval
+from config import *
+import read_config
+import sys
+import getopt
 
 config(channel = {'reliable', 'fifo'})
 
@@ -30,7 +34,7 @@ class Replica(process):
         self.messages_received_from_client = {} # messages received for each client
         self.messages_shuttle = {} # shuttles received for each client
         self.messages_result_shuttle = {} # result shuttles received for each client
-        self.messages_forwared_request = {} # forwarded requests received for each client
+        self.messages_forwarded_request = {} # forwarded requests received for each client
     
     def run():
         status = 1 # ACTIVE
@@ -57,7 +61,7 @@ class Replica(process):
     def receive(msg = ('Client_keys', client_id, client_public_key)):
         client_keys[client_id] = VerifyKey(client_public_key, encoder = HexEncoder)
         send(('ACK', name), to = olympus)
-    
+
     def receive(msg = (sender_id, 'Request', type, request_from, client, request_id, client_id, args)):
         output(str(type) + ' request with request id ' + str(request_id) + ' received by ' + name + '.')
         if status == 0:
@@ -284,7 +288,7 @@ class Client(process):
         self.replica_public_keys = None
         self.private_key = SigningKey.generate()
         self.public_key = self.private_key.verify_key.encode(encoder = HexEncoder)
-    
+
     def receive(msg = ('Configuration', replicas_, head_), from_ = olympus):
         replicas = replicas_
         head = head_
@@ -373,14 +377,51 @@ class Client(process):
             return sha256(str.encode(val), encoder = HexEncoder)
         return sha256(val, encoder = HexEncoder)
 
+def parse_program_args(argv):
+   inputfile = ''
+   outputfile = ''
+   try:
+      opts, args = getopt.getopt(argv,"hi:o:",["ifile=","ofile="])
+   except getopt.GetoptError:
+      output('Error in parsing arguments')
+      return None
+   for opt, arg in opts:
+      if opt in ("-i", "--ifile"):
+         inputfile = arg
+      elif opt in ("-o", "--ofile"):
+         outputfile = arg
+   return [inputfile, outputfile]
+
 def main():
-    num_replicas, request_id_counter, client_timeout = 3, 0, 3
-    client_id, message_number = 1, 10
-    head_timeout, replica_timeout = 3, 3
-    replica_failures = [('client_request', client_id, message_number, 'change_operation')]
-    olympus = new(Olympus, args=('Olympus', num_replicas, replica_failures, head_timeout, replica_timeout))
+    # ignore the 1st argument because it will be the program binary path
+    if len(sys.argv) < 2:
+        output("Incorrect argument count. Must specify the input configuration file atleast")
+        return
+
+    [infile, outfile]  = parse_program_args(sys.argv[1:])
+    if infile == None:
+        output("Must specify input configuration file!")
+        sys.exit(2)
+
+    config_dict = read_config.parse_config_file(infile)
+    global_config = GlobalConfig(config_dict)
+    client_config = ClientConfig(config_dict)
+    replica_config = ReplicaConfig(config_dict)
+
+    output("Running BCR simulation for test case: " + global_config.test_case_name)
+    request_id_counter = 0
+    #client_id, message_number = 1, 10
+    #head_timeout, replica_timeout = 3, 3
+    olympus = new(Olympus, args=('Olympus', replica_config.num_replica, replica_config.failures, replica_config.head_timeout, replica_config.nonhead_timeout))
     start(olympus)
-    operations = [('put', ['name', 'ankit']), ('get', ['name']), ('append', ['name', 'aggarwal']), ('get', ['name']), ('slice', ['name', 5]), ('get', ['name'])]
-    client_id = 1
-    client = new(Client, args=(client_id, olympus, request_id_counter, client_timeout, operations))
-    start(client)
+    #operations = [('put', ['name', 'ankit']), ('get', ['name']), ('append', ['name', 'aggarwal']), ('get', ['name']), ('slice', ['name', 5]), ('get', ['name'])]
+    #client_id = 1
+    clients = list()
+
+    for i in range(client_config.num_client):
+        modified_ops = list(map(lambda o: (o.type.name, o.args_list), client_config.workloads[i]))
+        output("Ops are: " + str(modified_ops))
+        client = new(Client, args=(i, olympus, request_id_counter, client_config.client_timeout, modified_ops))
+        clients.append(client)
+
+    start(clients)
