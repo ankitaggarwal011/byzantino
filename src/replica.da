@@ -168,6 +168,14 @@ class Replica(process):
                     shuttle = (order_proof, result_proof)
                     if self == tail:
                         result_shuttle = [result, result_proof]
+                        if FailureActionType.change_result in current_failure_scenario and current_failure_scenario[FailureActionType.change_result] == 1:
+                            op_t = result_shuttle[1][id][0]
+                            result_shuttle[1][id] = [op_t, calculate_hash('OK')]
+
+                        if FailureActionType.drop_result_stmt in current_failure_scenario and current_failure_scenario[FailureActionType.drop_result_stmt] == 1:
+                            result_t = result_shuttle[0]
+                            result_shuttle = [result_t, result_shuttle[1][1:]]
+
                         sign_and_send(('Operation_result', result_shuttle), client)
                         send(('Operation_result_' + str(request_id)), to = client)
                         sign_and_send(('Result_shuttle', self, request_id, client_id, result_shuttle), tail)
@@ -188,7 +196,7 @@ class Replica(process):
         if is_trigger:
             # trigger this failure
             current_failure_scenario[scenario.action_type] = 1
-            output("Replica {}: Trigger result shuttle failure for client_id: {} and message count: {}, scenario: {}".format(name, client_id, messages_result_shuttle[client_id], current_failure_scenario));
+            output("Replica {}: Trigger result shuttle failure for client_id: {} and message count: {}, scenario: {}".format(name, client_id, messages_result_shuttle[client_id], current_failure_scenario))
         messages_result_shuttle[client_id] += 1
 
         try:
@@ -200,6 +208,14 @@ class Replica(process):
         if validate_result_shuttle(result_shuttle):
             result_cache[request_id] = result_shuttle
             if self != head:
+                if FailureActionType.change_result in current_failure_scenario and current_failure_scenario[FailureActionType.change_result] == 1:
+                    op_t = result_shuttle[1][id][0]
+                    result_shuttle[1][id] = [op_t, calculate_hash('OK')]
+                    current_failure_scenario[FailureActionType.change_result] = 0
+                if FailureActionType.drop_result_stmt in current_failure_scenario and current_failure_scenario[FailureActionType.drop_result_stmt] == 1:
+                    result_t = result_shuttle[0]
+                    result_shuttle = [result_t, result_shuttle[1][1:]]
+                    current_failure_scenario[FailureActionType.drop_result_stmt] = 0
                 sign_and_send(('Result_shuttle', self, request_id, client_id, result_shuttle), replicas[id - 1])
                 send(('Result_shuttle_' + str(request_id)), to = replicas[id - 1])
             output('Result shuttle is at ' + name + '.')
@@ -246,13 +262,11 @@ class Replica(process):
         for stmt in order_stmt:
             if stmt[0] != slot_number or stmt[1] != operation or stmt[2] != configuration:
                 return False
-        hash = result_proof[0][1]
-        for result_stmt in result_proof:
-            if result_stmt[0] != operation or result_stmt[1] != hash:
-                return False
         return True
 
     def validate_result_shuttle(result_shuttle):
+        if len(result_shuttle[1]) != len(replicas):
+            return False
         result, result_proof = result_shuttle
         hash = calculate_hash(result)
         for i in result_proof:
@@ -411,6 +425,12 @@ class Client(process):
             send((None, 'Request', type, self, self, request_id, client_id, args), to = head)
 
     def validate_result(result, result_proof):
+        if len(result_proof) != len(replicas):
+            output('Result proofs are incomplete at client!')
+            return False
+
+        # ASSUMPTION: client checks all result proofs for validating correctness of response.
+        # Another approach may be to check that a majority of result proofs are the same as hash(tail_response)
         hash = calculate_hash(result)
         for i in result_proof:
             if hash != i[1]:
