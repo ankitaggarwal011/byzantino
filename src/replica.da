@@ -31,7 +31,7 @@ class Replica(process):
         self.private_key = None
         self.client_keys = dict()
         self.configuration = None
-
+        self.current_failure_scenario = {}   # dict of failure_action_type vs boolean
         self.messages_received_from_client = {} # messages received for each client
         self.messages_shuttle = {} # shuttles received for each client
         self.messages_result_shuttle = {} # result shuttles received for each client
@@ -80,7 +80,7 @@ class Replica(process):
                 is_trigger, scenario = check_failure(replica_failures, client_id, messages_received_from_client[client_id], FailureType.client_request)
                 if is_trigger:
                     # trigger this failure
-                    current_failure_scenario = scenario
+                    current_failure_scenario[scenario.action_type] = 1
                     output("Replica {}: Trigger client request failure for client_id: {} and message count: {}, scenario: {}".format(name, client_id, messages_received_from_client[client_id], current_failure_scenario));
 
                 messages_received_from_client[client_id] += 1
@@ -119,12 +119,20 @@ class Replica(process):
                     is_trigger, scenario = check_failure(replica_failures, client_id, messages_forwared_request[client_id], FailureType.forwarded_request)
                     if is_trigger:
                         # trigger this failure
-                        current_failure_scenario = scenario
+                        current_failure_scenario[scenario.action_type] = 1
                         output("Replica {}: Trigger forwarded request failure for client_id: {} and message count: {}, scenario: {}".format(name, client_id, messages_forwared_request[client_id], current_failure_scenario));
                     messages_forwared_request[client_id] += 1
                 result = update_running_state(type, args)
                 slot_number += 1
-                order_stmt = [[slot_number, (type, args), configuration]] # (type, args) is operation (o)
+                if FailureActionType.change_operation in current_failure_scenario and current_failure_scenario[FailureActionType.change_operation] == 1:
+                    stmt_type = 'get'
+                    stmt_args = ['x']
+                    current_failure_scenario[FailureActionType.change_operation] = 0
+                else:
+                    stmt_type = type
+                    stmt_args = args
+
+                order_stmt = [[slot_number, (stmt_type, stmt_args), configuration]] # (type, args) is operation (o)
                 order_proof = [slot_number, (type, args), configuration, order_stmt]
                 result_proof = [[(type, args), calculate_hash(result)]] # add result stmt
                 shuttle = (order_proof, result_proof)
@@ -141,16 +149,20 @@ class Replica(process):
                 is_trigger, scenario = check_failure(replica_failures, client_id, messages_shuttle[client_id], FailureType.shuttle)
                 if is_trigger:
                     # trigger this failure
-                    current_failure_scenario = scenario
+                    current_failure_scenario[scenario.action_type] = 1
                     output("Replica {}: Trigger shuttle failure for client_id: {} and message count: {}, scenario: {}".format(name, client_id, messages_shuttle[client_id], current_failure_scenario));
                 messages_shuttle[client_id] += 1
-                
+                output("Args: " + str(args))
                 if validate_shuttle(args):
                     order_proof, result_proof = args
                     slot_number, operation, configuration, order_stmt = order_proof
                     last_slot_number = slot_number
                     type, operation_args = operation
                     result = update_running_state(type, operation_args)
+                    if FailureActionType.change_operation in current_failure_scenario and current_failure_scenario[FailureActionType.change_operation] == 1:
+                        type = 'get'
+                        operation_args = ['x']
+                        current_failure_scenario[FailureActionType.change_operation] = 0
                     order_proof[3].append([slot_number, (type, operation_args), configuration]) # append to order_stmt
                     result_proof.append([(type, operation_args), calculate_hash(result)]) # append result stmt
                     shuttle = (order_proof, result_proof)
@@ -175,7 +187,7 @@ class Replica(process):
         is_trigger, scenario = check_failure(replica_failures, client_id, messages_result_shuttle[client_id], FailureType.result_shuttle)
         if is_trigger:
             # trigger this failure
-            current_failure_scenario = scenario
+            current_failure_scenario[scenario.action_type] = 1
             output("Replica {}: Trigger result shuttle failure for client_id: {} and message count: {}, scenario: {}".format(name, client_id, messages_result_shuttle[client_id], current_failure_scenario));
         messages_result_shuttle[client_id] += 1
 
