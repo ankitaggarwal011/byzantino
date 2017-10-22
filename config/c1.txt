@@ -39,5 +39,5 @@ workload[0] = put('movie','star'); append('movie',' wars'); get('movie')
 # configurations are numbered starting with 0.  replicas are numbered by
 # position in the chain, starting from 0.  replicas without a specified
 # failure scenario are failure-free.
-#failures[0,1] = shuttle(0,2), drop_result_stmt()
+failures[0,1] = shuttle(0,2), change_result()
 #failures[0,2] = shuttle(0,0),change_result(); result_shuttle(0,0),drop_result_stmt()

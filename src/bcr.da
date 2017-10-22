@@ -114,14 +114,14 @@ class Replica(process):
             if self == head:
                 if request_from != client:
                     # forwarded_request failure trigger
-                    if client_id not in messages_forwared_request:
-                        messages_forwared_request[client_id] = 0
-                    is_trigger, scenario = check_failure(replica_failures, client_id, messages_forwared_request[client_id], FailureType.forwarded_request)
+                    if client_id not in messages_forwarded_request:
+                        messages_forwarded_request[client_id] = 0
+                    is_trigger, scenario = check_failure(replica_failures, client_id, messages_forwarded_request[client_id], FailureType.forwarded_request)
                     if is_trigger:
                         # trigger this failure
                         current_failure_scenario[scenario.action_type] = 1
-                        output("Replica {}: Trigger forwarded request failure for client_id: {} and message count: {}, scenario: {}".format(name, client_id, messages_forwared_request[client_id], current_failure_scenario));
-                    messages_forwared_request[client_id] += 1
+                        output("Replica {}: Trigger forwarded request failure for client_id: {} and message count: {}, scenario: {}".format(name, client_id, messages_forwarded_request[client_id], current_failure_scenario));
+                    messages_forwarded_request[client_id] += 1
                 result = update_running_state(type, args)
                 slot_number += 1
                 if FailureActionType.change_operation in current_failure_scenario and current_failure_scenario[FailureActionType.change_operation] == 1:
@@ -198,7 +198,6 @@ class Replica(process):
             current_failure_scenario[scenario.action_type] = 1
             output("Replica {}: Trigger result shuttle failure for client_id: {} and message count: {}, scenario: {}".format(name, client_id, messages_result_shuttle[client_id], current_failure_scenario))
         messages_result_shuttle[client_id] += 1
-
         try:
             replica_public_keys[sender_id].verify(result_shuttle)
             result_shuttle = literal_eval(result_shuttle.message.decode('utf-8'))
@@ -218,9 +217,9 @@ class Replica(process):
                     current_failure_scenario[FailureActionType.drop_result_stmt] = 0
                 sign_and_send(('Result_shuttle', self, request_id, client_id, result_shuttle), replicas[id - 1])
                 send(('Result_shuttle_' + str(request_id)), to = replicas[id - 1])
-            output('Result shuttle is at ' + name + '.')
+            output('Result shuttle is at ' + str(name) + '.')
         else:
-            output('Result shuttle sent by Replica ' + sender_id + ' is not valid.')
+            output('Result shuttle sent by Replica ' + str(sender_id) + ' is not valid.')
             send(('Reconfiguration', name, None), to = olympus)
 
     def update_running_state(type, args):
@@ -265,9 +264,9 @@ class Replica(process):
         return True
 
     def validate_result_shuttle(result_shuttle):
-        if len(result_shuttle[1]) != len(replicas):
-            return False
         result, result_proof = result_shuttle
+        if len(result_proof) != len(replicas):
+            return False
         hash = calculate_hash(result)
         for i in result_proof:
             if hash != i[1]:
