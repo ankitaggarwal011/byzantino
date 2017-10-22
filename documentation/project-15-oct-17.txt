@@ -1,4 +1,4 @@
-		          CSE535: Asynchronous Systems               2017-10-14
+		          CSE535: Asynchronous Systems               2017-10-16
 	        Scott D. Stoller, Stony Brook University
 
                Project: Byzantine Chain Replication
@@ -39,7 +39,7 @@ there are some typos in the definition of hist in the switchConfig transition:
 "h' in H" should be "<wedged, h'>_* in H"
 "<s, o', v'> in h'" should be "<s, o', *, *, v'> in h'"
 
-notation:
+my notation:
 underscore denotes subscript: x_y means "x subscript y".
 "*" is the "don't care" pattern: the corresponding piece of the matched value is irrelevant.
 
@@ -286,6 +286,8 @@ drop(): drop (i.e., ignore) the incoming message that triggered this failure. [p
 -----
 configuration files should have the following format: each row either starts with "#", in which case it is a comment, or contains the name of a configuration parameter, an equals sign, and the value of that configuration parameter.  whitespace around the equals sign is optional and should be ignored.  parameters may appear in the configuration file in any order.
 
+[2017-10-16 I deleted the section of the configuration file that dealt with mapping of processes to hosts.  since this mapping is controlled by command-line options, not DistAlgo code, it is inconvenient to specify it in the configuration file.  the command(s) used to run each test case should be included in your submission; see revised description of item (3) in entries in testing.txt.]
+
 the following example shows the names of configuration parameters that must be supported by your system.  your system may support additional configuration parameters for your own use.
 
 # test case name.  can be used to trigger test case specific code in client,
@@ -305,18 +307,6 @@ client_timeout = 3000
 # in section 3.3.
 head_timeout = 3000
 nonhead_timeout = 3000
-
-# MAPPING OF PROCESSES TO HOSTS
-# to simplify changing the hosts, we first specify a semicolon-separated
-# list of hosts, and then use 0-based indices into that list to specify the
-# host on which each process runs.
-# list of hosts used in this scenario
-hosts = localhost; 192.168.0.3; 192.168.0.4
-# host on which each client runs.  in this example, client 0 runs
-# on host 1, clients 1 and 2 run on host 0.
-client_hosts = 1; 0; 0
-# host on which each replica runs.  same in all configurations.
-replica_hosts = 0; 1; 2
 
 # CLIENT WORKLOAD
 workload[0] = pseudorandom(233,5)
@@ -365,13 +355,17 @@ TESTING
 
 [2017-09-12: revised this paragraph.]  testing should be thorough.  the submission should include test cases that demonstrate that all implementation requirements on the grading sheet are satisfied.  these correspond to aspects of the algorithm.  thus, the requests and failure patterns in the test cases collectively should allow a user examining the logs to determine that all of these aspects of the algorithm are implemented correctly, and the system has the expected fault-tolerance for all failures described in the CONFIGURATION section.
 
-[2017-09-12: revised this paragraph.]  in addition to targeted test cases designed to satisfy the above requirements, the submission should contain at least one larger pseudorandom "stress test" involving more clients (around 10) and more requests (around 100).
+[2017-09-12: revised this paragraph]  in addition to targeted test cases designed to satisfy the above requirements, the submission should contain at least one larger pseudorandom "stress test" involving more clients (around 10) and more requests (around 100).
 
-[2017-10-14: split this from preceding paragraph and revised it.]  passing tests requires more than absence of runtime errors.  it also requires checking that the dictionary has the expected content.  for stress tests, this check should be done programmatically (doing it manually is impractical, because stress tests are large), by having client(s) execute queries at the end of the test to determine the content of the dictionary, check whether the results are as expected, and if not, report an error.  for targeted test cases, I recommend doing this check programmatically, but it can be done manually by examination of the log file if the test case is sufficiently short and simple, although even that will be tedious if you need to repeatedly re-run tests and manually re-check the log files as you modify and debug your system.  for each test case, the programmatic checks, if any, should be described briefly in the entry for the test case in testing.txt (see item (5) below).
+[2017-10-14: split this from preceding paragraph and revised it]  passing tests requires more than absence of runtime errors.  it also requires checking that the dictionary has the expected content.  for stress tests, this check should be done programmatically (doing it manually is impractical, because stress tests are large), by having client(s) execute queries at the end of the test to determine the content of the dictionary, check whether the results are as expected, and if not, report an error.  for targeted test cases, I recommend doing this check programmatically, but it can be done manually by examination of the log file if the test case is sufficiently short and simple, although even that will be tedious if you need to repeatedly re-run tests and manually re-check the log files as you modify and debug your system.  for each test case, the programmatic checks, if any, should be described briefly in the entry for the test case in testing.txt (see item (5) below).
 
 [2017-10-14: added this.]  the check can be done in various ways.  for example, each client can maintain a local dictionary that it updates after each request and, at the end, check consistency of the results of queries on its local dictionary and the results of queries to the service; or, each client can use more specialized auxiliary data structures and checks suitable for the test case. since different code is needed to check the results for different test cases, the code may be guarded by an if-statement with a condition on the test_case_name.
 
-[2017-10-14: added this.]  for test cases involving multiple clients, the check can be distributed among the clients, by having each client check whether its requests were handled correctly.  for example, suppose client A issues 100 requests to append 'a', and client B issues 50 requests to append 'b', to the same key.  client A can get the string and check whether it contains 100 'a', and client B can get the string and check whether it contains 100 'b'.  alternatively, a centralized check can be used, by having a parent process create the (other) clients, wait for a message from each child indicating that it finished, and then check the content of the dictionary.
+[2017-10-14: added this] for test cases involving multiple clients, the check can be distributed among the clients, by having each client check whether its requests were handled correctly.  for example, suppose client A issues 100 requests to append 'a', and client B issues 50 requests to append 'b', to the same key.  client A can get the string and check whether it contains 100 'a', and client B can get the string and check whether it contains 100 'b'.  alternatively, a centralized check can be used, by having a parent process create the (other) clients, wait for a message from each child indicating that it finished, and then check the content of the dictionary.
+
+[2017-10-15: added the following] the checks, whether performed in a decentralized way by each client, or in a centralized way by a parent process, can be based on knowledge of all requests issued by all clients, because the clients are not independent: all client workloads were designed together as part of the overall design of the test case.  the content of the dictonary might not be uniquely determined by the workload: it can depend on the order in which requests from different clients are interleaved, if the operations don't commute.  correctness checks need to take this into account.  for example, if one client puts value 'a' to a key, and another client puts value 'b' to the same key, then the appropriate check is that the final value associated with the key is 'a' or 'b'.
+
+[2017-10-15: added the following] I am stretching the term "client" to include both the client-side part of the BCR algorithm and the implementation of a test suite.  it would be good style to separate these in your code (and in my description, sorry), but it is not required.
 
 testing should include configurations with t=1 and t=2.
 
@@ -381,7 +375,7 @@ your submission should contain:
 
 the log files produced by running all test cases.
 
-a file named testing.txt with an entry for each test case.  each entry should include: (1) brief description of the scenario (i.e., the client requests, failure scenario, etc.), (2) the name of the configuration file used to run the test case, (3) other information (if any) needed to run the test case, e.g., that certain files should contain certain content, (4) the name of the log file produced by running the test case, [2017-10-14 added next item], (5) programmatic check of correctness of content of dictionary (if any), (6) the outcome (pass or fail), with a brief explanation of the problem in case of failure.
+a file named testing.txt with an entry for each test case.  each entry should include: (1) brief description of the scenario (i.e., the client requests, failure scenario, etc.), (2) the name of the configuration file used to run the test case, [2017-10-16] revised next item] (3) other information (if any) needed to run the test case, including the commands(s) used to run it (or the name of a shell script containing those commands) and any requirements such as that certain files should contain certain content, (4) the name of the log file produced by running the test case, [2017-10-14 added next item], (5) description of the programmatic check of correctness of content of dictionary (if any), (6) the outcome (pass or fail), with a brief explanation of the problem in case of failure.
 
 ------------------------------------------------------------
 README
