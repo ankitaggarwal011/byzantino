@@ -16,7 +16,7 @@ class ClientConfig:
         self.test_case_name = dict['test_case_name']
         self.num_client = int(dict['num_client'])
         self.num_failures = int(dict['t'])
-        self.client_timeout = int(dict['client_timeout'])
+        self.client_timeout = int(dict['client_timeout']) / 1000
         self.hosts = dict['hosts'].split(';')
         for i, host in enumerate(self.hosts):
             self.hosts[i] = host.strip()
@@ -83,8 +83,8 @@ def generate_pseudo_random_load(seed_str, count_str):
     operations = []
 
     random.seed(seed)
-    for i in range(1, count):
-        opcode = random.choice(range(1, 4))
+    for i in range(count):
+        opcode = random.choice(range(1, 5))
         if opcode == ClientOperationType.get.value:
             operations.append(ClientOperation('get', [get_random_word(word_len), ]))
         elif opcode == ClientOperationType.put.value:
@@ -92,7 +92,8 @@ def generate_pseudo_random_load(seed_str, count_str):
         elif opcode == ClientOperationType.append.value:
             operations.append(ClientOperation('append', [get_random_word(word_len), get_random_word(word_len)]))
         elif opcode == ClientOperationType.slice.value:
-            operations.append(ClientOperation('slice', [get_random_word(word_len), '1..3']))
+            range1 = random.choice(range(word_len))
+            operations.append(ClientOperation('slice', [get_random_word(word_len), range1]))
     return operations
 
 
@@ -125,8 +126,8 @@ class ReplicaConfig:
         self.test_case_name = dict['test_case_name']
         self.num_failures = int(dict['t'])
         self.num_replica = 2 * self.num_failures + 1
-        self.head_timeout = int(dict['head_timeout'])
-        self.nonhead_timeout = int(dict['nonhead_timeout'])
+        self.head_timeout = int(dict['head_timeout']) / 1000
+        self.nonhead_timeout = int(dict['nonhead_timeout']) / 1000
         self.hosts = dict['hosts'].split(';')
         for i, host in enumerate(self.hosts):
             self.hosts[i] = host.strip()
