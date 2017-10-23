@@ -9,7 +9,7 @@ import read_config
 import sys
 import getopt
 
-# config(channel = {'reliable', 'fifo'})
+config(channel = {'reliable', 'fifo'})
 
 class Replica(process):
     
