@@ -93,7 +93,10 @@ def generate_pseudo_random_load(seed_str, count_str):
             operations.append(ClientOperation('append', [get_random_word(word_len), get_random_word(word_len)]))
         elif opcode == ClientOperationType.slice.value:
             range1 = random.choice(range(word_len))
-            operations.append(ClientOperation('slice', [get_random_word(word_len), range1]))
+            range2 = random.choice(range(word_len))
+            lower = min(range1, range2)
+            upper = max(range1, range2)
+            operations.append(ClientOperation('slice', [get_random_word(word_len), '{}:{}'.format(str(lower), str(upper))]))
     return operations
 
 
