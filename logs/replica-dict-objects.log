@@ -1,0 +1,9 @@
+[2017-10-22 23:23:26,059] bcr.Node_<Node_:ef001>:ERROR: Unrecoverable error in node process: FileNotFoundError(2, 'No such file or directory')
+Traceback (most recent call last):
+  File "C:\Python35\lib\site-packages\da\sim.py", line 977, in _delayed_start
+    return self.run()
+  File "src\bcr.py", line 718, in run
+    config_dict = read_config.parse_config_file(infile)
+  File "src\read_config.py", line 7, in parse_config_file
+    with open(filename, 'r') as f:
+FileNotFoundError: [Errno 2] No such file or directory: 'config/replica-dict-objects.txt'
