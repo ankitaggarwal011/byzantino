@@ -1,21 +1,27 @@
+# imports for encryption and hashing
 from nacl.hash import sha256
 from nacl.encoding import HexEncoder
 from nacl.signing import SigningKey, VerifyKey
 from nacl.exceptions import BadSignatureError
+
+# import for deserialization of message objects
 from ast import literal_eval
+
+# import all config objects and functions
 from config import *
-from time import time
 import read_config
+
+# misc imports
 import sys
 import getopt
+from time import time
 
+# Configure a reliable FIFO channel
 config(channel = {'reliable', 'fifo'})
 
+# Implementation of the Replica process
 class Replica(process):
-    
-    def output_wrapper(log):
-        output('[{}][TS: {}]'.format(name, str(time())), log)
-    
+    ## Replica setup method called from
     def setup(id, name, replica_failures, replica_timeout, olympus_public_key):
         output_wrapper('replica failures: ' + str(replica_failures))
         self.status = 0 # PENDING
@@ -317,6 +323,10 @@ class Replica(process):
                 return (True, failure)
 
         return (False, None)
+
+    ## Utility method for logging, prepends process name and time to each log statement
+    def output_wrapper(log):
+        output('[{}][TS: {}]'.format(name, str(time())), log)
 
 class Olympus(process):
 
