@@ -13,6 +13,10 @@ python3 -m da <src file> -i <config file>
 e.g.
 python3 -m da src/bcr.da -i config/basic_multi_client.txt
 
+For multi-node:
+python3 -m da -n OlympusNode src/bcr_multi_node.da -i config/basic_multi_client.txt
+python3 -m da -n ClientNode src/bcr_multi_node.da -i config/basic_multi_client.txt
+
 
 WORKLOAD GENERATION
 ===================
@@ -53,6 +57,8 @@ MAIN FILES
 Implementation of the Replica, Olympus, and Client: src/bcr.da
 Setting up configuration for the program and workload generation: src/config.py
 Parsing the configuration file: src/read_config.py
+
+Implementation for multi-node setup: src/bcr_multi_node.da
 
 CODE SIZE
 =========
