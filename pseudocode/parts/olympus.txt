@@ -69,21 +69,24 @@ Olympus:
         for i = 1 to num_replicas in parallel:
             send('wedge_request') to replica[i]
 
-        <histories, checkpoint_proofs, hashed_running_states> =
-        wait_aggregate(num_replicas, on_message_received('wedge', history, checkpoint_proof, hash_running_state))
-        # now we make at most T quorum attempts, each with a size of T + 1, and attempt to find a valid history
-        for i from 1 to T:
-            quorum_range = range (i to i + T + 1)
-            quorum_result_pair = is_valid_quorum(histories (i, i + T + 1), quorum_range)
-            if quorum_result_pair.first == true:
-                # now, we need to get a valid running state from our quorum, and match it against the hash we got while checking validity
-                for i in quorum_range:
-                    send('get_running_state') to replica[i]
-                    rs = wait_for_message('running_state', rs)
-                    if (hash(rs) == quorum_result_pair.second):   # this means that the running state hash computed earlier while validating quorum,
-                                                                  # matches the one sent by the currently queried replica. This means we can now reconfigure.
-                        init_replicas(rs, lh)
-                        return
+        quorum_size = 0
+        quorum_range = []
+        while True:
+            wait(on_message_received('wedge', history, checkpoint_proof, hash_running_state))
+            add replica to quorum <histories, checkpoint_proofs, hashed_running_states>
+            quorum_size += 1
+            quorum_range.append(replica)
+            # now we will make a quorum with a size of T + 1, and attempt to find a valid history
+            quorum_result_pair = is_valid_quorum(histories, quorum_range)
+            if quorum_size > T + 1 and is_valid_quorum(...):
+                break
+            for each replica in quorum_range:
+                send('get_running_state') to replica[i]
+                rs = wait_for_message('running_state', rs, timeout)
+                if (hash(rs) == quorum_result_pair.second):   # this means that the running state hash computed earlier while validating quorum,
+                                                              # matches the one sent by the currently queried replica. This means we can now reconfigure.
+                init_replicas(rs, lh)
+                return
         return
 
 
