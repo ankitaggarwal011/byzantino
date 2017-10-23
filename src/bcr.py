@@ -17,24 +17,24 @@ PatternExpr_368 = da.pat.TuplePattern([da.pat.FreePattern(None), da.pat.TuplePat
 PatternExpr_748 = da.pat.TuplePattern([da.pat.FreePattern(None), da.pat.TuplePattern([da.pat.FreePattern(None), da.pat.FreePattern(None), da.pat.FreePattern(None)]), da.pat.BoundPattern('_BoundPattern755_')])
 PatternExpr_984 = da.pat.TuplePattern([da.pat.FreePattern(None), da.pat.TuplePattern([da.pat.FreePattern(None), da.pat.FreePattern(None), da.pat.FreePattern(None)]), da.pat.BoundPattern('_BoundPattern991_')])
 PatternExpr_1314 = da.pat.TuplePattern([da.pat.FreePattern(None), da.pat.TuplePattern([da.pat.FreePattern(None), da.pat.FreePattern(None), da.pat.FreePattern(None)]), da.pat.BoundPattern('_BoundPattern1321_')])
-PatternExpr_2195 = da.pat.TuplePattern([da.pat.ConstantPattern('ACK'), da.pat.FreePattern('sender')])
-PatternExpr_2214 = da.pat.TuplePattern([da.pat.ConstantPattern('Get_configuration'), da.pat.FreePattern('client'), da.pat.FreePattern('client_name'), da.pat.FreePattern('client_id'), da.pat.FreePattern('client_public_key')])
-PatternExpr_2280 = da.pat.TuplePattern([da.pat.ConstantPattern('Reconfiguration'), da.pat.FreePattern('sender'), da.pat.FreePattern('proof_of_misbehavior')])
-PatternExpr_2396 = da.pat.TuplePattern([da.pat.ConstantPattern('ACK'), da.pat.ConstantPattern(None)])
-PatternExpr_2419 = da.pat.ConstantPattern('Shutdown')
-PatternExpr_2403 = da.pat.TuplePattern([da.pat.FreePattern(None), da.pat.TuplePattern([da.pat.FreePattern(None), da.pat.FreePattern(None), da.pat.FreePattern(None)]), da.pat.TuplePattern([da.pat.ConstantPattern('ACK'), da.pat.ConstantPattern(None)])])
-PatternExpr_2423 = da.pat.TuplePattern([da.pat.FreePattern(None), da.pat.TuplePattern([da.pat.FreePattern(None), da.pat.FreePattern(None), da.pat.FreePattern(None)]), da.pat.ConstantPattern('Shutdown')])
-PatternExpr_2536 = da.pat.TuplePattern([da.pat.ConstantPattern('Configuration'), da.pat.FreePattern('replicas_'), da.pat.FreePattern('head_')])
-PatternExpr_2545 = da.pat.FreePattern('olympus')
-PatternExpr_2568 = da.pat.TuplePattern([da.pat.ConstantPattern('Keys'), da.pat.FreePattern('replica_public_keys_'), da.pat.FreePattern('olympus_public_key_')])
-PatternExpr_2577 = da.pat.FreePattern('olympus')
-PatternExpr_2613 = da.pat.TuplePattern([da.pat.FreePattern('sender_id'), da.pat.ConstantPattern('Operation_result'), da.pat.FreePattern('request_id'), da.pat.FreePattern('result_shuttle')])
-PatternExpr_2794 = da.pat.TuplePattern([da.pat.ConstantPattern('Configuration'), da.pat.BoundPattern('_BoundPattern2797_'), da.pat.BoundPattern('_BoundPattern2798_')])
-PatternExpr_2848 = da.pat.BoundPattern('_BoundPattern2854_')
-PatternExpr_2920 = da.pat.ConstantPattern('Shutdown')
-PatternExpr_2801 = da.pat.TuplePattern([da.pat.FreePattern(None), da.pat.TuplePattern([da.pat.FreePattern(None), da.pat.FreePattern(None), da.pat.FreePattern(None)]), da.pat.TuplePattern([da.pat.ConstantPattern('Configuration'), da.pat.BoundPattern('_BoundPattern2811_'), da.pat.BoundPattern('_BoundPattern2812_')])])
-PatternExpr_2856 = da.pat.TuplePattern([da.pat.FreePattern(None), da.pat.TuplePattern([da.pat.FreePattern(None), da.pat.FreePattern(None), da.pat.FreePattern(None)]), da.pat.BoundPattern('_BoundPattern2863_')])
-PatternExpr_2924 = da.pat.TuplePattern([da.pat.FreePattern(None), da.pat.TuplePattern([da.pat.FreePattern(None), da.pat.FreePattern(None), da.pat.FreePattern(None)]), da.pat.ConstantPattern('Shutdown')])
+PatternExpr_2208 = da.pat.TuplePattern([da.pat.ConstantPattern('ACK'), da.pat.FreePattern('sender')])
+PatternExpr_2227 = da.pat.TuplePattern([da.pat.ConstantPattern('Get_configuration'), da.pat.FreePattern('client'), da.pat.FreePattern('client_name'), da.pat.FreePattern('client_id'), da.pat.FreePattern('client_public_key')])
+PatternExpr_2293 = da.pat.TuplePattern([da.pat.ConstantPattern('Reconfiguration'), da.pat.FreePattern('sender'), da.pat.FreePattern('proof_of_misbehavior')])
+PatternExpr_2409 = da.pat.TuplePattern([da.pat.ConstantPattern('ACK'), da.pat.ConstantPattern(None)])
+PatternExpr_2432 = da.pat.ConstantPattern('Shutdown')
+PatternExpr_2416 = da.pat.TuplePattern([da.pat.FreePattern(None), da.pat.TuplePattern([da.pat.FreePattern(None), da.pat.FreePattern(None), da.pat.FreePattern(None)]), da.pat.TuplePattern([da.pat.ConstantPattern('ACK'), da.pat.ConstantPattern(None)])])
+PatternExpr_2436 = da.pat.TuplePattern([da.pat.FreePattern(None), da.pat.TuplePattern([da.pat.FreePattern(None), da.pat.FreePattern(None), da.pat.FreePattern(None)]), da.pat.ConstantPattern('Shutdown')])
+PatternExpr_2549 = da.pat.TuplePattern([da.pat.ConstantPattern('Configuration'), da.pat.FreePattern('replicas_'), da.pat.FreePattern('head_')])
+PatternExpr_2558 = da.pat.FreePattern('olympus')
+PatternExpr_2581 = da.pat.TuplePattern([da.pat.ConstantPattern('Keys'), da.pat.FreePattern('replica_public_keys_'), da.pat.FreePattern('olympus_public_key_')])
+PatternExpr_2590 = da.pat.FreePattern('olympus')
+PatternExpr_2626 = da.pat.TuplePattern([da.pat.FreePattern('sender_id'), da.pat.ConstantPattern('Operation_result'), da.pat.FreePattern('request_id'), da.pat.FreePattern('result_shuttle')])
+PatternExpr_2807 = da.pat.TuplePattern([da.pat.ConstantPattern('Configuration'), da.pat.BoundPattern('_BoundPattern2810_'), da.pat.BoundPattern('_BoundPattern2811_')])
+PatternExpr_2861 = da.pat.BoundPattern('_BoundPattern2867_')
+PatternExpr_2933 = da.pat.ConstantPattern('Shutdown')
+PatternExpr_2814 = da.pat.TuplePattern([da.pat.FreePattern(None), da.pat.TuplePattern([da.pat.FreePattern(None), da.pat.FreePattern(None), da.pat.FreePattern(None)]), da.pat.TuplePattern([da.pat.ConstantPattern('Configuration'), da.pat.BoundPattern('_BoundPattern2824_'), da.pat.BoundPattern('_BoundPattern2825_')])])
+PatternExpr_2869 = da.pat.TuplePattern([da.pat.FreePattern(None), da.pat.TuplePattern([da.pat.FreePattern(None), da.pat.FreePattern(None), da.pat.FreePattern(None)]), da.pat.BoundPattern('_BoundPattern2876_')])
+PatternExpr_2937 = da.pat.TuplePattern([da.pat.FreePattern(None), da.pat.TuplePattern([da.pat.FreePattern(None), da.pat.FreePattern(None), da.pat.FreePattern(None)]), da.pat.ConstantPattern('Shutdown')])
 _config_object = {'channel': {'reliable', 'fifo'}}
 from nacl.hash import sha256
 from nacl.encoding import HexEncoder
@@ -57,8 +57,8 @@ class Replica(da.DistProcess):
         self._ReplicaReceivedEvent_8 = []
         self._events.extend([da.pat.EventPattern(da.pat.ReceivedEvent, '_ReplicaReceivedEvent_0', PatternExpr_362, sources=[PatternExpr_366], destinations=None, timestamps=None, record_history=True, handlers=[]), da.pat.EventPattern(da.pat.ReceivedEvent, '_ReplicaReceivedEvent_1', PatternExpr_380, sources=[PatternExpr_384], destinations=None, timestamps=None, record_history=None, handlers=[self._Replica_handler_379]), da.pat.EventPattern(da.pat.ReceivedEvent, '_ReplicaReceivedEvent_2', PatternExpr_398, sources=None, destinations=None, timestamps=None, record_history=None, handlers=[self._Replica_handler_397]), da.pat.EventPattern(da.pat.ReceivedEvent, '_ReplicaReceivedEvent_3', PatternExpr_472, sources=[PatternExpr_479], destinations=None, timestamps=None, record_history=None, handlers=[self._Replica_handler_471]), da.pat.EventPattern(da.pat.ReceivedEvent, '_ReplicaReceivedEvent_4', PatternExpr_499, sources=None, destinations=None, timestamps=None, record_history=None, handlers=[self._Replica_handler_498]), da.pat.EventPattern(da.pat.ReceivedEvent, '_ReplicaReceivedEvent_5', PatternExpr_537, sources=None, destinations=None, timestamps=None, record_history=None, handlers=[self._Replica_handler_536]), da.pat.EventPattern(da.pat.ReceivedEvent, '_ReplicaReceivedEvent_6', PatternExpr_740, sources=None, destinations=None, timestamps=None, record_history=True, handlers=[]), da.pat.EventPattern(da.pat.ReceivedEvent, '_ReplicaReceivedEvent_7', PatternExpr_976, sources=None, destinations=None, timestamps=None, record_history=True, handlers=[]), da.pat.EventPattern(da.pat.ReceivedEvent, '_ReplicaReceivedEvent_8', PatternExpr_1306, sources=None, destinations=None, timestamps=None, record_history=True, handlers=[]), da.pat.EventPattern(da.pat.ReceivedEvent, '_ReplicaReceivedEvent_9', PatternExpr_1338, sources=None, destinations=None, timestamps=None, record_history=None, handlers=[self._Replica_handler_1337])])
 
-    def setup(self, id, name, replica_failures, replica_timeout, olympus_public_key, **rest_3496):
-        super().setup(id=id, name=name, replica_failures=replica_failures, replica_timeout=replica_timeout, olympus_public_key=olympus_public_key, **rest_3496)
+    def setup(self, id, name, replica_failures, replica_timeout, olympus_public_key, **rest_3522):
+        super().setup(id=id, name=name, replica_failures=replica_failures, replica_timeout=replica_timeout, olympus_public_key=olympus_public_key, **rest_3522)
         self._state.id = id
         self._state.name = name
         self._state.replica_failures = replica_failures
@@ -113,8 +113,9 @@ class Replica(da.DistProcess):
                     return ''
         elif (type == 'slice'):
             if (len(args) > 1):
-                if ((args[0] in self._state.running_state) and (args[1] <= len(self._state.running_state[args[0]]))):
-                    self._state.running_state[args[0]] = self._state.running_state[args[0]][int(args[1]):]
+                (lower, upper) = map(int, args[1].split(':'))
+                if ((args[0] in self._state.running_state) and (lower >= 0) and (upper <= len(self._state.running_state[args[0]]))):
+                    self._state.running_state[args[0]] = self._state.running_state[args[0]][lower:upper]
                     return self._state.running_state[args[0]]
                 else:
                     return 'fail'
@@ -401,10 +402,10 @@ class Olympus(da.DistProcess):
         super().__init__(procimpl, props)
         self._OlympusReceivedEvent_3 = []
         self._OlympusReceivedEvent_4 = []
-        self._events.extend([da.pat.EventPattern(da.pat.ReceivedEvent, '_OlympusReceivedEvent_0', PatternExpr_2195, sources=None, destinations=None, timestamps=None, record_history=None, handlers=[self._Olympus_handler_2194]), da.pat.EventPattern(da.pat.ReceivedEvent, '_OlympusReceivedEvent_1', PatternExpr_2214, sources=None, destinations=None, timestamps=None, record_history=None, handlers=[self._Olympus_handler_2213]), da.pat.EventPattern(da.pat.ReceivedEvent, '_OlympusReceivedEvent_2', PatternExpr_2280, sources=None, destinations=None, timestamps=None, record_history=None, handlers=[self._Olympus_handler_2279]), da.pat.EventPattern(da.pat.ReceivedEvent, '_OlympusReceivedEvent_3', PatternExpr_2396, sources=None, destinations=None, timestamps=None, record_history=True, handlers=[]), da.pat.EventPattern(da.pat.ReceivedEvent, '_OlympusReceivedEvent_4', PatternExpr_2419, sources=None, destinations=None, timestamps=None, record_history=True, handlers=[])])
+        self._events.extend([da.pat.EventPattern(da.pat.ReceivedEvent, '_OlympusReceivedEvent_0', PatternExpr_2208, sources=None, destinations=None, timestamps=None, record_history=None, handlers=[self._Olympus_handler_2207]), da.pat.EventPattern(da.pat.ReceivedEvent, '_OlympusReceivedEvent_1', PatternExpr_2227, sources=None, destinations=None, timestamps=None, record_history=None, handlers=[self._Olympus_handler_2226]), da.pat.EventPattern(da.pat.ReceivedEvent, '_OlympusReceivedEvent_2', PatternExpr_2293, sources=None, destinations=None, timestamps=None, record_history=None, handlers=[self._Olympus_handler_2292]), da.pat.EventPattern(da.pat.ReceivedEvent, '_OlympusReceivedEvent_3', PatternExpr_2409, sources=None, destinations=None, timestamps=None, record_history=True, handlers=[]), da.pat.EventPattern(da.pat.ReceivedEvent, '_OlympusReceivedEvent_4', PatternExpr_2432, sources=None, destinations=None, timestamps=None, record_history=True, handlers=[])])
 
-    def setup(self, name, num_replicas, all_replica_conf_failures, head_timeout, replica_timeout, **rest_3496):
-        super().setup(name=name, num_replicas=num_replicas, all_replica_conf_failures=all_replica_conf_failures, head_timeout=head_timeout, replica_timeout=replica_timeout, **rest_3496)
+    def setup(self, name, num_replicas, all_replica_conf_failures, head_timeout, replica_timeout, **rest_3522):
+        super().setup(name=name, num_replicas=num_replicas, all_replica_conf_failures=all_replica_conf_failures, head_timeout=head_timeout, replica_timeout=replica_timeout, **rest_3522)
         self._state.name = name
         self._state.num_replicas = num_replicas
         self._state.all_replica_conf_failures = all_replica_conf_failures
@@ -444,24 +445,24 @@ class Olympus(da.DistProcess):
         self.sign_and_send(('Configuration', self._id, self._state.replicas, self._state.head, self._state.tail, [self._state.replica_public_keys, self._state.configuration_number]), self._state.replicas)
         for i in range(len(self._state.replicas)):
             self.send(('Key', self._state.replica_private_keys[i]), to=self._state.replicas[i])
-        super()._label('_st_label_2393', block=False)
-        _st_label_2393 = 0
-        while (_st_label_2393 == 0):
-            _st_label_2393 += 1
-            if PatternExpr_2403.match_iter(self._OlympusReceivedEvent_3, SELF_ID=self._id):
-                _st_label_2393 += 1
+        super()._label('_st_label_2406', block=False)
+        _st_label_2406 = 0
+        while (_st_label_2406 == 0):
+            _st_label_2406 += 1
+            if PatternExpr_2416.match_iter(self._OlympusReceivedEvent_3, SELF_ID=self._id):
+                _st_label_2406 += 1
             else:
-                super()._label('_st_label_2393', block=True)
-                _st_label_2393 -= 1
-        super()._label('_st_label_2416', block=False)
-        _st_label_2416 = 0
-        while (_st_label_2416 == 0):
-            _st_label_2416 += 1
-            if PatternExpr_2423.match_iter(self._OlympusReceivedEvent_4, SELF_ID=self._id):
-                _st_label_2416 += 1
+                super()._label('_st_label_2406', block=True)
+                _st_label_2406 -= 1
+        super()._label('_st_label_2429', block=False)
+        _st_label_2429 = 0
+        while (_st_label_2429 == 0):
+            _st_label_2429 += 1
+            if PatternExpr_2436.match_iter(self._OlympusReceivedEvent_4, SELF_ID=self._id):
+                _st_label_2429 += 1
             else:
-                super()._label('_st_label_2416', block=True)
-                _st_label_2416 -= 1
+                super()._label('_st_label_2429', block=True)
+                _st_label_2429 -= 1
 
     def sign_and_send(self, data, to_):
         data = list(data)
@@ -478,26 +479,26 @@ class Olympus(da.DistProcess):
     def output_wrapper(self, log):
         self.output('[{}][TS: {}]'.format(self._state.name, str(time())), log)
 
-    def _Olympus_handler_2194(self, sender):
+    def _Olympus_handler_2207(self, sender):
         self.output_wrapper((('ACK from ' + str(sender)) + '.'))
-    _Olympus_handler_2194._labels = None
-    _Olympus_handler_2194._notlabels = None
+    _Olympus_handler_2207._labels = None
+    _Olympus_handler_2207._notlabels = None
 
-    def _Olympus_handler_2213(self, client, client_name, client_id, client_public_key):
+    def _Olympus_handler_2226(self, client, client_name, client_id, client_public_key):
         self._state.client_keys[client_id] = VerifyKey(client_public_key, encoder=HexEncoder)
         self.send(('Configuration', self._state.replicas, self._state.head), to=client)
         self.send(('Keys', self._state.replica_public_keys, self._state.public_key), to=client)
         self.send(('Client_keys', client_id, client_public_key), to=self._state.replicas)
         self.output_wrapper('Received public key: {} from client: {}'.format(str(client_public_key), str(client_name)))
         self.output_wrapper((('Configuration sent to ' + str(client_name)) + '.'))
-    _Olympus_handler_2213._labels = None
-    _Olympus_handler_2213._notlabels = None
+    _Olympus_handler_2226._labels = None
+    _Olympus_handler_2226._notlabels = None
 
-    def _Olympus_handler_2279(self, sender, proof_of_misbehavior):
+    def _Olympus_handler_2292(self, sender, proof_of_misbehavior):
         self.output_wrapper((('Reconfiguration request received from ' + str(sender)) + '.'))
         self.output_wrapper('No reconfiguration mechanism implemented yet.')
-    _Olympus_handler_2279._labels = None
-    _Olympus_handler_2279._notlabels = None
+    _Olympus_handler_2292._labels = None
+    _Olympus_handler_2292._notlabels = None
 
 class Client(da.DistProcess):
 
@@ -506,10 +507,10 @@ class Client(da.DistProcess):
         self._ClientReceivedEvent_3 = []
         self._ClientReceivedEvent_4 = []
         self._ClientReceivedEvent_5 = []
-        self._events.extend([da.pat.EventPattern(da.pat.ReceivedEvent, '_ClientReceivedEvent_0', PatternExpr_2536, sources=[PatternExpr_2545], destinations=None, timestamps=None, record_history=None, handlers=[self._Client_handler_2535]), da.pat.EventPattern(da.pat.ReceivedEvent, '_ClientReceivedEvent_1', PatternExpr_2568, sources=[PatternExpr_2577], destinations=None, timestamps=None, record_history=None, handlers=[self._Client_handler_2567]), da.pat.EventPattern(da.pat.ReceivedEvent, '_ClientReceivedEvent_2', PatternExpr_2613, sources=None, destinations=None, timestamps=None, record_history=None, handlers=[self._Client_handler_2612]), da.pat.EventPattern(da.pat.ReceivedEvent, '_ClientReceivedEvent_3', PatternExpr_2794, sources=None, destinations=None, timestamps=None, record_history=True, handlers=[]), da.pat.EventPattern(da.pat.ReceivedEvent, '_ClientReceivedEvent_4', PatternExpr_2848, sources=None, destinations=None, timestamps=None, record_history=True, handlers=[]), da.pat.EventPattern(da.pat.ReceivedEvent, '_ClientReceivedEvent_5', PatternExpr_2920, sources=None, destinations=None, timestamps=None, record_history=True, handlers=[])])
+        self._events.extend([da.pat.EventPattern(da.pat.ReceivedEvent, '_ClientReceivedEvent_0', PatternExpr_2549, sources=[PatternExpr_2558], destinations=None, timestamps=None, record_history=None, handlers=[self._Client_handler_2548]), da.pat.EventPattern(da.pat.ReceivedEvent, '_ClientReceivedEvent_1', PatternExpr_2581, sources=[PatternExpr_2590], destinations=None, timestamps=None, record_history=None, handlers=[self._Client_handler_2580]), da.pat.EventPattern(da.pat.ReceivedEvent, '_ClientReceivedEvent_2', PatternExpr_2626, sources=None, destinations=None, timestamps=None, record_history=None, handlers=[self._Client_handler_2625]), da.pat.EventPattern(da.pat.ReceivedEvent, '_ClientReceivedEvent_3', PatternExpr_2807, sources=None, destinations=None, timestamps=None, record_history=True, handlers=[]), da.pat.EventPattern(da.pat.ReceivedEvent, '_ClientReceivedEvent_4', PatternExpr_2861, sources=None, destinations=None, timestamps=None, record_history=True, handlers=[]), da.pat.EventPattern(da.pat.ReceivedEvent, '_ClientReceivedEvent_5', PatternExpr_2933, sources=None, destinations=None, timestamps=None, record_history=True, handlers=[])])
 
-    def setup(self, client_id, olympus, request_id, client_timeout, operations, num_failures, **rest_3496):
-        super().setup(client_id=client_id, olympus=olympus, request_id=request_id, client_timeout=client_timeout, operations=operations, num_failures=num_failures, **rest_3496)
+    def setup(self, client_id, olympus, request_id, client_timeout, operations, num_failures, **rest_3522):
+        super().setup(client_id=client_id, olympus=olympus, request_id=request_id, client_timeout=client_timeout, operations=operations, num_failures=num_failures, **rest_3522)
         self._state.client_id = client_id
         self._state.olympus = olympus
         self._state.request_id = request_id
@@ -529,39 +530,39 @@ class Client(da.DistProcess):
     def run(self):
         if (self._state.replicas is None):
             self.send(('Get_configuration', self._id, self._state.name, self._state.client_id, self._state.public_key), to=self._state.olympus)
-            super()._label('_st_label_2791', block=False)
-            _st_label_2791 = 0
-            while (_st_label_2791 == 0):
-                _st_label_2791 += 1
-                if PatternExpr_2801.match_iter(self._ClientReceivedEvent_3, _BoundPattern2811_=self._state.replicas, _BoundPattern2812_=self._state.head, SELF_ID=self._id):
-                    _st_label_2791 += 1
+            super()._label('_st_label_2804', block=False)
+            _st_label_2804 = 0
+            while (_st_label_2804 == 0):
+                _st_label_2804 += 1
+                if PatternExpr_2814.match_iter(self._ClientReceivedEvent_3, _BoundPattern2824_=self._state.replicas, _BoundPattern2825_=self._state.head, SELF_ID=self._id):
+                    _st_label_2804 += 1
                 else:
-                    super()._label('_st_label_2791', block=True)
-                    _st_label_2791 -= 1
+                    super()._label('_st_label_2804', block=True)
+                    _st_label_2804 -= 1
         for op in self._state.operations:
             self.update_client_running_state(self._state.client_running_state, op[0], op[1])
             retry = 0
             while True:
                 self.send_request(op[0], op[1], retry)
-                super()._label('_st_label_2845', block=False)
-                _st_label_2845 = 0
+                super()._label('_st_label_2858', block=False)
+                _st_label_2858 = 0
                 self._timer_start()
-                while (_st_label_2845 == 0):
-                    _st_label_2845 += 1
-                    if PatternExpr_2856.match_iter(self._ClientReceivedEvent_4, _BoundPattern2863_=('Operation_result_' + str(self._state.request_id)), SELF_ID=self._id):
+                while (_st_label_2858 == 0):
+                    _st_label_2858 += 1
+                    if PatternExpr_2869.match_iter(self._ClientReceivedEvent_4, _BoundPattern2876_=('Operation_result_' + str(self._state.request_id)), SELF_ID=self._id):
                         break
-                        _st_label_2845 += 1
+                        _st_label_2858 += 1
                     elif self._timer_expired:
                         self.output_wrapper('Timeout: Retrying request id: {}, sending to all replicas'.format(str(self._state.request_id)))
                         retry = 1
-                        _st_label_2845 += 1
+                        _st_label_2858 += 1
                     else:
-                        super()._label('_st_label_2845', block=True, timeout=self._state.client_timeout)
-                        _st_label_2845 -= 1
+                        super()._label('_st_label_2858', block=True, timeout=self._state.client_timeout)
+                        _st_label_2858 -= 1
                 else:
-                    if (_st_label_2845 != 2):
+                    if (_st_label_2858 != 2):
                         continue
-                if (_st_label_2845 != 2):
+                if (_st_label_2858 != 2):
                     break
         self.output_wrapper((('Local running state of client after the given set of operations: ' + str(self._state.client_running_state)) + '.'))
         self.output_wrapper((('Running state of client at the server (assuming no conflicting keys from other clients) after the given set of operations: ' + str(self._state.client_running_state_sync)) + '.'))
@@ -569,15 +570,15 @@ class Client(da.DistProcess):
             self.output_wrapper('\n\nTest case passed! Actual and expected running states match.\n\n')
         else:
             self.output_wrapper("\n\nTest case failed! Actual and expected running states don't match\n\n")
-        super()._label('_st_label_2917', block=False)
-        _st_label_2917 = 0
-        while (_st_label_2917 == 0):
-            _st_label_2917 += 1
-            if PatternExpr_2924.match_iter(self._ClientReceivedEvent_5, SELF_ID=self._id):
-                _st_label_2917 += 1
+        super()._label('_st_label_2930', block=False)
+        _st_label_2930 = 0
+        while (_st_label_2930 == 0):
+            _st_label_2930 += 1
+            if PatternExpr_2937.match_iter(self._ClientReceivedEvent_5, SELF_ID=self._id):
+                _st_label_2930 += 1
             else:
-                super()._label('_st_label_2917', block=True)
-                _st_label_2917 -= 1
+                super()._label('_st_label_2930', block=True)
+                _st_label_2930 -= 1
 
     def sign_and_send(self, data, to_):
         data = list(data)
@@ -604,8 +605,9 @@ class Client(da.DistProcess):
                     return ''
         elif (type == 'slice'):
             if (len(args) > 1):
-                if ((args[0] in running_state) and (args[1] <= len(running_state[args[0]]))):
-                    running_state[args[0]] = running_state[args[0]][int(args[1]):]
+                (lower, upper) = map(int, args[1].split(':'))
+                if ((args[0] in running_state) and (lower >= 0) and (upper <= len(running_state[args[0]]))):
+                    running_state[args[0]] = running_state[args[0]][lower:upper]
                     return running_state[args[0]]
                 else:
                     return 'fail'
@@ -649,24 +651,24 @@ class Client(da.DistProcess):
     def output_wrapper(self, log):
         self.output('[{}][TS: {}]'.format(self._state.name, str(time())), log)
 
-    def _Client_handler_2535(self, replicas_, head_, olympus):
+    def _Client_handler_2548(self, replicas_, head_, olympus):
         self._state.replicas = replicas_
         self._state.head = head_
         self.output_wrapper((self._state.name + ' is configured.'))
         self.send(('ACK', self._state.name), to=olympus)
-    _Client_handler_2535._labels = None
-    _Client_handler_2535._notlabels = None
+    _Client_handler_2548._labels = None
+    _Client_handler_2548._notlabels = None
 
-    def _Client_handler_2567(self, replica_public_keys_, olympus_public_key_, olympus):
+    def _Client_handler_2580(self, replica_public_keys_, olympus_public_key_, olympus):
         self._state.replica_public_keys = [VerifyKey(key, encoder=HexEncoder) for key in replica_public_keys_]
         self._state.olympus_public_key = VerifyKey(olympus_public_key_, encoder=HexEncoder)
         self.output_wrapper('Received the public keys of replicas from Olympus')
         self.output_wrapper('Received the public key of Olympus.')
         self.send(('ACK', self._state.name), to=olympus)
-    _Client_handler_2567._labels = None
-    _Client_handler_2567._notlabels = None
+    _Client_handler_2580._labels = None
+    _Client_handler_2580._notlabels = None
 
-    def _Client_handler_2612(self, sender_id, request_id, result_shuttle):
+    def _Client_handler_2625(self, sender_id, request_id, result_shuttle):
         result_shuttle = self.verify_data_with_key(result_shuttle, self._state.replica_public_keys[sender_id])
         if (result_shuttle == None):
             self.output_wrapper((('Verification of message sent by Replica ' + str(sender_id)) + ' has failed.'))
@@ -680,8 +682,8 @@ class Client(da.DistProcess):
         if is_reconfiguration_required:
             self.output_wrapper('Misbehaviour detected in request id: {}! Sending reconfiguration request to Olympus'.format(request_id))
             self.send(('Reconfiguration', self._state.name, result_shuttle), to=self._state.olympus)
-    _Client_handler_2612._labels = None
-    _Client_handler_2612._notlabels = None
+    _Client_handler_2625._labels = None
+    _Client_handler_2625._notlabels = None
 
 def parse_program_args(argv):
     inputfile = ''

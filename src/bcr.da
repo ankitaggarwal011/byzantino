@@ -303,8 +303,9 @@ class Replica(process):
                     return ''
         elif type == 'slice':
             if len(args) > 1:
-                if args[0] in running_state and args[1] <= len(running_state[args[0]]):
-                    running_state[args[0]] = running_state[args[0]][int(args[1]):]
+                lower, upper = map(int, args[1].split(':'))
+                if args[0] in running_state and lower >= 0 and upper <= len(running_state[args[0]]):
+                    running_state[args[0]] = running_state[args[0]][lower:upper]
                     return running_state[args[0]]
                 else:
                     return 'fail'
@@ -557,8 +558,9 @@ class Client(process):
                     return ''
         elif type == 'slice':
             if len(args) > 1:
-                if args[0] in running_state and args[1] <= len(running_state[args[0]]):
-                    running_state[args[0]] = running_state[args[0]][int(args[1]):]
+                lower, upper = map(int, args[1].split(':'))
+                if args[0] in running_state and lower >= 0 and upper <= len(running_state[args[0]]):
+                    running_state[args[0]] = running_state[args[0]][lower:upper]
                     return running_state[args[0]]
                 else:
                     return 'fail'
