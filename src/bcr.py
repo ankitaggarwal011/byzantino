@@ -186,7 +186,7 @@ class Replica(da.DistProcess):
         self._state.head = head_
         self._state.tail = tail_
         config_data = self.verify_data_with_key(config_data, self._state.olympus_public_key)
-        if (config_data == None):
+        if (config_data is None):
             self.output_wrapper('Verification of message sent by Olympus has failed.')
             return
         (replica_public_keys_, self._state.configuration) = config_data
