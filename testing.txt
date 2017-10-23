@@ -116,7 +116,7 @@ Test cases
 
     Command:-
     This happens in all test scenarios with valid operations.
-    Example: python3 -m da --logfile --logfilename logs/replica-dict-objects.log -F output src/bcr.da -i config/replica-dict-objects.txt
+    Example: python3 -m da --logfile --logfilename logs/replica-dict-object.log -F output src/bcr.da -i config/replica-dict-object.txt
 
     -- Replicas: head: handle new request: assign slot, sign order stmt & result stmt, send shuttle
     Description:-
@@ -132,7 +132,7 @@ Test cases
 
     Command:-
     This happens in all test scenarios.
-    Example: python3 -m da --logfile --logfilename logs/replica-dict-objects.log -F output src/bcr.da -i config/replica-dict-objects.txt    
+    Example: python3 -m da --logfile --logfilename logs/replica-dict-object.log -F output src/bcr.da -i config/replica-dict-object.txt    
 
     -- Replica: head: handle retransmitted request as described in paper
     Description:-
@@ -140,25 +140,25 @@ Test cases
 
     Command:-
     This happens in all test scenarios.
-    Example: python3 -m da --logfile --logfilename logs/replica-dict-objects.log -F output src/bcr.da -i config/replica-dict-objects.txt  
+    Example: python3 -m da --logfile --logfilename logs/replica-dict-object.log -F output src/bcr.da -i config/replica-dict-object.txt  
 
     -- Replica: handle shuttle: check validity of order proof (incl. signatures), add signed order 10 statement and signed result statement, send updated shuttle
 
     Command:-
     This happens in all test scenarios.
-    Example: python3 -m da --logfile --logfilename logs/replica-dict-objects.log -F output src/bcr.da -i config/replica-dict-objects.txt  
+    Example: python3 -m da --logfile --logfilename logs/replica-dict-object.log -F output src/bcr.da -i config/replica-dict-object.txt  
 
     -- Replica: handle result shuttle: validate, save, and forward it
 
     Command:-
     This happens in all test scenarios.
-    Example: python3 -m da --logfile --logfilename logs/replica-dict-objects.log -F output src/bcr.da -i config/replica-dict-objects.txt  
+    Example: python3 -m da --logfile --logfilename logs/replica-dict-object.log -F output src/bcr.da -i config/replica-dict-object.txt  
 
     -- Replica: non-head: handle request: send cached result, send error, or forward request
 
     Command:-
     This happens in all test scenarios.
-    Example: python3 -m da --logfile --logfilename logs/replica-dict-objects.log -F output src/bcr.da -i config/replica-dict-objects.txt
+    Example: python3 -m da --logfile --logfilename logs/replica-dict-object.log -F output src/bcr.da -i config/replica-dict-object.txt
 
     -- Replica: fault-injection: required triggers
     -- Replica: fault-injection: fault-injection: required failures
@@ -206,3 +206,11 @@ Test cases
     Command:-
     This happens in all test scenarios with given failure triggers with failures.
     Example: python3 -m da --logfile --logfilename logs/replica-failures.log -F output src/bcr.da -i config/replica-failures.txt
+
+---------- Stress test --------------------
+Description:-
+    In stress test, we generate 3 clients with workload of 50 to load test system.
+    Expected output: no crash.
+
+    Command:-
+    python3 -m da --logfile --logfilename=logs/stress_test.txt --logfilelevel=info src/bcr.da -i config/stress_test.txt

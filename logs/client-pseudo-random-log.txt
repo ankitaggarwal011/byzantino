@@ -1376,3 +1376,574 @@ Test case passed! Actual and expected running states match.
 [2017-10-22 23:36:51,158] bcr.Replica<Replica:79403>:OUTPUT: [Head][TS: 1508729811.158085] Head has timed out while waiting for result shuttle for request id 0. Sending reconfiguration request to Olympus
 [2017-10-22 23:36:51,159] bcr.Olympus<Olympus:79402>:OUTPUT: [Olympus][TS: 1508729811.159383] Reconfiguration request received from Head.
 [2017-10-22 23:36:51,160] bcr.Olympus<Olympus:79402>:OUTPUT: [Olympus][TS: 1508729811.160095] No reconfiguration mechanism implemented yet.
+[2017-10-22 23:39:46,926] da.api<MainProcess>:INFO: <Node_:a0001> initialized at 127.0.0.1:(UdpTransport=26658, TcpTransport=20391).
+[2017-10-22 23:39:46,926] da.api<MainProcess>:INFO: Starting program <module 'bcr' from 'src/bcr.py'>...
+[2017-10-22 23:39:46,926] da.api<MainProcess>:INFO: Running iteration 1 ...
+[2017-10-22 23:39:46,927] da.api<MainProcess>:INFO: Waiting for remaining child processes to terminate...(Press "Ctrl-C" to force kill)
+[2017-10-22 23:39:46,928] bcr.Node_<Node_:a0001>:OUTPUT: [Main][TS: 1508729986.928071] Running BCR simulation for test case: basic_multi_client
+[2017-10-22 23:39:46,985] bcr.Replica<Replica:92403>:OUTPUT: [Head][TS: 1508729986.985755] replica failures: {}
+[2017-10-22 23:39:46,987] bcr.Olympus<Olympus:92402>:OUTPUT: [Olympus][TS: 1508729986.987217] Olympus created replica process: Replica 0
+[2017-10-22 23:39:46,988] bcr.Olympus<Olympus:92402>:OUTPUT: [Olympus][TS: 1508729986.988263] Olympus created keys for replica process: Replica 0. Public key: b'b140daf1c91d1c9182d92ef9aaa5e0ff79c1bd179ab5b6c32bf0f11cb4c43361'
+[2017-10-22 23:39:47,003] bcr.Replica<Replica:92404>:OUTPUT: [Replica 1][TS: 1508729987.003645] replica failures: [shuttle(0,2), drop_result_stmt()]
+[2017-10-22 23:39:47,004] bcr.Olympus<Olympus:92402>:OUTPUT: [Olympus][TS: 1508729987.004916] Olympus created replica process: Replica 1
+[2017-10-22 23:39:47,005] bcr.Olympus<Olympus:92402>:OUTPUT: [Olympus][TS: 1508729987.0058198] Olympus created keys for replica process: Replica 1. Public key: b'eb0ba879a049eb2025901cfdca5071bdf9d63556519df19a00a87502ba3de43a'
+[2017-10-22 23:39:47,021] bcr.Replica<Replica:92405>:OUTPUT: [Tail][TS: 1508729987.021823] replica failures: [shuttle(0,0), change_result(), result_shuttle(0,0), drop_result_stmt()]
+[2017-10-22 23:39:47,024] bcr.Olympus<Olympus:92402>:OUTPUT: [Olympus][TS: 1508729987.024117] Olympus created replica process: Replica 2
+[2017-10-22 23:39:47,025] bcr.Olympus<Olympus:92402>:OUTPUT: [Olympus][TS: 1508729987.025197] Olympus created keys for replica process: Replica 2. Public key: b'900621119c9ef035cfbba3e493e58c233332b67f1be1e8c0aa116152de4bb2df'
+[2017-10-22 23:39:47,027] bcr.Node_<Node_:a0001>:OUTPUT: [Main][TS: 1508729987.0275898] Workload for client 0 : [('put', ['movie', 'star']), ('append', ['movie', ' wars']), ('get', ['movie'])]
+[2017-10-22 23:39:47,036] bcr.Replica<Replica:92404>:OUTPUT: [Replica 1][TS: 1508729987.036737] Replica 1 received replica references and public keys from Olympus
+[2017-10-22 23:39:47,036] bcr.Replica<Replica:92403>:OUTPUT: [Head][TS: 1508729987.0368562] Head received replica references and public keys from Olympus
+[2017-10-22 23:39:47,037] bcr.Replica<Replica:92405>:OUTPUT: [Tail][TS: 1508729987.03778] Tail received replica references and public keys from Olympus
+[2017-10-22 23:39:47,038] bcr.Replica<Replica:92404>:OUTPUT: [Replica 1][TS: 1508729987.0384881] Replica 1 has receives its private key from Olympus.
+[2017-10-22 23:39:47,039] bcr.Replica<Replica:92405>:OUTPUT: [Tail][TS: 1508729987.039485] Tail has receives its private key from Olympus.
+[2017-10-22 23:39:47,039] bcr.Replica<Replica:92403>:OUTPUT: [Head][TS: 1508729987.0395331] Head has receives its private key from Olympus.
+[2017-10-22 23:39:47,040] bcr.Olympus<Olympus:92402>:OUTPUT: [Olympus][TS: 1508729987.04078] ACK from Replica 1.
+[2017-10-22 23:39:47,042] bcr.Olympus<Olympus:92402>:OUTPUT: [Olympus][TS: 1508729987.042202] ACK from Replica 1.
+[2017-10-22 23:39:47,042] bcr.Olympus<Olympus:92402>:OUTPUT: [Olympus][TS: 1508729987.042686] ACK from Head.
+[2017-10-22 23:39:47,043] bcr.Olympus<Olympus:92402>:OUTPUT: [Olympus][TS: 1508729987.0432289] ACK from Tail.
+[2017-10-22 23:39:47,043] bcr.Olympus<Olympus:92402>:OUTPUT: [Olympus][TS: 1508729987.043846] ACK from Tail.
+[2017-10-22 23:39:47,044] bcr.Olympus<Olympus:92402>:OUTPUT: [Olympus][TS: 1508729987.044449] ACK from Head.
+[2017-10-22 23:39:47,048] bcr.Node_<Node_:a0001>:OUTPUT: [Main][TS: 1508729987.048605] Workload for client 1 : [('put', ['name', 'saraj']), ('append', ['name', ' munjal']), ('get', ['age'])]
+[2017-10-22 23:39:47,065] bcr.Node_<Node_:a0001>:OUTPUT: [Main][TS: 1508729987.0656729] Workload for client 2 : [('put', ['qhz', 'prg']), ('get', ['dih']), ('get', ['cvh']), ('put', ['xjd', 'pkg']), ('get', ['jpq']), ('put', ['twk', 'jdq']), ('slice', ['nbm', '1:2']), ('put', ['byc', 'yyd']), ('put', ['flk', 'xqq']), ('slice', ['odw', '0:0'])]
+[2017-10-22 23:39:47,085] da.api<MainProcess>:INFO: Main process terminated.
+[2017-10-22 23:39:47,088] bcr.Client<Client:92403>:OUTPUT: [Client 0][TS: 1508729987.088369] Client 0 is configured.
+[2017-10-22 23:39:47,088] bcr.Olympus<Olympus:92402>:OUTPUT: [Olympus][TS: 1508729987.088768] Received public key: b'34dc733963de7436b75ce06c67ae27ad138dfa4a720e677d20d0989401ad22b0' from client: Client 0
+[2017-10-22 23:39:47,089] bcr.Replica<Replica:92403>:OUTPUT: [Head][TS: 1508729987.0889962] Head has received client public key: b'34dc733963de7436b75ce06c67ae27ad138dfa4a720e677d20d0989401ad22b0' for client 0
+[2017-10-22 23:39:47,089] bcr.Olympus<Olympus:92402>:OUTPUT: [Olympus][TS: 1508729987.0893052] Configuration sent to Client 0.
+[2017-10-22 23:39:47,090] bcr.Replica<Replica:92404>:OUTPUT: [Replica 1][TS: 1508729987.090441] Replica 1 has received client public key: b'34dc733963de7436b75ce06c67ae27ad138dfa4a720e677d20d0989401ad22b0' for client 0
+[2017-10-22 23:39:47,091] bcr.Replica<Replica:92405>:OUTPUT: [Tail][TS: 1508729987.091058] Tail has received client public key: b'34dc733963de7436b75ce06c67ae27ad138dfa4a720e677d20d0989401ad22b0' for client 0
+[2017-10-22 23:39:47,092] bcr.Client<Client:92403>:OUTPUT: [Client 0][TS: 1508729987.092074] Received the public keys of replicas from Olympus
+[2017-10-22 23:39:47,092] bcr.Replica<Replica:92403>:OUTPUT: [Head][TS: 1508729987.092524] put request with request id 0 received by Head.
+[2017-10-22 23:39:47,093] bcr.Replica<Replica:92403>:OUTPUT: [Head][TS: 1508729987.0930922] Head is in ACTIVE state.
+[2017-10-22 23:39:47,093] bcr.Olympus<Olympus:92402>:OUTPUT: [Olympus][TS: 1508729987.093238] Received public key: b'a6361f1f2e826c1fbd5efc9cdecdd490adedebfa9f9d5abfbfcd0ddb6b203037' from client: Client 1
+[2017-10-22 23:39:47,093] bcr.Olympus<Olympus:92402>:OUTPUT: [Olympus][TS: 1508729987.0937421] Configuration sent to Client 1.
+[2017-10-22 23:39:47,093] bcr.Client<Client:92404>:OUTPUT: [Client 1][TS: 1508729987.093811] Client 1 is configured.
+[2017-10-22 23:39:47,092] bcr.Client<Client:92403>:OUTPUT: [Client 0][TS: 1508729987.0927029] Received the public key of Olympus.
+[2017-10-22 23:39:47,096] bcr.Replica<Replica:92404>:OUTPUT: [Replica 1][TS: 1508729987.0961668] Replica 1 has received client public key: b'a6361f1f2e826c1fbd5efc9cdecdd490adedebfa9f9d5abfbfcd0ddb6b203037' for client 1
+[2017-10-22 23:39:47,096] bcr.Replica<Replica:92405>:OUTPUT: [Tail][TS: 1508729987.09609] Tail has received client public key: b'a6361f1f2e826c1fbd5efc9cdecdd490adedebfa9f9d5abfbfcd0ddb6b203037' for client 1
+[2017-10-22 23:39:47,098] bcr.Replica<Replica:92403>:OUTPUT: [Head][TS: 1508729987.097991] Head has received client public key: b'a6361f1f2e826c1fbd5efc9cdecdd490adedebfa9f9d5abfbfcd0ddb6b203037' for client 1
+[2017-10-22 23:39:47,098] bcr.Olympus<Olympus:92402>:OUTPUT: [Olympus][TS: 1508729987.098308] Received public key: b'cecc04720ea3f2d68aca5c01f591652443f2878e0c33eedbbb3da9d9d0397b07' from client: Client 2
+[2017-10-22 23:39:47,098] bcr.Olympus<Olympus:92402>:OUTPUT: [Olympus][TS: 1508729987.098878] Configuration sent to Client 2.
+[2017-10-22 23:39:47,099] bcr.Olympus<Olympus:92402>:OUTPUT: [Olympus][TS: 1508729987.099515] ACK from Client 0.
+[2017-10-22 23:39:47,099] bcr.Replica<Replica:92403>:OUTPUT: [Head][TS: 1508729987.099916] put request with request id 10000 received by Head.
+[2017-10-22 23:39:47,100] bcr.Olympus<Olympus:92402>:OUTPUT: [Olympus][TS: 1508729987.100151] ACK from Head.
+[2017-10-22 23:39:47,099] bcr.Client<Client:92405>:OUTPUT: [Client 2][TS: 1508729987.0995681] Client 2 is configured.
+[2017-10-22 23:39:47,098] bcr.Client<Client:92404>:OUTPUT: [Client 1][TS: 1508729987.0982778] Received the public keys of replicas from Olympus
+[2017-10-22 23:39:47,100] bcr.Replica<Replica:92403>:OUTPUT: [Head][TS: 1508729987.1004028] Head is in ACTIVE state.
+[2017-10-22 23:39:47,101] bcr.Client<Client:92404>:OUTPUT: [Client 1][TS: 1508729987.101797] Received the public key of Olympus.
+[2017-10-22 23:39:47,101] bcr.Replica<Replica:92404>:OUTPUT: [Replica 1][TS: 1508729987.101403] put request with request id 0 received by Replica 1.
+[2017-10-22 23:39:47,100] bcr.Olympus<Olympus:92402>:OUTPUT: [Olympus][TS: 1508729987.1007621] ACK from Replica 1.
+[2017-10-22 23:39:47,116] bcr.Replica<Replica:92404>:OUTPUT: [Replica 1][TS: 1508729987.1166239] Replica 1 is in ACTIVE state.
+[2017-10-22 23:39:47,102] bcr.Client<Client:92405>:OUTPUT: [Client 2][TS: 1508729987.102643] Received the public keys of replicas from Olympus
+[2017-10-22 23:39:47,116] bcr.Olympus<Olympus:92402>:OUTPUT: [Olympus][TS: 1508729987.1168761] ACK from Tail.
+[2017-10-22 23:39:47,117] bcr.Client<Client:92405>:OUTPUT: [Client 2][TS: 1508729987.117184] Received the public key of Olympus.
+[2017-10-22 23:39:47,117] bcr.Olympus<Olympus:92402>:OUTPUT: [Olympus][TS: 1508729987.117506] ACK from Client 1.
+[2017-10-22 23:39:47,101] bcr.Replica<Replica:92405>:OUTPUT: [Tail][TS: 1508729987.1019552] Tail has received client public key: b'cecc04720ea3f2d68aca5c01f591652443f2878e0c33eedbbb3da9d9d0397b07' for client 2
+[2017-10-22 23:39:47,117] bcr.Replica<Replica:92403>:OUTPUT: [Head][TS: 1508729987.1176069] Head has received client public key: b'cecc04720ea3f2d68aca5c01f591652443f2878e0c33eedbbb3da9d9d0397b07' for client 2
+[2017-10-22 23:39:47,118] bcr.Olympus<Olympus:92402>:OUTPUT: [Olympus][TS: 1508729987.118094] ACK from Client 0.
+[2017-10-22 23:39:47,118] bcr.Olympus<Olympus:92402>:OUTPUT: [Olympus][TS: 1508729987.11884] ACK from Replica 1.
+[2017-10-22 23:39:47,119] bcr.Replica<Replica:92403>:OUTPUT: [Head][TS: 1508729987.11904] put request with request id 20000 received by Head.
+[2017-10-22 23:39:47,119] bcr.Replica<Replica:92404>:OUTPUT: [Replica 1][TS: 1508729987.1193721] Replica 1 has received client public key: b'cecc04720ea3f2d68aca5c01f591652443f2878e0c33eedbbb3da9d9d0397b07' for client 2
+[2017-10-22 23:39:47,119] bcr.Replica<Replica:92405>:OUTPUT: [Tail][TS: 1508729987.119524] put request with request id 0 received by Tail.
+[2017-10-22 23:39:47,119] bcr.Replica<Replica:92403>:OUTPUT: [Head][TS: 1508729987.119602] Head is in ACTIVE state.
+[2017-10-22 23:39:47,119] bcr.Olympus<Olympus:92402>:OUTPUT: [Olympus][TS: 1508729987.119484] ACK from Tail.
+[2017-10-22 23:39:47,120] bcr.Replica<Replica:92405>:OUTPUT: [Tail][TS: 1508729987.1201348] Tail is in ACTIVE state.
+[2017-10-22 23:39:47,120] bcr.Olympus<Olympus:92402>:OUTPUT: [Olympus][TS: 1508729987.120627] ACK from Head.
+[2017-10-22 23:39:47,120] bcr.Replica<Replica:92404>:OUTPUT: [Replica 1][TS: 1508729987.120834] put request with request id 10000 received by Replica 1.
+[2017-10-22 23:39:47,121] bcr.Replica<Replica:92405>:OUTPUT: [Tail][TS: 1508729987.1211169] Replica Tail: Trigger shuttle failure for client_id: 0 and message count: 0, scenario: shuttle(0,0), change_result()
+[2017-10-22 23:39:47,121] bcr.Olympus<Olympus:92402>:OUTPUT: [Olympus][TS: 1508729987.1212428] ACK from Client 2.
+[2017-10-22 23:39:47,121] bcr.Replica<Replica:92404>:OUTPUT: [Replica 1][TS: 1508729987.121359] Replica 1 is in ACTIVE state.
+[2017-10-22 23:39:47,122] bcr.Olympus<Olympus:92402>:OUTPUT: [Olympus][TS: 1508729987.122414] ACK from Client 1.
+[2017-10-22 23:39:47,123] bcr.Olympus<Olympus:92402>:OUTPUT: [Olympus][TS: 1508729987.1231942] ACK from Client 2.
+[2017-10-22 23:39:47,123] bcr.Olympus<Olympus:92402>:OUTPUT: [Olympus][TS: 1508729987.123886] ACK from Tail.
+[2017-10-22 23:39:47,123] bcr.Replica<Replica:92404>:OUTPUT: [Replica 1][TS: 1508729987.123969] put request with request id 20000 received by Replica 1.
+[2017-10-22 23:39:47,124] bcr.Replica<Replica:92405>:OUTPUT: [Tail][TS: 1508729987.124374] Tail: Trigger result shuttle failure for client_id: 0 and message count: 0, scenario: result_shuttle(0,0), drop_result_stmt()
+[2017-10-22 23:39:47,124] bcr.Client<Client:92403>:OUTPUT: [Client 0][TS: 1508729987.1244678] Number of correct result proofs received :3, required majority: 2
+[2017-10-22 23:39:47,124] bcr.Olympus<Olympus:92402>:OUTPUT: [Olympus][TS: 1508729987.124518] ACK from Head.
+[2017-10-22 23:39:47,124] bcr.Replica<Replica:92404>:OUTPUT: [Replica 1][TS: 1508729987.124497] Replica 1 is in ACTIVE state.
+[2017-10-22 23:39:47,125] bcr.Olympus<Olympus:92402>:OUTPUT: [Olympus][TS: 1508729987.125227] ACK from Replica 1.
+[2017-10-22 23:39:47,125] bcr.Client<Client:92403>:OUTPUT: [Client 0][TS: 1508729987.125231] Valid result: OK received for request id: 0
+[2017-10-22 23:39:47,125] bcr.Replica<Replica:92405>:OUTPUT: [Tail][TS: 1508729987.125464] Executing failure scenario: shuttle(0,0), change_result()
+[2017-10-22 23:39:47,126] bcr.Replica<Replica:92405>:OUTPUT: [Tail][TS: 1508729987.126275] Executing failure scenario: result_shuttle(0,0), drop_result_stmt()
+[2017-10-22 23:39:47,127] bcr.Replica<Replica:92403>:OUTPUT: [Head][TS: 1508729987.1275468] append request with request id 1 received by Head.
+[2017-10-22 23:39:47,128] bcr.Replica<Replica:92403>:OUTPUT: [Head][TS: 1508729987.128513] Head is in ACTIVE state.
+[2017-10-22 23:39:47,130] bcr.Replica<Replica:92405>:OUTPUT: [Tail][TS: 1508729987.129983] Result shuttle is at Tail.
+[2017-10-22 23:39:47,131] bcr.Replica<Replica:92404>:OUTPUT: [Replica 1][TS: 1508729987.1314921] Result shuttle sent by Replica 2 is not valid.
+[2017-10-22 23:39:47,131] bcr.Replica<Replica:92405>:OUTPUT: [Tail][TS: 1508729987.131685] put request with request id 10000 received by Tail.
+[2017-10-22 23:39:47,132] bcr.Replica<Replica:92405>:OUTPUT: [Tail][TS: 1508729987.1320949] Tail is in ACTIVE state.
+[2017-10-22 23:39:47,133] bcr.Olympus<Olympus:92402>:OUTPUT: [Olympus][TS: 1508729987.133163] Reconfiguration request received from Replica 1.
+[2017-10-22 23:39:47,133] bcr.Replica<Replica:92404>:OUTPUT: [Replica 1][TS: 1508729987.133792] append request with request id 1 received by Replica 1.
+[2017-10-22 23:39:47,134] bcr.Olympus<Olympus:92402>:OUTPUT: [Olympus][TS: 1508729987.134185] No reconfiguration mechanism implemented yet.
+[2017-10-22 23:39:47,134] bcr.Replica<Replica:92404>:OUTPUT: [Replica 1][TS: 1508729987.1345541] Replica 1 is in ACTIVE state.
+[2017-10-22 23:39:47,135] bcr.Replica<Replica:92405>:OUTPUT: [Tail][TS: 1508729987.1359842] put request with request id 20000 received by Tail.
+[2017-10-22 23:39:47,136] bcr.Client<Client:92404>:OUTPUT: [Client 1][TS: 1508729987.1362891] Number of correct result proofs received :3, required majority: 2
+[2017-10-22 23:39:47,136] bcr.Replica<Replica:92405>:OUTPUT: [Tail][TS: 1508729987.1365278] Tail is in ACTIVE state.
+[2017-10-22 23:39:47,136] bcr.Client<Client:92404>:OUTPUT: [Client 1][TS: 1508729987.1367521] Valid result: OK received for request id: 10000
+[2017-10-22 23:39:47,138] bcr.Replica<Replica:92403>:OUTPUT: [Head][TS: 1508729987.138064] append request with request id 10001 received by Head.
+[2017-10-22 23:39:47,138] bcr.Replica<Replica:92403>:OUTPUT: [Head][TS: 1508729987.138655] Head is in ACTIVE state.
+[2017-10-22 23:39:47,139] bcr.Client<Client:92405>:OUTPUT: [Client 2][TS: 1508729987.1392581] Number of correct result proofs received :3, required majority: 2
+[2017-10-22 23:39:47,139] bcr.Client<Client:92405>:OUTPUT: [Client 2][TS: 1508729987.1398] Valid result: OK received for request id: 20000
+[2017-10-22 23:39:47,140] bcr.Replica<Replica:92405>:OUTPUT: [Tail][TS: 1508729987.1400661] Result shuttle is at Tail.
+[2017-10-22 23:39:47,140] bcr.Replica<Replica:92404>:OUTPUT: [Replica 1][TS: 1508729987.1402712] append request with request id 10001 received by Replica 1.
+[2017-10-22 23:39:47,140] bcr.Replica<Replica:92404>:OUTPUT: [Replica 1][TS: 1508729987.140688] Replica 1 is in ACTIVE state.
+[2017-10-22 23:39:47,140] bcr.Replica<Replica:92405>:OUTPUT: [Tail][TS: 1508729987.140946] append request with request id 1 received by Tail.
+[2017-10-22 23:39:47,141] bcr.Replica<Replica:92405>:OUTPUT: [Tail][TS: 1508729987.141463] Tail is in ACTIVE state.
+[2017-10-22 23:39:47,141] bcr.Replica<Replica:92403>:OUTPUT: [Head][TS: 1508729987.14159] get request with request id 20001 received by Head.
+[2017-10-22 23:39:47,142] bcr.Replica<Replica:92403>:OUTPUT: [Head][TS: 1508729987.142058] Head is in ACTIVE state.
+[2017-10-22 23:39:47,143] bcr.Client<Client:92403>:OUTPUT: [Client 0][TS: 1508729987.1439092] Number of correct result proofs received :3, required majority: 2
+[2017-10-22 23:39:47,144] bcr.Replica<Replica:92404>:OUTPUT: [Replica 1][TS: 1508729987.144258] Result shuttle is at Replica 1.
+[2017-10-22 23:39:47,144] bcr.Client<Client:92403>:OUTPUT: [Client 0][TS: 1508729987.144515] Valid result: OK received for request id: 1
+[2017-10-22 23:39:47,144] bcr.Replica<Replica:92403>:OUTPUT: [Head][TS: 1508729987.144883] Result shuttle is at Head.
+[2017-10-22 23:39:47,145] bcr.Replica<Replica:92405>:OUTPUT: [Tail][TS: 1508729987.145003] Result shuttle is at Tail.
+[2017-10-22 23:39:47,145] bcr.Replica<Replica:92404>:OUTPUT: [Replica 1][TS: 1508729987.145709] get request with request id 20001 received by Replica 1.
+[2017-10-22 23:39:47,145] bcr.Replica<Replica:92405>:OUTPUT: [Tail][TS: 1508729987.145877] append request with request id 10001 received by Tail.
+[2017-10-22 23:39:47,146] bcr.Replica<Replica:92405>:OUTPUT: [Tail][TS: 1508729987.1462982] Tail is in ACTIVE state.
+[2017-10-22 23:39:47,146] bcr.Replica<Replica:92404>:OUTPUT: [Replica 1][TS: 1508729987.146372] Replica 1 is in ACTIVE state.
+[2017-10-22 23:39:47,146] bcr.Replica<Replica:92403>:OUTPUT: [Head][TS: 1508729987.1465569] get request with request id 2 received by Head.
+[2017-10-22 23:39:47,146] bcr.Replica<Replica:92403>:OUTPUT: [Head][TS: 1508729987.1469781] Head is in ACTIVE state.
+[2017-10-22 23:39:47,148] bcr.Client<Client:92404>:OUTPUT: [Client 1][TS: 1508729987.1482298] Number of correct result proofs received :3, required majority: 2
+[2017-10-22 23:39:47,148] bcr.Client<Client:92404>:OUTPUT: [Client 1][TS: 1508729987.14895] Valid result: OK received for request id: 10001
+[2017-10-22 23:39:47,149] bcr.Replica<Replica:92404>:OUTPUT: [Replica 1][TS: 1508729987.1494389] Result shuttle is at Replica 1.
+[2017-10-22 23:39:47,149] bcr.Replica<Replica:92405>:OUTPUT: [Tail][TS: 1508729987.149555] Result shuttle is at Tail.
+[2017-10-22 23:39:47,150] bcr.Replica<Replica:92403>:OUTPUT: [Head][TS: 1508729987.150006] Result shuttle is at Head.
+[2017-10-22 23:39:47,150] bcr.Replica<Replica:92404>:OUTPUT: [Replica 1][TS: 1508729987.150794] get request with request id 2 received by Replica 1.
+[2017-10-22 23:39:47,151] bcr.Replica<Replica:92405>:OUTPUT: [Tail][TS: 1508729987.1514618] Result shuttle is at Tail.
+[2017-10-22 23:39:47,151] bcr.Replica<Replica:92403>:OUTPUT: [Head][TS: 1508729987.151594] get request with request id 10002 received by Head.
+[2017-10-22 23:39:47,151] bcr.Replica<Replica:92404>:OUTPUT: [Replica 1][TS: 1508729987.1517131] Replica 1 is in ACTIVE state.
+[2017-10-22 23:39:47,152] bcr.Replica<Replica:92403>:OUTPUT: [Head][TS: 1508729987.152139] Head is in ACTIVE state.
+[2017-10-22 23:39:47,152] bcr.Replica<Replica:92405>:OUTPUT: [Tail][TS: 1508729987.152148] get request with request id 20001 received by Tail.
+[2017-10-22 23:39:47,152] bcr.Replica<Replica:92405>:OUTPUT: [Tail][TS: 1508729987.1526132] Tail is in ACTIVE state.
+[2017-10-22 23:39:47,152] bcr.Replica<Replica:92404>:OUTPUT: [Replica 1][TS: 1508729987.152798] Replica Replica 1: Trigger shuttle failure for client_id: 0 and message count: 2, scenario: shuttle(0,2), drop_result_stmt()
+[2017-10-22 23:39:47,154] bcr.Client<Client:92405>:OUTPUT: [Client 2][TS: 1508729987.1545868] Number of correct result proofs received :3, required majority: 2
+[2017-10-22 23:39:47,154] bcr.Replica<Replica:92404>:OUTPUT: [Replica 1][TS: 1508729987.1546571] Executing failure scenario: shuttle(0,2), drop_result_stmt()
+[2017-10-22 23:39:47,155] bcr.Client<Client:92405>:OUTPUT: [Client 2][TS: 1508729987.155317] Valid result:  received for request id: 20001
+[2017-10-22 23:39:47,155] bcr.Replica<Replica:92405>:OUTPUT: [Tail][TS: 1508729987.1559522] Result shuttle is at Tail.
+[2017-10-22 23:39:47,156] bcr.Replica<Replica:92404>:OUTPUT: [Replica 1][TS: 1508729987.156585] Result shuttle is at Replica 1.
+[2017-10-22 23:39:47,156] bcr.Replica<Replica:92405>:OUTPUT: [Tail][TS: 1508729987.1569679] get request with request id 2 received by Tail.
+[2017-10-22 23:39:47,157] bcr.Replica<Replica:92405>:OUTPUT: [Tail][TS: 1508729987.157459] Tail is in ACTIVE state.
+[2017-10-22 23:39:47,157] bcr.Replica<Replica:92403>:OUTPUT: [Head][TS: 1508729987.157973] Result shuttle sent by Replica 1 is not valid.
+[2017-10-22 23:39:47,159] bcr.Replica<Replica:92404>:OUTPUT: [Replica 1][TS: 1508729987.1590242] Result shuttle is at Replica 1.
+[2017-10-22 23:39:47,159] bcr.Replica<Replica:92403>:OUTPUT: [Head][TS: 1508729987.1596968] get request with request id 20002 received by Head.
+[2017-10-22 23:39:47,160] bcr.Replica<Replica:92403>:OUTPUT: [Head][TS: 1508729987.160185] Head is in ACTIVE state.
+[2017-10-22 23:39:47,160] bcr.Replica<Replica:92404>:OUTPUT: [Replica 1][TS: 1508729987.1605818] get request with request id 10002 received by Replica 1.
+[2017-10-22 23:39:47,161] bcr.Replica<Replica:92404>:OUTPUT: [Replica 1][TS: 1508729987.161081] Replica 1 is in ACTIVE state.
+[2017-10-22 23:39:47,161] bcr.Olympus<Olympus:92402>:OUTPUT: [Olympus][TS: 1508729987.161474] Reconfiguration request received from Head.
+[2017-10-22 23:39:47,162] bcr.Olympus<Olympus:92402>:OUTPUT: [Olympus][TS: 1508729987.161995] No reconfiguration mechanism implemented yet.
+[2017-10-22 23:39:47,162] bcr.Replica<Replica:92403>:OUTPUT: [Head][TS: 1508729987.162718] Result shuttle is at Head.
+[2017-10-22 23:39:47,163] bcr.Client<Client:92403>:OUTPUT: [Client 0][TS: 1508729987.1635468] Number of correct result proofs received :3, required majority: 2
+[2017-10-22 23:39:47,160] bcr.Replica<Replica:92405>:OUTPUT: [Tail][TS: 1508729987.160887] Result shuttle is at Tail.
+[2017-10-22 23:39:47,164] bcr.Client<Client:92403>:OUTPUT: [Client 0][TS: 1508729987.1640801] Valid result: star wars received for request id: 2
+[2017-10-22 23:39:47,164] bcr.Client<Client:92403>:OUTPUT: [Client 0][TS: 1508729987.16485] Local running state of client after the given set of operations: {'movie': 'star wars'}.
+[2017-10-22 23:39:47,165] bcr.Replica<Replica:92404>:OUTPUT: [Replica 1][TS: 1508729987.165191] Result shuttle is at Replica 1.
+[2017-10-22 23:39:47,165] bcr.Client<Client:92403>:OUTPUT: [Client 0][TS: 1508729987.165384] Running state of client at the server (assuming no conflicting keys from other clients) after the given set of operations: {'movie': 'star wars'}.
+[2017-10-22 23:39:47,165] bcr.Client<Client:92403>:OUTPUT: [Client 0][TS: 1508729987.165926] 
+
+Test case passed! Actual and expected running states match.
+
+
+[2017-10-22 23:39:47,166] bcr.Replica<Replica:92403>:OUTPUT: [Head][TS: 1508729987.166328] Result shuttle is at Head.
+[2017-10-22 23:39:47,165] bcr.Replica<Replica:92405>:OUTPUT: [Tail][TS: 1508729987.16502] get request with request id 10002 received by Tail.
+[2017-10-22 23:39:47,166] bcr.Replica<Replica:92405>:OUTPUT: [Tail][TS: 1508729987.166929] Tail is in ACTIVE state.
+[2017-10-22 23:39:47,168] bcr.Replica<Replica:92404>:OUTPUT: [Replica 1][TS: 1508729987.1685178] Result shuttle is at Replica 1.
+[2017-10-22 23:39:47,169] bcr.Client<Client:92404>:OUTPUT: [Client 1][TS: 1508729987.1690009] Number of correct result proofs received :3, required majority: 2
+[2017-10-22 23:39:47,169] bcr.Client<Client:92404>:OUTPUT: [Client 1][TS: 1508729987.169513] Valid result:  received for request id: 10002
+[2017-10-22 23:39:47,170] bcr.Replica<Replica:92404>:OUTPUT: [Replica 1][TS: 1508729987.170103] get request with request id 20002 received by Replica 1.
+[2017-10-22 23:39:47,170] bcr.Replica<Replica:92405>:OUTPUT: [Tail][TS: 1508729987.1701849] Result shuttle is at Tail.
+[2017-10-22 23:39:47,170] bcr.Client<Client:92404>:OUTPUT: [Client 1][TS: 1508729987.170397] Local running state of client after the given set of operations: {'name': 'saraj munjal'}.
+[2017-10-22 23:39:47,170] bcr.Replica<Replica:92404>:OUTPUT: [Replica 1][TS: 1508729987.1705952] Replica 1 is in ACTIVE state.
+[2017-10-22 23:39:47,173] bcr.Replica<Replica:92404>:OUTPUT: [Replica 1][TS: 1508729987.173187] Result shuttle is at Replica 1.
+[2017-10-22 23:39:47,172] bcr.Replica<Replica:92405>:OUTPUT: [Tail][TS: 1508729987.172236] get request with request id 20002 received by Tail.
+[2017-10-22 23:39:47,171] bcr.Replica<Replica:92403>:OUTPUT: [Head][TS: 1508729987.1715999] Result shuttle is at Head.
+[2017-10-22 23:39:47,170] bcr.Client<Client:92404>:OUTPUT: [Client 1][TS: 1508729987.170872] Running state of client at the server (assuming no conflicting keys from other clients) after the given set of operations: {'name': 'saraj munjal'}.
+[2017-10-22 23:39:47,184] bcr.Replica<Replica:92405>:OUTPUT: [Tail][TS: 1508729987.1843698] Tail is in ACTIVE state.
+[2017-10-22 23:39:47,184] bcr.Client<Client:92404>:OUTPUT: [Client 1][TS: 1508729987.184443] 
+
+Test case passed! Actual and expected running states match.
+
+
+[2017-10-22 23:39:47,185] bcr.Replica<Replica:92403>:OUTPUT: [Head][TS: 1508729987.1856909] Result shuttle is at Head.
+[2017-10-22 23:39:47,186] bcr.Client<Client:92405>:OUTPUT: [Client 2][TS: 1508729987.186647] Number of correct result proofs received :3, required majority: 2
+[2017-10-22 23:39:47,187] bcr.Replica<Replica:92405>:OUTPUT: [Tail][TS: 1508729987.187181] Result shuttle is at Tail.
+[2017-10-22 23:39:47,187] bcr.Client<Client:92405>:OUTPUT: [Client 2][TS: 1508729987.18718] Valid result:  received for request id: 20002
+[2017-10-22 23:39:47,188] bcr.Replica<Replica:92404>:OUTPUT: [Replica 1][TS: 1508729987.188525] Result shuttle is at Replica 1.
+[2017-10-22 23:39:47,189] bcr.Replica<Replica:92403>:OUTPUT: [Head][TS: 1508729987.189048] put request with request id 20003 received by Head.
+[2017-10-22 23:39:47,189] bcr.Replica<Replica:92403>:OUTPUT: [Head][TS: 1508729987.189903] Head is in ACTIVE state.
+[2017-10-22 23:39:47,191] bcr.Replica<Replica:92404>:OUTPUT: [Replica 1][TS: 1508729987.191391] put request with request id 20003 received by Replica 1.
+[2017-10-22 23:39:47,191] bcr.Replica<Replica:92403>:OUTPUT: [Head][TS: 1508729987.1913972] Result shuttle is at Head.
+[2017-10-22 23:39:47,191] bcr.Replica<Replica:92404>:OUTPUT: [Replica 1][TS: 1508729987.191862] Replica 1 is in ACTIVE state.
+[2017-10-22 23:39:47,193] bcr.Replica<Replica:92405>:OUTPUT: [Tail][TS: 1508729987.1934688] put request with request id 20003 received by Tail.
+[2017-10-22 23:39:47,194] bcr.Replica<Replica:92405>:OUTPUT: [Tail][TS: 1508729987.1942232] Tail is in ACTIVE state.
+[2017-10-22 23:39:47,198] bcr.Client<Client:92405>:OUTPUT: [Client 2][TS: 1508729987.198482] Number of correct result proofs received :3, required majority: 2
+[2017-10-22 23:39:47,199] bcr.Client<Client:92405>:OUTPUT: [Client 2][TS: 1508729987.199732] Valid result: OK received for request id: 20003
+[2017-10-22 23:39:47,199] bcr.Replica<Replica:92405>:OUTPUT: [Tail][TS: 1508729987.1998231] Result shuttle is at Tail.
+[2017-10-22 23:39:47,201] bcr.Replica<Replica:92404>:OUTPUT: [Replica 1][TS: 1508729987.2019641] Result shuttle is at Replica 1.
+[2017-10-22 23:39:47,202] bcr.Replica<Replica:92403>:OUTPUT: [Head][TS: 1508729987.202653] Result shuttle is at Head.
+[2017-10-22 23:39:47,203] bcr.Replica<Replica:92403>:OUTPUT: [Head][TS: 1508729987.203418] get request with request id 20004 received by Head.
+[2017-10-22 23:39:47,203] bcr.Replica<Replica:92403>:OUTPUT: [Head][TS: 1508729987.203798] Head is in ACTIVE state.
+[2017-10-22 23:39:47,205] bcr.Replica<Replica:92404>:OUTPUT: [Replica 1][TS: 1508729987.205175] get request with request id 20004 received by Replica 1.
+[2017-10-22 23:39:47,205] bcr.Replica<Replica:92404>:OUTPUT: [Replica 1][TS: 1508729987.2055428] Replica 1 is in ACTIVE state.
+[2017-10-22 23:39:47,206] bcr.Replica<Replica:92405>:OUTPUT: [Tail][TS: 1508729987.2069] get request with request id 20004 received by Tail.
+[2017-10-22 23:39:47,207] bcr.Replica<Replica:92405>:OUTPUT: [Tail][TS: 1508729987.207285] Tail is in ACTIVE state.
+[2017-10-22 23:39:47,208] bcr.Client<Client:92405>:OUTPUT: [Client 2][TS: 1508729987.208899] Number of correct result proofs received :3, required majority: 2
+[2017-10-22 23:39:47,209] bcr.Client<Client:92405>:OUTPUT: [Client 2][TS: 1508729987.209389] Valid result:  received for request id: 20004
+[2017-10-22 23:39:47,209] bcr.Replica<Replica:92405>:OUTPUT: [Tail][TS: 1508729987.209774] Result shuttle is at Tail.
+[2017-10-22 23:39:47,210] bcr.Replica<Replica:92403>:OUTPUT: [Head][TS: 1508729987.2108579] put request with request id 20005 received by Head.
+[2017-10-22 23:39:47,210] bcr.Replica<Replica:92404>:OUTPUT: [Replica 1][TS: 1508729987.210946] Result shuttle is at Replica 1.
+[2017-10-22 23:39:47,211] bcr.Replica<Replica:92403>:OUTPUT: [Head][TS: 1508729987.211416] Head is in ACTIVE state.
+[2017-10-22 23:39:47,212] bcr.Replica<Replica:92404>:OUTPUT: [Replica 1][TS: 1508729987.2127612] put request with request id 20005 received by Replica 1.
+[2017-10-22 23:39:47,212] bcr.Replica<Replica:92403>:OUTPUT: [Head][TS: 1508729987.212817] Result shuttle is at Head.
+[2017-10-22 23:39:47,213] bcr.Replica<Replica:92404>:OUTPUT: [Replica 1][TS: 1508729987.213173] Replica 1 is in ACTIVE state.
+[2017-10-22 23:39:47,214] bcr.Replica<Replica:92405>:OUTPUT: [Tail][TS: 1508729987.214453] put request with request id 20005 received by Tail.
+[2017-10-22 23:39:47,214] bcr.Replica<Replica:92405>:OUTPUT: [Tail][TS: 1508729987.214844] Tail is in ACTIVE state.
+[2017-10-22 23:39:47,216] bcr.Client<Client:92405>:OUTPUT: [Client 2][TS: 1508729987.216392] Number of correct result proofs received :3, required majority: 2
+[2017-10-22 23:39:47,216] bcr.Client<Client:92405>:OUTPUT: [Client 2][TS: 1508729987.216807] Valid result: OK received for request id: 20005
+[2017-10-22 23:39:47,217] bcr.Replica<Replica:92405>:OUTPUT: [Tail][TS: 1508729987.217281] Result shuttle is at Tail.
+[2017-10-22 23:39:47,218] bcr.Replica<Replica:92403>:OUTPUT: [Head][TS: 1508729987.218317] slice request with request id 20006 received by Head.
+[2017-10-22 23:39:47,218] bcr.Replica<Replica:92404>:OUTPUT: [Replica 1][TS: 1508729987.2184901] Result shuttle is at Replica 1.
+[2017-10-22 23:39:47,218] bcr.Replica<Replica:92403>:OUTPUT: [Head][TS: 1508729987.218913] Head is in ACTIVE state.
+[2017-10-22 23:39:47,220] bcr.Replica<Replica:92404>:OUTPUT: [Replica 1][TS: 1508729987.2202911] slice request with request id 20006 received by Replica 1.
+[2017-10-22 23:39:47,220] bcr.Replica<Replica:92403>:OUTPUT: [Head][TS: 1508729987.22035] Result shuttle is at Head.
+[2017-10-22 23:39:47,220] bcr.Replica<Replica:92404>:OUTPUT: [Replica 1][TS: 1508729987.220702] Replica 1 is in ACTIVE state.
+[2017-10-22 23:39:47,222] bcr.Replica<Replica:92405>:OUTPUT: [Tail][TS: 1508729987.222513] slice request with request id 20006 received by Tail.
+[2017-10-22 23:39:47,222] bcr.Replica<Replica:92405>:OUTPUT: [Tail][TS: 1508729987.2229388] Tail is in ACTIVE state.
+[2017-10-22 23:39:47,225] bcr.Client<Client:92405>:OUTPUT: [Client 2][TS: 1508729987.2250938] Number of correct result proofs received :3, required majority: 2
+[2017-10-22 23:39:47,225] bcr.Client<Client:92405>:OUTPUT: [Client 2][TS: 1508729987.225694] Valid result: fail received for request id: 20006
+[2017-10-22 23:39:47,225] bcr.Replica<Replica:92405>:OUTPUT: [Tail][TS: 1508729987.2258189] Result shuttle is at Tail.
+[2017-10-22 23:39:47,227] bcr.Replica<Replica:92404>:OUTPUT: [Replica 1][TS: 1508729987.22727] Result shuttle is at Replica 1.
+[2017-10-22 23:39:47,228] bcr.Replica<Replica:92403>:OUTPUT: [Head][TS: 1508729987.228215] Result shuttle is at Head.
+[2017-10-22 23:39:47,229] bcr.Replica<Replica:92403>:OUTPUT: [Head][TS: 1508729987.229238] put request with request id 20007 received by Head.
+[2017-10-22 23:39:47,229] bcr.Replica<Replica:92403>:OUTPUT: [Head][TS: 1508729987.229584] Head is in ACTIVE state.
+[2017-10-22 23:39:47,231] bcr.Replica<Replica:92404>:OUTPUT: [Replica 1][TS: 1508729987.231034] put request with request id 20007 received by Replica 1.
+[2017-10-22 23:39:47,231] bcr.Replica<Replica:92404>:OUTPUT: [Replica 1][TS: 1508729987.2314181] Replica 1 is in ACTIVE state.
+[2017-10-22 23:39:47,232] bcr.Replica<Replica:92405>:OUTPUT: [Tail][TS: 1508729987.232875] put request with request id 20007 received by Tail.
+[2017-10-22 23:39:47,233] bcr.Replica<Replica:92405>:OUTPUT: [Tail][TS: 1508729987.2332218] Tail is in ACTIVE state.
+[2017-10-22 23:39:47,234] bcr.Client<Client:92405>:OUTPUT: [Client 2][TS: 1508729987.234715] Number of correct result proofs received :3, required majority: 2
+[2017-10-22 23:39:47,236] bcr.Replica<Replica:92404>:OUTPUT: [Replica 1][TS: 1508729987.236823] Result shuttle is at Replica 1.
+[2017-10-22 23:39:47,235] bcr.Replica<Replica:92405>:OUTPUT: [Tail][TS: 1508729987.2359722] Result shuttle is at Tail.
+[2017-10-22 23:39:47,235] bcr.Client<Client:92405>:OUTPUT: [Client 2][TS: 1508729987.23508] Valid result: OK received for request id: 20007
+[2017-10-22 23:39:47,237] bcr.Replica<Replica:92403>:OUTPUT: [Head][TS: 1508729987.237414] Result shuttle is at Head.
+[2017-10-22 23:39:47,251] bcr.Replica<Replica:92403>:OUTPUT: [Head][TS: 1508729987.251364] put request with request id 20008 received by Head.
+[2017-10-22 23:39:47,251] bcr.Replica<Replica:92403>:OUTPUT: [Head][TS: 1508729987.251734] Head is in ACTIVE state.
+[2017-10-22 23:39:47,253] bcr.Replica<Replica:92404>:OUTPUT: [Replica 1][TS: 1508729987.2529979] put request with request id 20008 received by Replica 1.
+[2017-10-22 23:39:47,253] bcr.Replica<Replica:92404>:OUTPUT: [Replica 1][TS: 1508729987.2533891] Replica 1 is in ACTIVE state.
+[2017-10-22 23:39:47,254] bcr.Replica<Replica:92405>:OUTPUT: [Tail][TS: 1508729987.2548978] put request with request id 20008 received by Tail.
+[2017-10-22 23:39:47,255] bcr.Replica<Replica:92405>:OUTPUT: [Tail][TS: 1508729987.255716] Tail is in ACTIVE state.
+[2017-10-22 23:39:47,257] bcr.Client<Client:92405>:OUTPUT: [Client 2][TS: 1508729987.257932] Number of correct result proofs received :3, required majority: 2
+[2017-10-22 23:39:47,258] bcr.Client<Client:92405>:OUTPUT: [Client 2][TS: 1508729987.258427] Valid result: OK received for request id: 20008
+[2017-10-22 23:39:47,258] bcr.Replica<Replica:92405>:OUTPUT: [Tail][TS: 1508729987.258838] Result shuttle is at Tail.
+[2017-10-22 23:39:47,260] bcr.Replica<Replica:92403>:OUTPUT: [Head][TS: 1508729987.260082] slice request with request id 20009 received by Head.
+[2017-10-22 23:39:47,260] bcr.Replica<Replica:92404>:OUTPUT: [Replica 1][TS: 1508729987.260162] Result shuttle is at Replica 1.
+[2017-10-22 23:39:47,261] bcr.Replica<Replica:92403>:OUTPUT: [Head][TS: 1508729987.261306] Head is in ACTIVE state.
+[2017-10-22 23:39:47,264] bcr.Replica<Replica:92403>:OUTPUT: [Head][TS: 1508729987.2643762] Result shuttle is at Head.
+[2017-10-22 23:39:47,264] bcr.Replica<Replica:92404>:OUTPUT: [Replica 1][TS: 1508729987.2643058] slice request with request id 20009 received by Replica 1.
+[2017-10-22 23:39:47,265] bcr.Replica<Replica:92404>:OUTPUT: [Replica 1][TS: 1508729987.265376] Replica 1 is in ACTIVE state.
+[2017-10-22 23:39:47,267] bcr.Replica<Replica:92405>:OUTPUT: [Tail][TS: 1508729987.267742] slice request with request id 20009 received by Tail.
+[2017-10-22 23:39:47,268] bcr.Replica<Replica:92405>:OUTPUT: [Tail][TS: 1508729987.268337] Tail is in ACTIVE state.
+[2017-10-22 23:39:47,270] bcr.Client<Client:92405>:OUTPUT: [Client 2][TS: 1508729987.27005] Number of correct result proofs received :3, required majority: 2
+[2017-10-22 23:39:47,270] bcr.Client<Client:92405>:OUTPUT: [Client 2][TS: 1508729987.270457] Valid result: fail received for request id: 20009
+[2017-10-22 23:39:47,270] bcr.Replica<Replica:92405>:OUTPUT: [Tail][TS: 1508729987.270902] Result shuttle is at Tail.
+[2017-10-22 23:39:47,271] bcr.Client<Client:92405>:OUTPUT: [Client 2][TS: 1508729987.271285] Local running state of client after the given set of operations: {'qhz': 'prg', 'xjd': 'pkg', 'twk': 'jdq', 'byc': 'yyd', 'flk': 'xqq'}.
+[2017-10-22 23:39:47,271] bcr.Client<Client:92405>:OUTPUT: [Client 2][TS: 1508729987.2716968] Running state of client at the server (assuming no conflicting keys from other clients) after the given set of operations: {'qhz': 'prg', 'xjd': 'pkg', 'twk': 'jdq', 'byc': 'yyd', 'flk': 'xqq'}.
+[2017-10-22 23:39:47,272] bcr.Replica<Replica:92404>:OUTPUT: [Replica 1][TS: 1508729987.272181] Result shuttle is at Replica 1.
+[2017-10-22 23:39:47,272] bcr.Client<Client:92405>:OUTPUT: [Client 2][TS: 1508729987.2721112] 
+
+Test case passed! Actual and expected running states match.
+
+
+[2017-10-22 23:39:47,272] bcr.Replica<Replica:92403>:OUTPUT: [Head][TS: 1508729987.272888] Result shuttle is at Head.
+[2017-10-22 23:39:50,267] bcr.Replica<Replica:92403>:OUTPUT: [Head][TS: 1508729990.267112] Head has timed out while waiting for result shuttle for request id 0. Sending reconfiguration request to Olympus
+[2017-10-22 23:39:50,269] bcr.Olympus<Olympus:92402>:OUTPUT: [Olympus][TS: 1508729990.268973] Reconfiguration request received from Head.
+[2017-10-22 23:39:50,269] bcr.Olympus<Olympus:92402>:OUTPUT: [Olympus][TS: 1508729990.269689] No reconfiguration mechanism implemented yet.
+[2017-10-22 23:39:56,416] da.api<MainProcess>:INFO: <Node_:a0001> initialized at 127.0.0.1:(UdpTransport=26632, TcpTransport=31243).
+[2017-10-22 23:39:56,417] da.api<MainProcess>:INFO: Starting program <module 'bcr' from 'src/bcr.py'>...
+[2017-10-22 23:39:56,417] da.api<MainProcess>:INFO: Running iteration 1 ...
+[2017-10-22 23:39:56,417] da.api<MainProcess>:INFO: Waiting for remaining child processes to terminate...(Press "Ctrl-C" to force kill)
+[2017-10-22 23:39:56,418] bcr.Node_<Node_:a0001>:OUTPUT: [Main][TS: 1508729996.4188778] Running BCR simulation for test case: basic_multi_client
+[2017-10-22 23:39:56,478] bcr.Replica<Replica:5e003>:OUTPUT: [Head][TS: 1508729996.478406] replica failures: {}
+[2017-10-22 23:39:56,481] bcr.Olympus<Olympus:5e002>:OUTPUT: [Olympus][TS: 1508729996.481514] Olympus created replica process: Replica 0
+[2017-10-22 23:39:56,484] bcr.Olympus<Olympus:5e002>:OUTPUT: [Olympus][TS: 1508729996.4842281] Olympus created keys for replica process: Replica 0. Public key: b'867dbefdfae2f272234af0d4e78dfa97814552bca152d1c4349bff1cbff1b25b'
+[2017-10-22 23:39:56,501] bcr.Replica<Replica:5e004>:OUTPUT: [Replica 1][TS: 1508729996.5015092] replica failures: [shuttle(0,2), drop_result_stmt()]
+[2017-10-22 23:39:56,504] bcr.Olympus<Olympus:5e002>:OUTPUT: [Olympus][TS: 1508729996.5044968] Olympus created replica process: Replica 1
+[2017-10-22 23:39:56,505] bcr.Olympus<Olympus:5e002>:OUTPUT: [Olympus][TS: 1508729996.505413] Olympus created keys for replica process: Replica 1. Public key: b'033fac609837a4174e4928323ec36232f81c5c45173d0d453733a808869b4773'
+[2017-10-22 23:39:56,521] bcr.Replica<Replica:5e005>:OUTPUT: [Tail][TS: 1508729996.5211] replica failures: [shuttle(0,0), change_result(), result_shuttle(0,0), drop_result_stmt()]
+[2017-10-22 23:39:56,522] bcr.Olympus<Olympus:5e002>:OUTPUT: [Olympus][TS: 1508729996.522372] Olympus created replica process: Replica 2
+[2017-10-22 23:39:56,523] bcr.Olympus<Olympus:5e002>:OUTPUT: [Olympus][TS: 1508729996.523746] Olympus created keys for replica process: Replica 2. Public key: b'f435c9da3937130b29d103d459e3e55854dc4d764a2f1aaddb397242fc2a87e2'
+[2017-10-22 23:39:56,526] bcr.Node_<Node_:a0001>:OUTPUT: [Main][TS: 1508729996.526588] Workload for client 0 : [('put', ['movie', 'star']), ('append', ['movie', ' wars']), ('get', ['movie'])]
+[2017-10-22 23:39:56,538] bcr.Replica<Replica:5e004>:OUTPUT: [Replica 1][TS: 1508729996.538249] Replica 1 received replica references and public keys from Olympus
+[2017-10-22 23:39:56,540] bcr.Replica<Replica:5e004>:OUTPUT: [Replica 1][TS: 1508729996.5400782] Replica 1 has receives its private key from Olympus.
+[2017-10-22 23:39:56,540] bcr.Replica<Replica:5e005>:OUTPUT: [Tail][TS: 1508729996.540025] Tail received replica references and public keys from Olympus
+[2017-10-22 23:39:56,541] bcr.Replica<Replica:5e003>:OUTPUT: [Head][TS: 1508729996.541043] Head received replica references and public keys from Olympus
+[2017-10-22 23:39:56,541] bcr.Olympus<Olympus:5e002>:OUTPUT: [Olympus][TS: 1508729996.541433] ACK from Replica 1.
+[2017-10-22 23:39:56,541] bcr.Replica<Replica:5e005>:OUTPUT: [Tail][TS: 1508729996.541875] Tail has receives its private key from Olympus.
+[2017-10-22 23:39:56,542] bcr.Olympus<Olympus:5e002>:OUTPUT: [Olympus][TS: 1508729996.542153] ACK from Replica 1.
+[2017-10-22 23:39:56,542] bcr.Replica<Replica:5e003>:OUTPUT: [Head][TS: 1508729996.542887] Head has receives its private key from Olympus.
+[2017-10-22 23:39:56,543] bcr.Olympus<Olympus:5e002>:OUTPUT: [Olympus][TS: 1508729996.5432699] ACK from Tail.
+[2017-10-22 23:39:56,543] bcr.Olympus<Olympus:5e002>:OUTPUT: [Olympus][TS: 1508729996.543859] ACK from Head.
+[2017-10-22 23:39:56,544] bcr.Olympus<Olympus:5e002>:OUTPUT: [Olympus][TS: 1508729996.5447779] ACK from Tail.
+[2017-10-22 23:39:56,545] bcr.Olympus<Olympus:5e002>:OUTPUT: [Olympus][TS: 1508729996.5456169] ACK from Head.
+[2017-10-22 23:39:56,549] bcr.Node_<Node_:a0001>:OUTPUT: [Main][TS: 1508729996.5491142] Workload for client 1 : [('put', ['name', 'saraj']), ('append', ['name', ' munjal']), ('get', ['age'])]
+[2017-10-22 23:39:56,566] bcr.Node_<Node_:a0001>:OUTPUT: [Main][TS: 1508729996.566607] Workload for client 2 : [('put', ['qhz', 'prg']), ('get', ['dih']), ('get', ['cvh']), ('put', ['xjd', 'pkg']), ('get', ['jpq']), ('put', ['twk', 'jdq']), ('slice', ['nbm', '1:2']), ('put', ['byc', 'yyd']), ('put', ['flk', 'xqq']), ('slice', ['odw', '0:0'])]
+[2017-10-22 23:39:56,589] da.api<MainProcess>:INFO: Main process terminated.
+[2017-10-22 23:39:56,591] bcr.Client<Client:5e003>:OUTPUT: [Client 0][TS: 1508729996.591247] Client 0 is configured.
+[2017-10-22 23:39:56,591] bcr.Olympus<Olympus:5e002>:OUTPUT: [Olympus][TS: 1508729996.5917969] Received public key: b'9aebd7f7c214047a6b1c1a0cf464d320b99834e9a4b546630fba9daab039ca25' from client: Client 0
+[2017-10-22 23:39:56,592] bcr.Replica<Replica:5e003>:OUTPUT: [Head][TS: 1508729996.5920289] Head has received client public key: b'9aebd7f7c214047a6b1c1a0cf464d320b99834e9a4b546630fba9daab039ca25' for client 0
+[2017-10-22 23:39:56,592] bcr.Olympus<Olympus:5e002>:OUTPUT: [Olympus][TS: 1508729996.59253] Configuration sent to Client 0.
+[2017-10-22 23:39:56,593] bcr.Replica<Replica:5e004>:OUTPUT: [Replica 1][TS: 1508729996.59374] Replica 1 has received client public key: b'9aebd7f7c214047a6b1c1a0cf464d320b99834e9a4b546630fba9daab039ca25' for client 0
+[2017-10-22 23:39:56,594] bcr.Replica<Replica:5e005>:OUTPUT: [Tail][TS: 1508729996.594188] Tail has received client public key: b'9aebd7f7c214047a6b1c1a0cf464d320b99834e9a4b546630fba9daab039ca25' for client 0
+[2017-10-22 23:39:56,595] bcr.Client<Client:5e003>:OUTPUT: [Client 0][TS: 1508729996.5958478] Received the public keys of replicas from Olympus
+[2017-10-22 23:39:56,596] bcr.Replica<Replica:5e003>:OUTPUT: [Head][TS: 1508729996.596287] put request with request id 0 received by Head.
+[2017-10-22 23:39:56,596] bcr.Olympus<Olympus:5e002>:OUTPUT: [Olympus][TS: 1508729996.596587] Received public key: b'059298885b3fd281d1c694ccdc4f6a57c6c18a12229366c5f2fe6b1dedf60049' from client: Client 2
+[2017-10-22 23:39:56,597] bcr.Replica<Replica:5e003>:OUTPUT: [Head][TS: 1508729996.597051] Head is in ACTIVE state.
+[2017-10-22 23:39:56,597] bcr.Olympus<Olympus:5e002>:OUTPUT: [Olympus][TS: 1508729996.597195] Configuration sent to Client 2.
+[2017-10-22 23:39:56,596] bcr.Client<Client:5e003>:OUTPUT: [Client 0][TS: 1508729996.59653] Received the public key of Olympus.
+[2017-10-22 23:39:56,597] bcr.Client<Client:5e005>:OUTPUT: [Client 2][TS: 1508729996.597634] Client 2 is configured.
+[2017-10-22 23:39:56,599] bcr.Replica<Replica:5e005>:OUTPUT: [Tail][TS: 1508729996.5994198] Tail has received client public key: b'059298885b3fd281d1c694ccdc4f6a57c6c18a12229366c5f2fe6b1dedf60049' for client 2
+[2017-10-22 23:39:56,599] bcr.Replica<Replica:5e004>:OUTPUT: [Replica 1][TS: 1508729996.599901] Replica 1 has received client public key: b'059298885b3fd281d1c694ccdc4f6a57c6c18a12229366c5f2fe6b1dedf60049' for client 2
+[2017-10-22 23:39:56,601] bcr.Replica<Replica:5e003>:OUTPUT: [Head][TS: 1508729996.601435] Head has received client public key: b'059298885b3fd281d1c694ccdc4f6a57c6c18a12229366c5f2fe6b1dedf60049' for client 2
+[2017-10-22 23:39:56,601] bcr.Replica<Replica:5e004>:OUTPUT: [Replica 1][TS: 1508729996.601631] put request with request id 0 received by Replica 1.
+[2017-10-22 23:39:56,601] bcr.Olympus<Olympus:5e002>:OUTPUT: [Olympus][TS: 1508729996.601973] Received public key: b'd5e9b6206a7c44089f9b3c8ae53e7054c17a4d360b46b340856cd1e7d761bb2f' from client: Client 1
+[2017-10-22 23:39:56,602] bcr.Replica<Replica:5e004>:OUTPUT: [Replica 1][TS: 1508729996.60214] Replica 1 is in ACTIVE state.
+[2017-10-22 23:39:56,602] bcr.Olympus<Olympus:5e002>:OUTPUT: [Olympus][TS: 1508729996.6025012] Configuration sent to Client 1.
+[2017-10-22 23:39:56,603] bcr.Olympus<Olympus:5e002>:OUTPUT: [Olympus][TS: 1508729996.6030982] ACK from Client 0.
+[2017-10-22 23:39:56,603] bcr.Replica<Replica:5e003>:OUTPUT: [Head][TS: 1508729996.603133] Head has received client public key: b'd5e9b6206a7c44089f9b3c8ae53e7054c17a4d360b46b340856cd1e7d761bb2f' for client 1
+[2017-10-22 23:39:56,604] bcr.Client<Client:5e005>:OUTPUT: [Client 2][TS: 1508729996.604424] Received the public keys of replicas from Olympus
+[2017-10-22 23:39:56,605] bcr.Replica<Replica:5e003>:OUTPUT: [Head][TS: 1508729996.60551] put request with request id 20000 received by Head.
+[2017-10-22 23:39:56,603] bcr.Olympus<Olympus:5e002>:OUTPUT: [Olympus][TS: 1508729996.603746] ACK from Head.
+[2017-10-22 23:39:56,605] bcr.Replica<Replica:5e004>:OUTPUT: [Replica 1][TS: 1508729996.605393] Replica 1 has received client public key: b'd5e9b6206a7c44089f9b3c8ae53e7054c17a4d360b46b340856cd1e7d761bb2f' for client 1
+[2017-10-22 23:39:56,604] bcr.Client<Client:5e004>:OUTPUT: [Client 1][TS: 1508729996.604415] Client 1 is configured.
+[2017-10-22 23:39:56,604] bcr.Replica<Replica:5e005>:OUTPUT: [Tail][TS: 1508729996.6046] Tail has received client public key: b'd5e9b6206a7c44089f9b3c8ae53e7054c17a4d360b46b340856cd1e7d761bb2f' for client 1
+[2017-10-22 23:39:56,615] bcr.Olympus<Olympus:5e002>:OUTPUT: [Olympus][TS: 1508729996.615741] ACK from Replica 1.
+[2017-10-22 23:39:56,615] bcr.Replica<Replica:5e003>:OUTPUT: [Head][TS: 1508729996.6153522] Head is in ACTIVE state.
+[2017-10-22 23:39:56,616] bcr.Olympus<Olympus:5e002>:OUTPUT: [Olympus][TS: 1508729996.61636] ACK from Tail.
+[2017-10-22 23:39:56,616] bcr.Replica<Replica:5e005>:OUTPUT: [Tail][TS: 1508729996.6165361] put request with request id 0 received by Tail.
+[2017-10-22 23:39:56,615] bcr.Client<Client:5e005>:OUTPUT: [Client 2][TS: 1508729996.615315] Received the public key of Olympus.
+[2017-10-22 23:39:56,617] bcr.Olympus<Olympus:5e002>:OUTPUT: [Olympus][TS: 1508729996.616987] ACK from Client 0.
+[2017-10-22 23:39:56,617] bcr.Replica<Replica:5e005>:OUTPUT: [Tail][TS: 1508729996.617046] Tail is in ACTIVE state.
+[2017-10-22 23:39:56,617] bcr.Olympus<Olympus:5e002>:OUTPUT: [Olympus][TS: 1508729996.6175911] ACK from Client 2.
+[2017-10-22 23:39:56,618] bcr.Olympus<Olympus:5e002>:OUTPUT: [Olympus][TS: 1508729996.618189] ACK from Tail.
+[2017-10-22 23:39:56,618] bcr.Replica<Replica:5e004>:OUTPUT: [Replica 1][TS: 1508729996.618442] put request with request id 20000 received by Replica 1.
+[2017-10-22 23:39:56,618] bcr.Client<Client:5e004>:OUTPUT: [Client 1][TS: 1508729996.618573] Received the public keys of replicas from Olympus
+[2017-10-22 23:39:56,618] bcr.Olympus<Olympus:5e002>:OUTPUT: [Olympus][TS: 1508729996.6188002] ACK from Replica 1.
+[2017-10-22 23:39:56,619] bcr.Replica<Replica:5e004>:OUTPUT: [Replica 1][TS: 1508729996.619012] Replica 1 is in ACTIVE state.
+[2017-10-22 23:39:56,619] bcr.Client<Client:5e004>:OUTPUT: [Client 1][TS: 1508729996.6191082] Received the public key of Olympus.
+[2017-10-22 23:39:56,619] bcr.Olympus<Olympus:5e002>:OUTPUT: [Olympus][TS: 1508729996.619405] ACK from Head.
+[2017-10-22 23:39:56,619] bcr.Replica<Replica:5e003>:OUTPUT: [Head][TS: 1508729996.619414] put request with request id 10000 received by Head.
+[2017-10-22 23:39:56,618] bcr.Replica<Replica:5e005>:OUTPUT: [Tail][TS: 1508729996.618149] Replica Tail: Trigger shuttle failure for client_id: 0 and message count: 0, scenario: shuttle(0,0), change_result()
+[2017-10-22 23:39:56,619] bcr.Replica<Replica:5e003>:OUTPUT: [Head][TS: 1508729996.619912] Head is in ACTIVE state.
+[2017-10-22 23:39:56,620] bcr.Olympus<Olympus:5e002>:OUTPUT: [Olympus][TS: 1508729996.619992] ACK from Head.
+[2017-10-22 23:39:56,621] bcr.Olympus<Olympus:5e002>:OUTPUT: [Olympus][TS: 1508729996.6213279] ACK from Replica 1.
+[2017-10-22 23:39:56,621] bcr.Replica<Replica:5e004>:OUTPUT: [Replica 1][TS: 1508729996.621755] put request with request id 10000 received by Replica 1.
+[2017-10-22 23:39:56,622] bcr.Olympus<Olympus:5e002>:OUTPUT: [Olympus][TS: 1508729996.6219919] ACK from Client 1.
+[2017-10-22 23:39:56,622] bcr.Replica<Replica:5e004>:OUTPUT: [Replica 1][TS: 1508729996.622241] Replica 1 is in ACTIVE state.
+[2017-10-22 23:39:56,622] bcr.Replica<Replica:5e005>:OUTPUT: [Tail][TS: 1508729996.622367] put request with request id 20000 received by Tail.
+[2017-10-22 23:39:56,622] bcr.Olympus<Olympus:5e002>:OUTPUT: [Olympus][TS: 1508729996.622586] ACK from Client 1.
+[2017-10-22 23:39:56,622] bcr.Client<Client:5e003>:OUTPUT: [Client 0][TS: 1508729996.622648] Number of correct result proofs received :3, required majority: 2
+[2017-10-22 23:39:56,622] bcr.Replica<Replica:5e005>:OUTPUT: [Tail][TS: 1508729996.6228962] Tail is in ACTIVE state.
+[2017-10-22 23:39:56,623] bcr.Client<Client:5e003>:OUTPUT: [Client 0][TS: 1508729996.623147] Valid result: OK received for request id: 0
+[2017-10-22 23:39:56,623] bcr.Olympus<Olympus:5e002>:OUTPUT: [Olympus][TS: 1508729996.623167] ACK from Tail.
+[2017-10-22 23:39:56,623] bcr.Olympus<Olympus:5e002>:OUTPUT: [Olympus][TS: 1508729996.6239738] ACK from Client 2.
+[2017-10-22 23:39:56,625] bcr.Replica<Replica:5e003>:OUTPUT: [Head][TS: 1508729996.625692] append request with request id 1 received by Head.
+[2017-10-22 23:39:56,626] bcr.Replica<Replica:5e003>:OUTPUT: [Head][TS: 1508729996.626459] Head is in ACTIVE state.
+[2017-10-22 23:39:56,626] bcr.Client<Client:5e005>:OUTPUT: [Client 2][TS: 1508729996.626899] Number of correct result proofs received :3, required majority: 2
+[2017-10-22 23:39:56,627] bcr.Replica<Replica:5e005>:OUTPUT: [Tail][TS: 1508729996.627017] Tail: Trigger result shuttle failure for client_id: 0 and message count: 0, scenario: result_shuttle(0,0), drop_result_stmt()
+[2017-10-22 23:39:56,627] bcr.Client<Client:5e005>:OUTPUT: [Client 2][TS: 1508729996.627373] Valid result: OK received for request id: 20000
+[2017-10-22 23:39:56,628] bcr.Replica<Replica:5e005>:OUTPUT: [Tail][TS: 1508729996.628008] Executing failure scenario: shuttle(0,0), change_result()
+[2017-10-22 23:39:56,628] bcr.Replica<Replica:5e004>:OUTPUT: [Replica 1][TS: 1508729996.628425] append request with request id 1 received by Replica 1.
+[2017-10-22 23:39:56,628] bcr.Replica<Replica:5e005>:OUTPUT: [Tail][TS: 1508729996.628617] Executing failure scenario: result_shuttle(0,0), drop_result_stmt()
+[2017-10-22 23:39:56,628] bcr.Replica<Replica:5e004>:OUTPUT: [Replica 1][TS: 1508729996.628938] Replica 1 is in ACTIVE state.
+[2017-10-22 23:39:56,628] bcr.Replica<Replica:5e003>:OUTPUT: [Head][TS: 1508729996.628901] get request with request id 20001 received by Head.
+[2017-10-22 23:39:56,629] bcr.Replica<Replica:5e003>:OUTPUT: [Head][TS: 1508729996.629727] Head is in ACTIVE state.
+[2017-10-22 23:39:56,633] bcr.Replica<Replica:5e005>:OUTPUT: [Tail][TS: 1508729996.633394] Result shuttle is at Tail.
+[2017-10-22 23:39:56,633] bcr.Replica<Replica:5e004>:OUTPUT: [Replica 1][TS: 1508729996.6339462] get request with request id 20001 received by Replica 1.
+[2017-10-22 23:39:56,634] bcr.Replica<Replica:5e005>:OUTPUT: [Tail][TS: 1508729996.634499] put request with request id 10000 received by Tail.
+[2017-10-22 23:39:56,634] bcr.Replica<Replica:5e004>:OUTPUT: [Replica 1][TS: 1508729996.6345909] Replica 1 is in ACTIVE state.
+[2017-10-22 23:39:56,635] bcr.Replica<Replica:5e005>:OUTPUT: [Tail][TS: 1508729996.635492] Tail is in ACTIVE state.
+[2017-10-22 23:39:56,637] bcr.Replica<Replica:5e004>:OUTPUT: [Replica 1][TS: 1508729996.637194] Result shuttle sent by Replica 2 is not valid.
+[2017-10-22 23:39:56,638] bcr.Olympus<Olympus:5e002>:OUTPUT: [Olympus][TS: 1508729996.638195] Reconfiguration request received from Replica 1.
+[2017-10-22 23:39:56,638] bcr.Olympus<Olympus:5e002>:OUTPUT: [Olympus][TS: 1508729996.638796] No reconfiguration mechanism implemented yet.
+[2017-10-22 23:39:56,639] bcr.Client<Client:5e004>:OUTPUT: [Client 1][TS: 1508729996.639025] Number of correct result proofs received :3, required majority: 2
+[2017-10-22 23:39:56,639] bcr.Client<Client:5e004>:OUTPUT: [Client 1][TS: 1508729996.639533] Valid result: OK received for request id: 10000
+[2017-10-22 23:39:56,639] bcr.Replica<Replica:5e005>:OUTPUT: [Tail][TS: 1508729996.639681] Result shuttle is at Tail.
+[2017-10-22 23:39:56,640] bcr.Replica<Replica:5e005>:OUTPUT: [Tail][TS: 1508729996.640366] append request with request id 1 received by Tail.
+[2017-10-22 23:39:56,640] bcr.Replica<Replica:5e005>:OUTPUT: [Tail][TS: 1508729996.640805] Tail is in ACTIVE state.
+[2017-10-22 23:39:56,641] bcr.Replica<Replica:5e003>:OUTPUT: [Head][TS: 1508729996.6411982] append request with request id 10001 received by Head.
+[2017-10-22 23:39:56,641] bcr.Replica<Replica:5e003>:OUTPUT: [Head][TS: 1508729996.6416829] Head is in ACTIVE state.
+[2017-10-22 23:39:56,642] bcr.Replica<Replica:5e004>:OUTPUT: [Replica 1][TS: 1508729996.642733] Result shuttle is at Replica 1.
+[2017-10-22 23:39:56,643] bcr.Client<Client:5e003>:OUTPUT: [Client 0][TS: 1508729996.6430562] Number of correct result proofs received :3, required majority: 2
+[2017-10-22 23:39:56,643] bcr.Replica<Replica:5e005>:OUTPUT: [Tail][TS: 1508729996.643093] get request with request id 20001 received by Tail.
+[2017-10-22 23:39:56,643] bcr.Replica<Replica:5e005>:OUTPUT: [Tail][TS: 1508729996.643849] Tail is in ACTIVE state.
+[2017-10-22 23:39:56,643] bcr.Client<Client:5e003>:OUTPUT: [Client 0][TS: 1508729996.643741] Valid result: OK received for request id: 1
+[2017-10-22 23:39:56,644] bcr.Replica<Replica:5e003>:OUTPUT: [Head][TS: 1508729996.6443121] Result shuttle is at Head.
+[2017-10-22 23:39:56,644] bcr.Replica<Replica:5e004>:OUTPUT: [Replica 1][TS: 1508729996.644494] append request with request id 10001 received by Replica 1.
+[2017-10-22 23:39:56,645] bcr.Replica<Replica:5e004>:OUTPUT: [Replica 1][TS: 1508729996.645011] Replica 1 is in ACTIVE state.
+[2017-10-22 23:39:56,646] bcr.Replica<Replica:5e003>:OUTPUT: [Head][TS: 1508729996.646105] get request with request id 2 received by Head.
+[2017-10-22 23:39:56,646] bcr.Replica<Replica:5e003>:OUTPUT: [Head][TS: 1508729996.6466272] Head is in ACTIVE state.
+[2017-10-22 23:39:56,646] bcr.Client<Client:5e005>:OUTPUT: [Client 2][TS: 1508729996.646512] Number of correct result proofs received :3, required majority: 2
+[2017-10-22 23:39:56,647] bcr.Client<Client:5e005>:OUTPUT: [Client 2][TS: 1508729996.647132] Valid result:  received for request id: 20001
+[2017-10-22 23:39:56,647] bcr.Replica<Replica:5e005>:OUTPUT: [Tail][TS: 1508729996.647566] Result shuttle is at Tail.
+[2017-10-22 23:39:56,648] bcr.Replica<Replica:5e004>:OUTPUT: [Replica 1][TS: 1508729996.648882] Result shuttle is at Replica 1.
+[2017-10-22 23:39:56,649] bcr.Replica<Replica:5e005>:OUTPUT: [Tail][TS: 1508729996.649461] Result shuttle is at Tail.
+[2017-10-22 23:39:56,649] bcr.Replica<Replica:5e003>:OUTPUT: [Head][TS: 1508729996.6497889] get request with request id 20002 received by Head.
+[2017-10-22 23:39:56,650] bcr.Replica<Replica:5e003>:OUTPUT: [Head][TS: 1508729996.6502678] Head is in ACTIVE state.
+[2017-10-22 23:39:56,651] bcr.Replica<Replica:5e005>:OUTPUT: [Tail][TS: 1508729996.651496] Result shuttle is at Tail.
+[2017-10-22 23:39:56,652] bcr.Replica<Replica:5e004>:OUTPUT: [Replica 1][TS: 1508729996.6520011] Result shuttle is at Replica 1.
+[2017-10-22 23:39:56,652] bcr.Replica<Replica:5e003>:OUTPUT: [Head][TS: 1508729996.652221] Result shuttle is at Head.
+[2017-10-22 23:39:56,652] bcr.Replica<Replica:5e005>:OUTPUT: [Tail][TS: 1508729996.652396] append request with request id 10001 received by Tail.
+[2017-10-22 23:39:56,652] bcr.Replica<Replica:5e005>:OUTPUT: [Tail][TS: 1508729996.652868] Tail is in ACTIVE state.
+[2017-10-22 23:39:56,653] bcr.Replica<Replica:5e004>:OUTPUT: [Replica 1][TS: 1508729996.653314] get request with request id 2 received by Replica 1.
+[2017-10-22 23:39:56,653] bcr.Replica<Replica:5e004>:OUTPUT: [Replica 1][TS: 1508729996.653755] Replica 1 is in ACTIVE state.
+[2017-10-22 23:39:56,655] bcr.Replica<Replica:5e004>:OUTPUT: [Replica 1][TS: 1508729996.655218] Replica Replica 1: Trigger shuttle failure for client_id: 0 and message count: 2, scenario: shuttle(0,2), drop_result_stmt()
+[2017-10-22 23:39:56,655] bcr.Client<Client:5e004>:OUTPUT: [Client 1][TS: 1508729996.655443] Number of correct result proofs received :3, required majority: 2
+[2017-10-22 23:39:56,655] bcr.Client<Client:5e004>:OUTPUT: [Client 1][TS: 1508729996.655924] Valid result: OK received for request id: 10001
+[2017-10-22 23:39:56,656] bcr.Replica<Replica:5e005>:OUTPUT: [Tail][TS: 1508729996.656418] Result shuttle is at Tail.
+[2017-10-22 23:39:56,656] bcr.Replica<Replica:5e004>:OUTPUT: [Replica 1][TS: 1508729996.656949] Executing failure scenario: shuttle(0,2), drop_result_stmt()
+[2017-10-22 23:39:56,654] bcr.Replica<Replica:5e003>:OUTPUT: [Head][TS: 1508729996.654294] Result shuttle is at Head.
+[2017-10-22 23:39:56,657] bcr.Replica<Replica:5e005>:OUTPUT: [Tail][TS: 1508729996.6575592] get request with request id 2 received by Tail.
+[2017-10-22 23:39:56,658] bcr.Replica<Replica:5e004>:OUTPUT: [Replica 1][TS: 1508729996.6581771] Result shuttle is at Replica 1.
+[2017-10-22 23:39:56,658] bcr.Replica<Replica:5e005>:OUTPUT: [Tail][TS: 1508729996.6580741] Tail is in ACTIVE state.
+[2017-10-22 23:39:56,659] bcr.Replica<Replica:5e003>:OUTPUT: [Head][TS: 1508729996.6590269] get request with request id 10002 received by Head.
+[2017-10-22 23:39:56,659] bcr.Replica<Replica:5e003>:OUTPUT: [Head][TS: 1508729996.659536] Head is in ACTIVE state.
+[2017-10-22 23:39:56,659] bcr.Replica<Replica:5e004>:OUTPUT: [Replica 1][TS: 1508729996.659682] get request with request id 20002 received by Replica 1.
+[2017-10-22 23:39:56,660] bcr.Replica<Replica:5e004>:OUTPUT: [Replica 1][TS: 1508729996.660175] Replica 1 is in ACTIVE state.
+[2017-10-22 23:39:56,662] bcr.Replica<Replica:5e005>:OUTPUT: [Tail][TS: 1508729996.662261] Result shuttle is at Tail.
+[2017-10-22 23:39:56,662] bcr.Client<Client:5e003>:OUTPUT: [Client 0][TS: 1508729996.6627781] Number of correct result proofs received :3, required majority: 2
+[2017-10-22 23:39:56,663] bcr.Client<Client:5e003>:OUTPUT: [Client 0][TS: 1508729996.663305] Valid result: star wars received for request id: 2
+[2017-10-22 23:39:56,663] bcr.Replica<Replica:5e005>:OUTPUT: [Tail][TS: 1508729996.6636329] get request with request id 20002 received by Tail.
+[2017-10-22 23:39:56,663] bcr.Replica<Replica:5e004>:OUTPUT: [Replica 1][TS: 1508729996.66375] Result shuttle is at Replica 1.
+[2017-10-22 23:39:56,664] bcr.Client<Client:5e003>:OUTPUT: [Client 0][TS: 1508729996.664076] Local running state of client after the given set of operations: {'movie': 'star wars'}.
+[2017-10-22 23:39:56,664] bcr.Replica<Replica:5e005>:OUTPUT: [Tail][TS: 1508729996.6641548] Tail is in ACTIVE state.
+[2017-10-22 23:39:56,661] bcr.Replica<Replica:5e003>:OUTPUT: [Head][TS: 1508729996.661491] Result shuttle sent by Replica 1 is not valid.
+[2017-10-22 23:39:56,666] bcr.Replica<Replica:5e004>:OUTPUT: [Replica 1][TS: 1508729996.6664379] Result shuttle is at Replica 1.
+[2017-10-22 23:39:56,667] bcr.Client<Client:5e005>:OUTPUT: [Client 2][TS: 1508729996.667918] Number of correct result proofs received :3, required majority: 2
+[2017-10-22 23:39:56,667] bcr.Replica<Replica:5e005>:OUTPUT: [Tail][TS: 1508729996.6675131] Result shuttle is at Tail.
+[2017-10-22 23:39:56,664] bcr.Client<Client:5e003>:OUTPUT: [Client 0][TS: 1508729996.664562] Running state of client at the server (assuming no conflicting keys from other clients) after the given set of operations: {'movie': 'star wars'}.
+[2017-10-22 23:39:56,667] bcr.Olympus<Olympus:5e002>:OUTPUT: [Olympus][TS: 1508729996.667089] Reconfiguration request received from Head.
+[2017-10-22 23:39:56,679] bcr.Client<Client:5e005>:OUTPUT: [Client 2][TS: 1508729996.679939] Valid result:  received for request id: 20002
+[2017-10-22 23:39:56,680] bcr.Client<Client:5e003>:OUTPUT: [Client 0][TS: 1508729996.680224] 
+
+Test case passed! Actual and expected running states match.
+
+
+[2017-10-22 23:39:56,680] bcr.Olympus<Olympus:5e002>:OUTPUT: [Olympus][TS: 1508729996.680311] No reconfiguration mechanism implemented yet.
+[2017-10-22 23:39:56,667] bcr.Replica<Replica:5e003>:OUTPUT: [Head][TS: 1508729996.667124] Result shuttle is at Head.
+[2017-10-22 23:39:56,680] bcr.Replica<Replica:5e004>:OUTPUT: [Replica 1][TS: 1508729996.680532] get request with request id 10002 received by Replica 1.
+[2017-10-22 23:39:56,681] bcr.Replica<Replica:5e004>:OUTPUT: [Replica 1][TS: 1508729996.681024] Replica 1 is in ACTIVE state.
+[2017-10-22 23:39:56,682] bcr.Replica<Replica:5e003>:OUTPUT: [Head][TS: 1508729996.682078] Result shuttle is at Head.
+[2017-10-22 23:39:56,682] bcr.Replica<Replica:5e005>:OUTPUT: [Tail][TS: 1508729996.682441] get request with request id 10002 received by Tail.
+[2017-10-22 23:39:56,682] bcr.Replica<Replica:5e005>:OUTPUT: [Tail][TS: 1508729996.6828108] Tail is in ACTIVE state.
+[2017-10-22 23:39:56,683] bcr.Replica<Replica:5e003>:OUTPUT: [Head][TS: 1508729996.68368] put request with request id 20003 received by Head.
+[2017-10-22 23:39:56,684] bcr.Replica<Replica:5e004>:OUTPUT: [Replica 1][TS: 1508729996.684072] Result shuttle is at Replica 1.
+[2017-10-22 23:39:56,684] bcr.Replica<Replica:5e003>:OUTPUT: [Head][TS: 1508729996.6842308] Head is in ACTIVE state.
+[2017-10-22 23:39:56,684] bcr.Client<Client:5e004>:OUTPUT: [Client 1][TS: 1508729996.684682] Number of correct result proofs received :3, required majority: 2
+[2017-10-22 23:39:56,685] bcr.Client<Client:5e004>:OUTPUT: [Client 1][TS: 1508729996.685267] Valid result:  received for request id: 10002
+[2017-10-22 23:39:56,685] bcr.Replica<Replica:5e005>:OUTPUT: [Tail][TS: 1508729996.685811] Result shuttle is at Tail.
+[2017-10-22 23:39:56,686] bcr.Replica<Replica:5e004>:OUTPUT: [Replica 1][TS: 1508729996.686103] put request with request id 20003 received by Replica 1.
+[2017-10-22 23:39:56,686] bcr.Client<Client:5e004>:OUTPUT: [Client 1][TS: 1508729996.6861598] Local running state of client after the given set of operations: {'name': 'saraj munjal'}.
+[2017-10-22 23:39:56,686] bcr.Replica<Replica:5e004>:OUTPUT: [Replica 1][TS: 1508729996.686612] Replica 1 is in ACTIVE state.
+[2017-10-22 23:39:56,686] bcr.Client<Client:5e004>:OUTPUT: [Client 1][TS: 1508729996.686681] Running state of client at the server (assuming no conflicting keys from other clients) after the given set of operations: {'name': 'saraj munjal'}.
+[2017-10-22 23:39:56,686] bcr.Replica<Replica:5e003>:OUTPUT: [Head][TS: 1508729996.6868129] Result shuttle is at Head.
+[2017-10-22 23:39:56,687] bcr.Client<Client:5e004>:OUTPUT: [Client 1][TS: 1508729996.687123] 
+
+Test case passed! Actual and expected running states match.
+
+
+[2017-10-22 23:39:56,688] bcr.Replica<Replica:5e005>:OUTPUT: [Tail][TS: 1508729996.688203] put request with request id 20003 received by Tail.
+[2017-10-22 23:39:56,688] bcr.Replica<Replica:5e005>:OUTPUT: [Tail][TS: 1508729996.688566] Tail is in ACTIVE state.
+[2017-10-22 23:39:56,689] bcr.Replica<Replica:5e004>:OUTPUT: [Replica 1][TS: 1508729996.689024] Result shuttle is at Replica 1.
+[2017-10-22 23:39:56,689] bcr.Replica<Replica:5e003>:OUTPUT: [Head][TS: 1508729996.689646] Result shuttle is at Head.
+[2017-10-22 23:39:56,692] bcr.Replica<Replica:5e005>:OUTPUT: [Tail][TS: 1508729996.6920729] Result shuttle is at Tail.
+[2017-10-22 23:39:56,692] bcr.Client<Client:5e005>:OUTPUT: [Client 2][TS: 1508729996.692218] Number of correct result proofs received :3, required majority: 2
+[2017-10-22 23:39:56,692] bcr.Client<Client:5e005>:OUTPUT: [Client 2][TS: 1508729996.692788] Valid result: OK received for request id: 20003
+[2017-10-22 23:39:56,693] bcr.Replica<Replica:5e004>:OUTPUT: [Replica 1][TS: 1508729996.693593] Result shuttle is at Replica 1.
+[2017-10-22 23:39:56,694] bcr.Replica<Replica:5e003>:OUTPUT: [Head][TS: 1508729996.6942341] Result shuttle is at Head.
+[2017-10-22 23:39:56,698] bcr.Replica<Replica:5e003>:OUTPUT: [Head][TS: 1508729996.698619] get request with request id 20004 received by Head.
+[2017-10-22 23:39:56,699] bcr.Replica<Replica:5e003>:OUTPUT: [Head][TS: 1508729996.699564] Head is in ACTIVE state.
+[2017-10-22 23:39:56,701] bcr.Replica<Replica:5e004>:OUTPUT: [Replica 1][TS: 1508729996.701857] get request with request id 20004 received by Replica 1.
+[2017-10-22 23:39:56,702] bcr.Replica<Replica:5e004>:OUTPUT: [Replica 1][TS: 1508729996.702614] Replica 1 is in ACTIVE state.
+[2017-10-22 23:39:56,704] bcr.Replica<Replica:5e005>:OUTPUT: [Tail][TS: 1508729996.704421] get request with request id 20004 received by Tail.
+[2017-10-22 23:39:56,704] bcr.Replica<Replica:5e005>:OUTPUT: [Tail][TS: 1508729996.7048619] Tail is in ACTIVE state.
+[2017-10-22 23:39:56,706] bcr.Client<Client:5e005>:OUTPUT: [Client 2][TS: 1508729996.706561] Number of correct result proofs received :3, required majority: 2
+[2017-10-22 23:39:56,707] bcr.Client<Client:5e005>:OUTPUT: [Client 2][TS: 1508729996.707045] Valid result:  received for request id: 20004
+[2017-10-22 23:39:56,707] bcr.Replica<Replica:5e005>:OUTPUT: [Tail][TS: 1508729996.707212] Result shuttle is at Tail.
+[2017-10-22 23:39:56,708] bcr.Replica<Replica:5e004>:OUTPUT: [Replica 1][TS: 1508729996.708491] Result shuttle is at Replica 1.
+[2017-10-22 23:39:56,708] bcr.Replica<Replica:5e003>:OUTPUT: [Head][TS: 1508729996.708717] put request with request id 20005 received by Head.
+[2017-10-22 23:39:56,709] bcr.Replica<Replica:5e003>:OUTPUT: [Head][TS: 1508729996.709184] Head is in ACTIVE state.
+[2017-10-22 23:39:56,710] bcr.Replica<Replica:5e004>:OUTPUT: [Replica 1][TS: 1508729996.710352] put request with request id 20005 received by Replica 1.
+[2017-10-22 23:39:56,710] bcr.Replica<Replica:5e003>:OUTPUT: [Head][TS: 1508729996.710492] Result shuttle is at Head.
+[2017-10-22 23:39:56,710] bcr.Replica<Replica:5e004>:OUTPUT: [Replica 1][TS: 1508729996.71077] Replica 1 is in ACTIVE state.
+[2017-10-22 23:39:56,712] bcr.Replica<Replica:5e005>:OUTPUT: [Tail][TS: 1508729996.71209] put request with request id 20005 received by Tail.
+[2017-10-22 23:39:56,712] bcr.Replica<Replica:5e005>:OUTPUT: [Tail][TS: 1508729996.712546] Tail is in ACTIVE state.
+[2017-10-22 23:39:56,714] bcr.Client<Client:5e005>:OUTPUT: [Client 2][TS: 1508729996.7144792] Number of correct result proofs received :3, required majority: 2
+[2017-10-22 23:39:56,715] bcr.Client<Client:5e005>:OUTPUT: [Client 2][TS: 1508729996.715065] Valid result: OK received for request id: 20005
+[2017-10-22 23:39:56,715] bcr.Replica<Replica:5e005>:OUTPUT: [Tail][TS: 1508729996.7155] Result shuttle is at Tail.
+[2017-10-22 23:39:56,716] bcr.Replica<Replica:5e004>:OUTPUT: [Replica 1][TS: 1508729996.716927] Result shuttle is at Replica 1.
+[2017-10-22 23:39:56,716] bcr.Replica<Replica:5e003>:OUTPUT: [Head][TS: 1508729996.716815] slice request with request id 20006 received by Head.
+[2017-10-22 23:39:56,717] bcr.Replica<Replica:5e003>:OUTPUT: [Head][TS: 1508729996.71757] Head is in ACTIVE state.
+[2017-10-22 23:39:56,719] bcr.Replica<Replica:5e004>:OUTPUT: [Replica 1][TS: 1508729996.719077] slice request with request id 20006 received by Replica 1.
+[2017-10-22 23:39:56,719] bcr.Replica<Replica:5e004>:OUTPUT: [Replica 1][TS: 1508729996.719411] Replica 1 is in ACTIVE state.
+[2017-10-22 23:39:56,719] bcr.Replica<Replica:5e003>:OUTPUT: [Head][TS: 1508729996.7195652] Result shuttle is at Head.
+[2017-10-22 23:39:56,720] bcr.Replica<Replica:5e005>:OUTPUT: [Tail][TS: 1508729996.72081] slice request with request id 20006 received by Tail.
+[2017-10-22 23:39:56,721] bcr.Replica<Replica:5e005>:OUTPUT: [Tail][TS: 1508729996.7211788] Tail is in ACTIVE state.
+[2017-10-22 23:39:56,723] bcr.Client<Client:5e005>:OUTPUT: [Client 2][TS: 1508729996.7229939] Number of correct result proofs received :3, required majority: 2
+[2017-10-22 23:39:56,724] bcr.Replica<Replica:5e005>:OUTPUT: [Tail][TS: 1508729996.724365] Result shuttle is at Tail.
+[2017-10-22 23:39:56,723] bcr.Client<Client:5e005>:OUTPUT: [Client 2][TS: 1508729996.723396] Valid result: fail received for request id: 20006
+[2017-10-22 23:39:56,725] bcr.Replica<Replica:5e003>:OUTPUT: [Head][TS: 1508729996.725674] Result shuttle is at Head.
+[2017-10-22 23:39:56,725] bcr.Replica<Replica:5e004>:OUTPUT: [Replica 1][TS: 1508729996.7251048] Result shuttle is at Replica 1.
+[2017-10-22 23:39:56,741] bcr.Replica<Replica:5e003>:OUTPUT: [Head][TS: 1508729996.741726] put request with request id 20007 received by Head.
+[2017-10-22 23:39:56,742] bcr.Replica<Replica:5e003>:OUTPUT: [Head][TS: 1508729996.7422981] Head is in ACTIVE state.
+[2017-10-22 23:39:56,743] bcr.Replica<Replica:5e004>:OUTPUT: [Replica 1][TS: 1508729996.743786] put request with request id 20007 received by Replica 1.
+[2017-10-22 23:39:56,744] bcr.Replica<Replica:5e004>:OUTPUT: [Replica 1][TS: 1508729996.744276] Replica 1 is in ACTIVE state.
+[2017-10-22 23:39:56,746] bcr.Replica<Replica:5e005>:OUTPUT: [Tail][TS: 1508729996.7462451] put request with request id 20007 received by Tail.
+[2017-10-22 23:39:56,747] bcr.Replica<Replica:5e005>:OUTPUT: [Tail][TS: 1508729996.747276] Tail is in ACTIVE state.
+[2017-10-22 23:39:56,751] bcr.Client<Client:5e005>:OUTPUT: [Client 2][TS: 1508729996.751049] Number of correct result proofs received :3, required majority: 2
+[2017-10-22 23:39:56,751] bcr.Client<Client:5e005>:OUTPUT: [Client 2][TS: 1508729996.751848] Valid result: OK received for request id: 20007
+[2017-10-22 23:39:56,752] bcr.Replica<Replica:5e005>:OUTPUT: [Tail][TS: 1508729996.7527308] Result shuttle is at Tail.
+[2017-10-22 23:39:56,754] bcr.Replica<Replica:5e003>:OUTPUT: [Head][TS: 1508729996.754303] put request with request id 20008 received by Head.
+[2017-10-22 23:39:56,754] bcr.Replica<Replica:5e004>:OUTPUT: [Replica 1][TS: 1508729996.754465] Result shuttle is at Replica 1.
+[2017-10-22 23:39:56,754] bcr.Replica<Replica:5e003>:OUTPUT: [Head][TS: 1508729996.7548668] Head is in ACTIVE state.
+[2017-10-22 23:39:56,756] bcr.Replica<Replica:5e004>:OUTPUT: [Replica 1][TS: 1508729996.756205] put request with request id 20008 received by Replica 1.
+[2017-10-22 23:39:56,756] bcr.Replica<Replica:5e003>:OUTPUT: [Head][TS: 1508729996.756274] Result shuttle is at Head.
+[2017-10-22 23:39:56,756] bcr.Replica<Replica:5e004>:OUTPUT: [Replica 1][TS: 1508729996.756611] Replica 1 is in ACTIVE state.
+[2017-10-22 23:39:56,759] bcr.Replica<Replica:5e005>:OUTPUT: [Tail][TS: 1508729996.758985] put request with request id 20008 received by Tail.
+[2017-10-22 23:39:56,759] bcr.Replica<Replica:5e005>:OUTPUT: [Tail][TS: 1508729996.75936] Tail is in ACTIVE state.
+[2017-10-22 23:39:56,760] bcr.Client<Client:5e005>:OUTPUT: [Client 2][TS: 1508729996.7609658] Number of correct result proofs received :3, required majority: 2
+[2017-10-22 23:39:56,761] bcr.Client<Client:5e005>:OUTPUT: [Client 2][TS: 1508729996.761384] Valid result: OK received for request id: 20008
+[2017-10-22 23:39:56,761] bcr.Replica<Replica:5e005>:OUTPUT: [Tail][TS: 1508729996.761773] Result shuttle is at Tail.
+[2017-10-22 23:39:56,762] bcr.Replica<Replica:5e003>:OUTPUT: [Head][TS: 1508729996.7629771] slice request with request id 20009 received by Head.
+[2017-10-22 23:39:56,763] bcr.Replica<Replica:5e004>:OUTPUT: [Replica 1][TS: 1508729996.763184] Result shuttle is at Replica 1.
+[2017-10-22 23:39:56,763] bcr.Replica<Replica:5e003>:OUTPUT: [Head][TS: 1508729996.763579] Head is in ACTIVE state.
+[2017-10-22 23:39:56,764] bcr.Replica<Replica:5e004>:OUTPUT: [Replica 1][TS: 1508729996.764927] slice request with request id 20009 received by Replica 1.
+[2017-10-22 23:39:56,764] bcr.Replica<Replica:5e003>:OUTPUT: [Head][TS: 1508729996.764976] Result shuttle is at Head.
+[2017-10-22 23:39:56,765] bcr.Replica<Replica:5e004>:OUTPUT: [Replica 1][TS: 1508729996.765337] Replica 1 is in ACTIVE state.
+[2017-10-22 23:39:56,766] bcr.Replica<Replica:5e005>:OUTPUT: [Tail][TS: 1508729996.76662] slice request with request id 20009 received by Tail.
+[2017-10-22 23:39:56,767] bcr.Replica<Replica:5e005>:OUTPUT: [Tail][TS: 1508729996.767005] Tail is in ACTIVE state.
+[2017-10-22 23:39:56,768] bcr.Client<Client:5e005>:OUTPUT: [Client 2][TS: 1508729996.768538] Number of correct result proofs received :3, required majority: 2
+[2017-10-22 23:39:56,768] bcr.Client<Client:5e005>:OUTPUT: [Client 2][TS: 1508729996.7689312] Valid result: fail received for request id: 20009
+[2017-10-22 23:39:56,769] bcr.Replica<Replica:5e005>:OUTPUT: [Tail][TS: 1508729996.769553] Result shuttle is at Tail.
+[2017-10-22 23:39:56,769] bcr.Client<Client:5e005>:OUTPUT: [Client 2][TS: 1508729996.769954] Local running state of client after the given set of operations: {'qhz': 'prg', 'xjd': 'pkg', 'twk': 'jdq', 'byc': 'yyd', 'flk': 'xqq'}.
+[2017-10-22 23:39:56,770] bcr.Client<Client:5e005>:OUTPUT: [Client 2][TS: 1508729996.7703612] Running state of client at the server (assuming no conflicting keys from other clients) after the given set of operations: {'qhz': 'prg', 'xjd': 'pkg', 'twk': 'jdq', 'byc': 'yyd', 'flk': 'xqq'}.
+[2017-10-22 23:39:56,770] bcr.Replica<Replica:5e004>:OUTPUT: [Replica 1][TS: 1508729996.770591] Result shuttle is at Replica 1.
+[2017-10-22 23:39:56,770] bcr.Client<Client:5e005>:OUTPUT: [Client 2][TS: 1508729996.770808] 
+
+Test case passed! Actual and expected running states match.
+
+
+[2017-10-22 23:39:56,771] bcr.Replica<Replica:5e003>:OUTPUT: [Head][TS: 1508729996.7713752] Result shuttle is at Head.
+[2017-10-22 23:39:59,768] bcr.Replica<Replica:5e003>:OUTPUT: [Head][TS: 1508729999.7680562] Head has timed out while waiting for result shuttle for request id 0. Sending reconfiguration request to Olympus
+[2017-10-22 23:39:59,772] bcr.Olympus<Olympus:5e002>:OUTPUT: [Olympus][TS: 1508729999.7719738] Reconfiguration request received from Head.
+[2017-10-22 23:39:59,772] bcr.Olympus<Olympus:5e002>:OUTPUT: [Olympus][TS: 1508729999.7726772] No reconfiguration mechanism implemented yet.
+[2017-10-22 23:40:22,175] da.api<MainProcess>:INFO: <Node_:a0001> initialized at 127.0.0.1:(UdpTransport=15678, TcpTransport=24615).
+[2017-10-22 23:40:22,176] da.api<MainProcess>:INFO: Starting program <module 'bcr' from 'src/bcr.py'>...
+[2017-10-22 23:40:22,176] da.api<MainProcess>:INFO: Running iteration 1 ...
+[2017-10-22 23:40:22,176] da.api<MainProcess>:INFO: Waiting for remaining child processes to terminate...(Press "Ctrl-C" to force kill)
+[2017-10-22 23:40:22,177] bcr.Node_<Node_:a0001>:OUTPUT: [Main][TS: 1508730022.177921] Running BCR simulation for test case: basic_multi_client
+[2017-10-22 23:40:22,178] da.sim.OSThreadContainer<MainProcess>:ERROR: Failed to create instance () of <class 'bcr.Olympus'>: TransportException('Initialization failed for 1/2 transports.',)
+[2017-10-22 23:40:22,178] bcr.Node_<Node_:a0001>:WARNING: send: 'to' is None!
+[2017-10-22 23:40:22,178] bcr.Node_<Node_:a0001>:OUTPUT: [Main][TS: 1508730022.178817] Workload for client 0 : [('put', ['movie', 'star']), ('append', ['movie', ' wars']), ('get', ['movie'])]
+[2017-10-22 23:40:22,179] da.sim.OSThreadContainer<MainProcess>:ERROR: Failed to create instance () of <class 'bcr.Client'>: TransportException('Initialization failed for 1/2 transports.',)
+[2017-10-22 23:40:22,179] bcr.Node_<Node_:a0001>:OUTPUT: [Main][TS: 1508730022.1794019] Workload for client 1 : [('put', ['name', 'saraj']), ('append', ['name', ' munjal']), ('get', ['age'])]
+[2017-10-22 23:40:22,216] bcr.Node_<Node_:a0001>:OUTPUT: [Main][TS: 1508730022.216736] Workload for client 2 : [('put', ['qhz', 'prg']), ('get', ['dih']), ('get', ['cvh']), ('put', ['xjd', 'pkg']), ('get', ['jpq']), ('put', ['twk', 'jdq']), ('slice', ['nbm', '1:2']), ('put', ['byc', 'yyd']), ('put', ['flk', 'xqq']), ('slice', ['odw', '0:0'])]
+[2017-10-22 23:40:22,235] da.sim.Router<MainProcess>:WARNING: Caught exception while processing router message from <Node_:a0001>((<Command.Start: 1>, 126101024602587142)): CircularRoutingException('destination: <Node_:a0001>',)
+[2017-10-22 23:40:22,237] bcr.Client<Client:6b802>:WARNING: send: 'to' is None!
+[2017-10-22 23:40:22,237] da.api<MainProcess>:INFO: Main process terminated.
+[2017-10-22 23:40:22,237] bcr.Client<Client:6b803>:WARNING: send: 'to' is None!
