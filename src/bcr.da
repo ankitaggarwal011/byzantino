@@ -14,7 +14,7 @@ import getopt
 class Replica(process):
     
     def output_wrapper(log):
-        output('[TS: ' + str(time()) + ']', log)
+        output('[{}][TS: {}]'.format(name, str(time())), log)
     
     def setup(id, name, replica_failures, replica_timeout, olympus_public_key):
         output_wrapper('replica failures: ' + str(replica_failures))
@@ -33,7 +33,8 @@ class Replica(process):
         self.private_key = None
         self.client_keys = dict()
         self.configuration = None
-        self.current_failure_scenario = {}   # dict of failure_action_type vs boolean
+        self.pending_failures = {}   # dict of failure_action_type vs boolean
+        self.pending_failure_scenarios = {}
         self.messages_received_from_client = {} # messages received for each client
         self.messages_shuttle = {} # shuttles received for each client
         self.messages_result_shuttle = {} # result shuttles received for each client
@@ -87,8 +88,9 @@ class Replica(process):
                 is_trigger, scenario = check_failure(replica_failures, client_id, messages_received_from_client[client_id], FailureType.client_request)
                 if is_trigger:
                     # trigger this failure
-                    current_failure_scenario[scenario.action_type] = 1
-                    output_wrapper('Replica {}: Trigger client request failure for client_id: {} and message count: {}, scenario: {}'.format(name, client_id, messages_received_from_client[client_id], current_failure_scenario));
+                    pending_failures[scenario.action_type] = 1
+                    pending_failure_scenarios[scenario.action_type] = scenario
+                    output_wrapper('Replica {}: Trigger client request failure for client_id: {} and message count: {}, scenario: {}'.format(name, client_id, messages_received_from_client[client_id], pending_failures));
 
                 messages_received_from_client[client_id] += 1
                 
@@ -124,15 +126,18 @@ class Replica(process):
                     is_trigger, scenario = check_failure(replica_failures, client_id, messages_forwarded_request[client_id], FailureType.forwarded_request)
                     if is_trigger:
                         # trigger this failure
-                        current_failure_scenario[scenario.action_type] = 1
-                        output_wrapper('Replica {}: Trigger forwarded request failure for client_id: {} and message count: {}, scenario: {}'.format(name, client_id, messages_forwarded_request[client_id], current_failure_scenario));
+                        pending_failures[scenario.action_type] = 1
+                        pending_failure_scenarios[scenario.action_type] = scenario
+                        output_wrapper('Replica {}: Trigger forwarded request failure for client_id: {} and message count: {}, scenario: {}'.format(name, client_id, messages_forwarded_request[client_id], scenario));
                     messages_forwarded_request[client_id] += 1
                 result = update_running_state(type, args)
                 slot_number += 1
-                if FailureActionType.change_operation in current_failure_scenario and current_failure_scenario[FailureActionType.change_operation] == 1:
+                if FailureActionType.change_operation in pending_failures and pending_failures[FailureActionType.change_operation] == 1:
                     stmt_type = 'get'
                     stmt_args = ['x']
-                    current_failure_scenario[FailureActionType.change_operation] = 0
+                    output_wrapper('Executing failure scenario: {}'.format(str(pending_failure_scenarios[FailureActionType.change_operation])))
+                    pending_failures[FailureActionType.change_operation] = 0
+                    pending_failure_scenarios[FailureActionType.change_operation] = None
                 else:
                     stmt_type = type
                     stmt_args = args
@@ -154,8 +159,9 @@ class Replica(process):
                 is_trigger, scenario = check_failure(replica_failures, client_id, messages_shuttle[client_id], FailureType.shuttle)
                 if is_trigger:
                     # trigger this failure
-                    current_failure_scenario[scenario.action_type] = 1
-                    output_wrapper('Replica {}: Trigger shuttle failure for client_id: {} and message count: {}, scenario: {}'.format(name, client_id, messages_shuttle[client_id], current_failure_scenario));
+                    pending_failures[scenario.action_type] = 1
+                    pending_failure_scenarios[scenario.action_type] = scenario
+                    output_wrapper('Replica {}: Trigger shuttle failure for client_id: {} and message count: {}, scenario: {}'.format(name, client_id, messages_shuttle[client_id], scenario));
                 messages_shuttle[client_id] += 1
                 if validate_shuttle(args):
                     order_proof, result_proof = args
@@ -163,25 +169,33 @@ class Replica(process):
                     last_slot_number = slot_number
                     type, operation_args = operation
                     result = update_running_state(type, operation_args)
-                    if FailureActionType.change_operation in current_failure_scenario and current_failure_scenario[FailureActionType.change_operation] == 1:
+                    if FailureActionType.change_operation in pending_failures and pending_failures[FailureActionType.change_operation] == 1:
+                        output_wrapper('Executing failure scenario: {}'.format(str(pending_failure_scenarios[FailureActionType.change_operation])))
                         type = 'get'
                         operation_args = ['x']
-                        current_failure_scenario[FailureActionType.change_operation] = 0
+                        pending_failures[FailureActionType.change_operation] = 0
+                        pending_failure_scenarios[FailureActionType.change_operation] = None
                     order_proof[3].append([slot_number, (type, operation_args), configuration]) # append to order_stmt
                     result_proof.append([(type, operation_args), calculate_hash(result)]) # append result stmt
                     shuttle = (order_proof, result_proof)
                     if self == tail:
                         result_shuttle = [result, result_proof]
-                        if FailureActionType.change_result in current_failure_scenario and current_failure_scenario[FailureActionType.change_result] == 1:
+                        if FailureActionType.change_result in pending_failures and pending_failures[FailureActionType.change_result] == 1:
                             op_t = result_shuttle[1][id][0]
                             result_shuttle[1][id] = [op_t, calculate_hash('OK')]
 
-                        if FailureActionType.drop_result_stmt in current_failure_scenario and current_failure_scenario[FailureActionType.drop_result_stmt] == 1:
+                        if FailureActionType.drop_result_stmt in pending_failures and pending_failures[FailureActionType.drop_result_stmt] == 1:
                             result_t = result_shuttle[0]
                             result_shuttle = [result_t, result_shuttle[1][1:]]
 
-                        sign_and_send(('Operation_result', result_shuttle), client)
+                        sign_and_send(('Operation_result', request_id, result_shuttle), client)
+
+                        # we send a separate 'Operation_result_' message to client for tracking the completion of a
+                        # particular request with this request_id. It is not possible for the client to wait for specific
+                        # requests in any other way.
                         send(('Operation_result_' + str(request_id)), to = client)
+
+                        # The tail sends a result_shuttle message to itself to initiate the result shuttle handler train
                         sign_and_send(('Result_shuttle', self, request_id, client_id, result_shuttle), tail)
                     else:
                         sign_and_send(('Request', type, self, client, request_id, client_id, shuttle), replicas[id + 1])
@@ -199,8 +213,9 @@ class Replica(process):
         is_trigger, scenario = check_failure(replica_failures, client_id, messages_result_shuttle[client_id], FailureType.result_shuttle)
         if is_trigger:
             # trigger this failure
-            current_failure_scenario[scenario.action_type] = 1
-            output_wrapper('{}: Trigger result shuttle failure for client_id: {} and message count: {}, scenario: {}'.format(name, client_id, messages_result_shuttle[client_id], current_failure_scenario))
+            pending_failures[scenario.action_type] = 1
+            pending_failure_scenarios[scenario.action_type] = scenario
+            output_wrapper('{}: Trigger result shuttle failure for client_id: {} and message count: {}, scenario: {}'.format(name, client_id, messages_result_shuttle[client_id], scenario))
         messages_result_shuttle[client_id] += 1
         
         # Verification of signature of replicas sending result shuttles
@@ -212,14 +227,18 @@ class Replica(process):
         if validate_result_shuttle(result_shuttle):
             result_cache[request_id] = result_shuttle
             if self != head:
-                if FailureActionType.change_result in current_failure_scenario and current_failure_scenario[FailureActionType.change_result] == 1:
+                if FailureActionType.change_result in pending_failures and pending_failures[FailureActionType.change_result] == 1:
+                    output_wrapper('Executing failure scenario: {}'.format(str(pending_failure_scenarios[FailureActionType.change_result])))
                     op_t = result_shuttle[1][id][0]
                     result_shuttle[1][id] = [op_t, calculate_hash('OK')]
-                    current_failure_scenario[FailureActionType.change_result] = 0
-                if FailureActionType.drop_result_stmt in current_failure_scenario and current_failure_scenario[FailureActionType.drop_result_stmt] == 1:
+                    pending_failures[FailureActionType.change_result] = 0
+                    pending_failure_scenarios[FailureActionType.change_result] = None
+                if FailureActionType.drop_result_stmt in pending_failures and pending_failures[FailureActionType.drop_result_stmt] == 1:
+                    output_wrapper('Executing failure scenario: {}'.format(str(pending_failure_scenarios[FailureActionType.drop_result_stmt])))
                     result_t = result_shuttle[0]
                     result_shuttle = [result_t, result_shuttle[1][1:]]
-                    current_failure_scenario[FailureActionType.drop_result_stmt] = 0
+                    pending_failures[FailureActionType.drop_result_stmt] = 0
+                    pending_failure_scenarios[FailureActionType.drop_result_stmt] = None
                 sign_and_send(('Result_shuttle', self, request_id, client_id, result_shuttle), replicas[id - 1])
                 send(('Result_shuttle_' + str(request_id)), to = replicas[id - 1])
             output_wrapper('Result shuttle is at ' + str(name) + '.')
@@ -302,7 +321,7 @@ class Replica(process):
 class Olympus(process):
 
     def output_wrapper(log):
-        output('[TS: ' + str(time()) + ']', log)
+        output('[{}][TS: {}]'.format(name, str(time())), log)
     
     def setup(name, num_replicas, all_replica_conf_failures, head_timeout, replica_timeout):
         self.replicas = list()
@@ -327,8 +346,11 @@ class Olympus(process):
             else:
                 replica = new(Replica, args=(i, 'Replica ' + str(i), replica_failures, replica_timeout, public_key))
             self.replicas.append(replica)
+            replica_name = 'Replica ' + str(i)
+            output_wrapper('Olympus created replica process: {}'.format(replica_name))
             signing_key = SigningKey.generate()
             verify_key = signing_key.verify_key.encode(encoder = HexEncoder)
+            output_wrapper('Olympus created keys for replica process: {}. Public key: {}'.format(replica_name, str(verify_key)))
             self.replica_private_keys.append(signing_key)
             self.replica_public_keys.append(verify_key)
     
@@ -338,8 +360,9 @@ class Olympus(process):
     def receive(msg = ('Get_configuration', client, client_name, client_id, client_public_key)):
         client_keys[client_id] = VerifyKey(client_public_key, encoder = HexEncoder)
         send(('Configuration', replicas, head), to = client)
-        send(('Keys', replica_public_keys), to = client)
+        send(('Keys', replica_public_keys, public_key), to = client)
         send(('Client_keys', client_id, client_public_key), to = replicas)
+        output_wrapper('Received public key: {} from client: {}'.format(str(client_public_key), str(client_name)))
         output_wrapper('Configuration sent to ' + str(client_name) + '.')
 
     def receive(msg = ('Reconfiguration', sender, proof_of_misbehavior)):
@@ -370,13 +393,14 @@ class Olympus(process):
 class Client(process):
 
     def output_wrapper(log):
-        output('[TS: ' + str(time()) + ']', log)
+        output('[{}][TS: {}]'.format(name, str(time())), log)
     
     def setup(client_id, olympus, request_id, client_timeout, operations, num_failures):
         self.name = 'Client ' + str(client_id)
         self.replicas = None
         self.head = None
         self.replica_public_keys = None
+        self.olympus_public_key = None
         self.private_key = SigningKey.generate()
         self.public_key = self.private_key.verify_key.encode(encoder = HexEncoder)
         self.client_running_state = dict()
@@ -388,12 +412,14 @@ class Client(process):
         output_wrapper(name + ' is configured.')
         send(('ACK', name), to = olympus)
 
-    def receive(msg = ('Keys', replica_public_keys_), from_ = olympus):
+    def receive(msg = ('Keys', replica_public_keys_, olympus_public_key_), from_ = olympus):
         replica_public_keys = [VerifyKey(key, encoder = HexEncoder) for key in replica_public_keys_]
-        output_wrapper(name + ' received the public keys of replicas from Olympus.')
+        olympus_public_key = VerifyKey(olympus_public_key_, encoder = HexEncoder)
+        output_wrapper('Received the public keys of replicas from Olympus')
+        output_wrapper('Received the public key of Olympus.')
         send(('ACK', name), to = olympus)
 
-    def receive(msg = (sender_id, 'Operation_result', result_shuttle)):
+    def receive(msg = (sender_id, 'Operation_result', request_id, result_shuttle)):
         # Verification of signature of replicas
         result_shuttle = verify_data_with_key(result_shuttle, replica_public_keys[sender_id])
         if result_shuttle == None:
@@ -406,9 +432,10 @@ class Client(process):
             if result != 'fail' or result != '':
                 update_client_running_state(client_running_state_sync, result_proof[0][0][0], result_proof[0][0][1]) 
                 # updating state from the tail response
-            output_wrapper(str(result) + ' received by ' + str(name) + '.')
+            output_wrapper('Valid result: {} received for request id: {}'.format(str(result), str(request_id)))
         if is_reconfiguration_required:
             # send reconfiguration request to Olympus with proof of misbehavior
+            output_wrapper('Misbehaviour detected in request id: {}! Sending reconfiguration request to Olympus'.format(request_id))
             send(('Reconfiguration', name, result_shuttle), to = olympus)
 
     def sign_and_send(data, to_):
@@ -435,10 +462,14 @@ class Client(process):
                 if await(received(('Operation_result_' + str(request_id)))):
                     break
                 elif timeout(client_timeout):
-                    output_wrapper('Timeout: Retrying.')
+                    output_wrapper('Timeout: Retrying request id: {}, sending to all replicas'.format(str(request_id)))
                     retry = 1
         output_wrapper('Local running state of client after the given set of operations: ' + str(client_running_state) + '.')
         output_wrapper('Running state of client at the server (assuming no conflicting keys from other clients) after the given set of operations: ' + str(client_running_state_sync) + '.')
+        if are_dicts_equal(client_running_state, client_running_state_sync):
+            output_wrapper('\n\nTest case passed! Actual and expected running states match.\n\n')
+        else:
+            output_wrapper('\n\nTest case failed! Actual and expected running states don\'t match\n\n')
         await(received('Shutdown'))
 
     def update_client_running_state(running_state, type, args):
@@ -488,8 +519,8 @@ class Client(process):
         for i in result_proof:
             if hash == i[1]:
                 majority += 1
+        output_wrapper('Number of correct result proofs received :{}, required majority: {}'.format(majority, num_failures + 1))
         if majority < num_failures + 1:
-            output_wrapper('Number of correct result proofs received are less than the majority (failures + 1).')
             return (False, True)
         elif majority < 2 * num_failures + 1:
             return (True, True)
@@ -515,9 +546,12 @@ def parse_program_args(argv):
          output_wrapperfile = arg
    return [inputfile, output_wrapperfile]
 
+def are_dicts_equal(d1, d2):
+    return (len(d1) == len(d2) and all(k in d2 for k in d1))
+
 def main():
     def output_wrapper(log):
-        output('[TS: ' + str(time()) + ']', log)
+        output('[Main][TS: {}]'.format(str(time())), log)
 
     # ignore the 1st argument because it will be the program binary path
     if len(sys.argv) < 2:
@@ -535,18 +569,15 @@ def main():
     replica_config = ReplicaConfig(config_dict)
 
     output_wrapper('Running BCR simulation for test case: ' + global_config.test_case_name)
-    #client_id, message_number = 1, 10
-    #head_timeout, replica_timeout = 3, 3
     olympus = new(Olympus, args=('Olympus', replica_config.num_replica, replica_config.failures, replica_config.head_timeout, replica_config.nonhead_timeout))
     start(olympus)
-    #operations = [('put', ['name', 'ankit']), ('get', ['name']), ('append', ['name', 'aggarwal']), ('get', ['name']), ('slice', ['name', 5]), ('get', ['name'])]
-    #client_id = 1
     clients = list()
 
     for i in range(client_config.num_client):
         request_id_counter = i * 10000 # assuming each client will not perform more than 10000 operations in a single run
         modified_ops = list(map(lambda o: (o.type.name, o.args_list), client_config.workloads[i]))
-        client = new(Client, args=(i, olympus, request_id_counter, client_config.client_timeout, modified_ops, client_config.num_failures))
+        output_wrapper('Workload for client {} : {}'.format(str(i), str(modified_ops)))
+        client = new(Client, args=(i, olympus, request_id_counter - 1, client_config.client_timeout, modified_ops, client_config.num_failures))
         clients.append(client)
 
     start(clients)
