@@ -18,6 +18,7 @@ WORKLOAD GENERATION
 ===================
 
 Python's random module and random module's random function is used for pseudorandom workload generation. Initially, the given seed is set, and one of the four operations is randomly selected. Similarly, the keys and values of a particular set length are randomly generated using the above module and function.
+As a convention, all keys and values generated have a fixed length of 3 to keep the system simple.
 
 BUGS AND LIMITATIONS
 ====================
@@ -42,7 +43,7 @@ Testing
 Saraj Munjal (smunjal, 111497962):
 Client Implementation
 Configuration file parsing
-Pseduorandom and other workload generation
+Pseudorandom and other workload generation
 Logging
 Testing
 
@@ -75,3 +76,6 @@ Dictionary Comprehensions: 0
 Set Comprehensions: ~1-2
 Aggregations: 0
 Quantifications: 0
+Classes: 5
+Enums: 3
+
