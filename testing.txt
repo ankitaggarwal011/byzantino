@@ -1,5 +1,94 @@
-python3 -m da --logfile --logfilename=logs/stress_test-log.txt -L output src/bcr.da -i config/stress_test.txt
-python3 -m da --logfile --logfilename=logs/basic_multi_client-log.txt -L output src/bcr.da -i config/basic_multi_client.txt
-python3 -m da --logfile --logfilename=logs/basic_multi_client_with_failures-log.txt -L output src/bcr.da -i config/basic_multi_client_with_failures.txt
-python3 -m da --logfile --logfilename=logs/basic_pseudo_random_workload-log.txt -L output src/bcr.da -i config/basic_pseudo_random_workload.txt
-python3 -m da --logfile --logfilename=logs/basic_pseudo_random_workload_with_failures-log.txt -L output src/bcr.da -i config/basic_pseudo_random_workload_with_failures.txt
+
+Test cases
+
+-------------- Client -----------------------
+
+-- Generate pseudorandom workload
+    Description:-
+    The algorithm for pseudo-random workload generation is described in the README file.
+    In the main() function while constructing client processes, their workload is printed to output.
+
+    An example of pseudorandom workload is:
+    Workload for client 2 : [('put', ['qhz', 'prg']), ('get', ['dih']), ('get', ['cvh']), ('put', ['xjd', 'pkg']), ('get', ['jpq']), ('put', ['twk', 'jdq']), ('slice', ['inb', 2]), ('slice', ['fby', 2]), ('get', ['yyd']), ('put', ['flk', 'xqq'])]
+
+    This is a random distribution of supported operations with applicable random operands.
+
+    Command:-
+    python3 -m da --logfile --logfilename=logs/client-pseudo-random-log.txt --logfilelevel=info src/bcr.da -i config/client-pseudo-random.txt
+
+-- Generate request sequence
+    Description:-
+    A client can take either a pseudorandom workload, or a specific request sequence.
+    In the main() function while constructing client processes, their workload is printed to output.
+
+    An example of specific workload sequence is:
+    Workload for client 1 : [('put', ['name', 'saraj']), ('append', ['name', ' munjal']), ('get', ['age'])]
+
+    Command(same config file as pseudo random):-
+    python3 -m da --logfile --logfilename=logs/client-pseudo-random-log.txt --logfilelevel=info src/bcr.da -i config/client-pseudo-random.txt
+
+-- Client retransmission
+    Description:-
+    In an environment with t = 1 (3 replicas) and 1 client, we introduce a byzantine failure for the first client request
+    at replica 1(in the middle), through the operation change_result(). As a result, the tail detects misbehavior and
+    triggers reconfiguration, hence not sending the response to the client. The client times out and retries its request.
+
+    Command:-
+    python3 -m da --logfile --logfilename=logs/client-retransmission-log.txt --logfilelevel=info src/bcr.da -i config/client-retransmission.txt
+
+
+-- Client validation
+    Description:-
+
+    In an environment with t = 1 (3 replicas) and 1 client, we introduce a byzantine failure for the first client request
+    at the tail through the operation drop_result_stmt(). As a result, there is one missing operation in the result proofs
+    that are sent to the client. The client detects this misbehavior and prints:
+
+    Number of correct result proofs received :2, required majority: 2
+
+    This is still enough to make progress, but the client nonetheless triggers reconfiguration.
+
+    Command:-
+    python3 -m da --logfile --logfilename=logs/client-validation-log.txt --logfilelevel=info src/bcr.da -i config/client-validation.txt
+
+-- Client: check that dictionary contains expected content at the end of test case
+    Description:-
+    The client must verify that all operations have been performed correctly after completing its request workload.
+    The client keeps two running dictionaries for running state: one is for the client's expected result of operations, and
+    the second for the actual result of operations.
+
+    When the client has processed its workload, we match these two dictionaries to determine output
+
+    Command: Can be verified in every test case
+
+-------------- Olympus -----------------------
+
+    Description:-
+    Olympus creates replica processes, their public and private keys. It also parses the failure scenarios for each replica
+    from a config file and passes it to the replica while creating it.
+    Clients are created separately in the main process, to keep their creation decoupled from Olympus
+
+    Sample logs from Olympus:
+    [289] bcr.Replica<Replica:29803>:OUTPUT: [Head][TS: 1508723924.076395] replica failures: {}
+    [294] bcr.Olympus<Olympus:29802>:OUTPUT: [Olympus][TS: 1508723924.080791] Olympus created replica process: Replica 0
+    [295] bcr.Olympus<Olympus:29802>:OUTPUT: [Olympus][TS: 1508723924.082797] Olympus created keys for replica process: Replica 0. Public key: b'28463be0a63d8a023f4c589c771fd97fa2b5f5a395ce10ae73b8faf3b3ec7260'
+    [313] bcr.Replica<Replica:29804>:OUTPUT: [Replica 1][TS: 1508723924.1004622] replica failures: [shuttle(0,2), drop_result_stmt()]
+    [314] bcr.Olympus<Olympus:29802>:OUTPUT: [Olympus][TS: 1508723924.1016982] Olympus created replica process: Replica 1
+    [315] bcr.Olympus<Olympus:29802>:OUTPUT: [Olympus][TS: 1508723924.1025221] Olympus created keys for replica process: Replica 1. Public key: b'7f21660b4c175b9100a27b16c886140b6a413dfa88fa62167d11e06db1975e18'
+    [332] bcr.Replica<Replica:29805>:OUTPUT: [Tail][TS: 1508723924.119277] replica failures: [shuttle(0,0), change_result(), result_shuttle(0,0), drop_result_stmt()]
+    [334] bcr.Olympus<Olympus:29802>:OUTPUT: [Olympus][TS: 1508723924.120876] Olympus created replica process: Replica 2
+    [335] bcr.Olympus<Olympus:29802>:OUTPUT: [Olympus][TS: 1508723924.122046] Olympus created keys for replica process: Replica 2. Public key: b'1fbed03f55c613645db5eacba5087dd70bb44ac52aa586ad69db433568d04fe5'
+
+    Clients send their own public keys to Olympus while asking for configuration.
+    In response, clients get the public keys of Olympus and replicas while asking for configuration
+
+    Sample logs from Olympus:
+    [415] bcr.Olympus<Olympus:c0402>:OUTPUT: [Olympus][TS: 1508725072.153437] Received public key: b'b8fcc2e6a696a471b2c8cc5492fca4e41c5dd9fe481af933b776b4c512a29981' from client: Client 0
+    Sample logs from Client:
+    [417] bcr.Client<Client:c0403>:OUTPUT: [Client 0][TS: 1508725072.1556768] Received the public keys of replicas from Olympus
+    [418] bcr.Client<Client:c0403>:OUTPUT: [Client 0][TS: 1508725072.1563818] Received the public key of Olympus.
+
+    Command:-
+    This happens in all test scenarios.
+    Example: python3 -m da --logfile --logfilename=logs/client-pseudo-random-log.txt --logfilelevel=info src/bcr.da -i config/client-pseudo-random.txt
+
