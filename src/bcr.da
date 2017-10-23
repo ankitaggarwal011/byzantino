@@ -497,7 +497,9 @@ class Olympus(process):
     def output_wrapper(log):
         output('[{}][TS: {}]'.format(name, str(time())), log)
 
-
+# The client process. It is created by the main process
+# Setup inputs: reference to olympus, initial request_id index, client timeout, operation_list, and number of system
+# failures that are allowed
 class Client(process):
     def setup(client_id, olympus, request_id, client_timeout, operations, num_failures):
         self.name = 'Client ' + str(client_id)
@@ -510,12 +512,14 @@ class Client(process):
         self.client_running_state = dict()
         self.client_running_state_sync = dict()
 
+    # Receive configuration message from Olympus: references to all replicas and head
     def receive(msg=('Configuration', replicas_, head_), from_=olympus):
         replicas = replicas_
         head = head_
         output_wrapper(name + ' is configured.')
         send(('ACK', name), to=olympus)
 
+    # Receive keys message from Olympus: public keys of all replicas and Olympus
     def receive(msg=('Keys', replica_public_keys_, olympus_public_key_), from_=olympus):
         replica_public_keys = [VerifyKey(key, encoder=HexEncoder) for key in replica_public_keys_]
         olympus_public_key = VerifyKey(olympus_public_key_, encoder=HexEncoder)
@@ -523,6 +527,7 @@ class Client(process):
         output_wrapper('Received the public key of Olympus.')
         send(('ACK', name), to=olympus)
 
+    # receive operation result from replica
     def receive(msg=(sender_id, 'Operation_result', request_id, result_shuttle)):
         # Verification of signature of replicas
         result_shuttle = verify_data_with_key(result_shuttle, replica_public_keys[sender_id])
