@@ -54,13 +54,13 @@ class Node_(da.NodeProcess):
         client_config = ClientConfig(config_dict)
         replica_config = ReplicaConfig(config_dict)
         output_wrapper(('Running BCR simulation for test case: ' + global_config.test_case_name))
-        olympus = self.new(olympus_module.Olympus, args=('Olympus', replica_config.num_replica, replica_config.num_failures, replica_config.failures, replica_config.head_timeout, replica_config.nonhead_timeout), at='Node1')
+        olympus = self.new(olympus_module.Olympus, args=('Olympus', replica_config.num_replica, replica_config.num_failures, replica_config.failures, replica_config.head_timeout, replica_config.nonhead_timeout))
         self._start(olympus)
         clients = dict()
         for i in range(client_config.num_client):
             request_id_counter = (i * 10000)
             modified_ops = list(map((lambda o: (o.type.name, o.args_list)), client_config.workloads[i]))
             output_wrapper('Workload for client {} : {}'.format(str(i), str(modified_ops)))
-            client = self.new(client_module.Client, args=(i, olympus, (request_id_counter - 1), client_config.client_timeout, modified_ops, client_config.num_failures), at='Node1')
+            client = self.new(client_module.Client, args=(i, olympus, (request_id_counter - 1), client_config.client_timeout, modified_ops, client_config.num_failures))
             self._start(client)
             clients[i] = client

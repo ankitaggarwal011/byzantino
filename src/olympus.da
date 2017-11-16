@@ -22,6 +22,13 @@ class Olympus(process):
         self.replica_public_keys = list()
         self.head = None
         self.tail = None
+        self.running_state_validated = 0 # used during reconfiguration
+        self.quorum = list()
+        self.quorum_replicas = list()
+        self.longest_history = list()
+        self.chosen_running_state = None
+        self.running_states_received = 0
+        self.ignore_further_caught_up_messages = 0
         # generate own keys
         self.private_key = SigningKey.generate()
         self.public_key = self.private_key.verify_key.encode(encoder=HexEncoder)
@@ -32,17 +39,18 @@ class Olympus(process):
         for i in range(num_replicas):
             # get all failure scenarios in current replica
             replica_failures = all_replica_failures.get(i, {})
+            running_state = dict()
             if i == 0:
                 # create head replica
-                replica = new(replica_module.Replica, args=(i, 'Head', replica_failures, head_timeout, public_key), at='Node2')
+                replica = new(replica_module.Replica, args=(i, 'Head', running_state, replica_failures, head_timeout, public_key))
                 self.head = replica
             elif i == num_replicas - 1:
                 # create tail replica
-                replica = new(replica_module.Replica, args=(i, 'Tail', replica_failures, replica_timeout, public_key), at='Node2')
+                replica = new(replica_module.Replica, args=(i, 'Tail', running_state, replica_failures, replica_timeout, public_key))
                 self.tail = replica
             else:
                 # create other replica
-                replica = new(replica_module.Replica, args=(i, 'Replica ' + str(i), replica_failures, replica_timeout, public_key), at='Node2')
+                replica = new(replica_module.Replica, args=(i, 'Replica ' + str(i), running_state, replica_failures, replica_timeout, public_key))
             self.replicas[i] = replica
             replica_name = 'Replica ' + str(i)
             output_wrapper('Olympus created replica process: {}'.format(replica_name))
@@ -60,6 +68,8 @@ class Olympus(process):
     # Get configuration message handler from client in which client passes its own reference and key
     # Pass required information to all replicas and reply to client with current configuration details (replicas, head)
     def receive(msg=('Get_configuration', client, client_name, client_id, client_public_key)):
+        if state != 'NORMAL':
+            return
         client_keys[client_id] = VerifyKey(client_public_key, encoder=HexEncoder)
         send(('Configuration', replicas, head), to=client)
         send(('Keys', replica_public_keys, public_key), to=client)
@@ -71,133 +81,111 @@ class Olympus(process):
 
     def begin_reconfiguration():
         if state == 'RECONFIGURATION':
-            output_wrapper('System already in reconfiguration. ignoring new reconfiguration command')
+            output_wrapper('System is already in reconfiguration. Ignoring new reconfiguration command.')
             return
         state = 'RECONFIGURATION'
-        output_wrapper('Sending wedge requests to replicas: ' + str(len(replicas)))
-        output_wrapper('Sending wedge requests: checking replicas:  ' + str(replicas))
+        output('Changing states of replicas from old configuration to IMMUTABLE and spawning new replicas in the new configuration.')
+        for i, r in replicas.items():
+            send(('Immutable'), to=r)
+        select_quorum()
+
+    def select_quorum():
+        output_wrapper('Sending wedge requests: checking replicas: ' + str(replicas))
         for i, r in replicas.items():
             output_wrapper('Sending wedge requests to replica: ' + str(i))
-            send(('wedge_request', self), to= r)
+            send(('wedge_request'), to=r)
 
-        quorum_size = 0
-        quorum_range = []
-        send_ts = time()
-        num_wedge_responses = 0
-        if await(some(received(('wedge', hist, checkpoint_proof, hashed_running_state, replica, ts)), has=(ts >= send_ts))):
-            while True:
-            # blocking wait for atleast one wedge message
-                output_wrapper('Waiting for wedge statements')
-            # TODO add check for greater than last check
-                --wedge
-                curr_ts = time()
-                if curr_ts - send_ts >= 0.05:
-                    output_wrapper("Timed out waiting for wedge statements. ")
-                    break
-                if await(some(received(('wedge', hist, checkpoint_proof, hashed_running_state, replica, ts)), has=(ts >= send_ts))):
-                    output_wrapper('Received some wedged statements')
-                    wss = listof((hist, checkpoint_proof, hashed_running_state, replica, ts), ts >= send_ts, received(('wedge', hist, checkpoint_proof, hashed_running_state, replica, ts)))
-                    if (len(wss) < num_failures + 1):
-                        continue
-                    output_wrapper("We have quorum length")
-                    len_wss = len(wss);
-                    output_wrapper("Len_Wss is " + str(len_wss))
-                    qs = num_failures + 1;
-                    output_wrapper("QS is " + str(qs))
-                    for i in range(0, len_wss -qs + 1):
-                        indices_range = range(i, i + qs);
-                        histories = list()
-                        output_wrapper("Indices range is " + str(indices_range))
-                        for j in indices_range:
-                            histories.append(wss[j][0])
-                        res = is_valid_quorum(histories)
-                        if res[0] == True:
-                            # found a valid quorum, break
-                            quorum_replicas = []
-                            for j in indices_range:
-                                quorum_replicas.append(wss[j][3])
-                            on_successful_quorum(histories, quorum_replicas)
-
-
-        elif timeout(5):
-            output_wrapper('Timed out while waiting for wedged statements')
-            #await(some(received(('wedge', _hist, _check_proof, _hash_running_state)))):
-            #await(received(('wedge', history, checkpoint_proof, hash_running_state)))
-            #add replica to quorum <histories, checkpoint_proofs, hashed_running_states>
-            #quorum_size += 1
-            #quorum_range.append(replica)
-            # now we will make a quorum with a size of T + 1, and attempt to find a valid history
-            #quorum_result_pair = is_valid_quorum(histories, quorum_range)
-            #if quorum_size > T + 1 and is_valid_quorum(...):
-                #break
-            #for each replica in quorum_range:
-                #send('get_running_state') to replica[i]
-                #rs = wait_for_message('running_state', rs, timeout)
-                #if (hash(rs) == quorum_result_pair.second):   # this means that the running state hash computed earlier while validating quorum,
-                                                              # matches the one sent by the currently queried replica. This means we can now reconfigure.
-                #init_replicas(rs, lh)
-                #return
-        state = 'NORMAL'
-        return
-
-    # function that returns a tuple of boolean validity of quorum and hash of result
-    def is_valid_quorum(histories, indices):
-        output_wrapper("In is_valid_quorum")
-        output_wrapper("Histories: "  + str(histories))
-        output_wrapper("Indices: "  + str(indices))
-        for i in range(0, len(histories)):                      # proceed for each pair <i,j> in indices, nested loop
-            for j in range(0, len(histories)):              # for each tuple <si,oi> in history[i]
-                for k in range(0, len(histories[i])):
-                    output_wrapper("i: " + str(i) + " j: " + str(j) + " k: " + str(k))
-                    matches = list(set([v[1] for i, v in enumerate(histories[j]) if v[0] == histories[i][k][0]]))  # find a tuple <sj, oj> in history[j] such that s = si, o = anything
-                    output_wrapper("Matches: " +str(matches))
-                    if (len(matches) > 1) or (matches[0] != histories[i][k][1]):                            # if oi and oj don't match, the history is invalid due to a possible failure
-                        return (False, None)
-        # the quorum is valid up to this point. Now we ask each replica to catch up.
-        output_wrapper("Quorum is valid!!")
-        return (True, None)
-        #lh = max(histories)
-        #for i in indices:
-        #   send('catch_up', lh - histories[i]) to replica[i]
-        #hashed_running_states = wait_aggregate(size(indices), on_message_received('caught_up', hashed_running_state))
-        #unique_running_states = unique(hashed_running_states)
-        #if  size(unique_running_state) > 1:
-        #    # all hashes must be the same for a valid quorum
-        #    return <false, null>
-        #return <true, unique_running_states[0]>
-
-
-    def on_successful_quorum(histories, quorum_replicas):
-        max_hist_len = -1;
-        max_hist = []
-        for i in range(0, len(histories)):
-            if len(histories[i]) > max_hist_len:
-                max_hist_len = len(histories[i])
-                max_hist = histories[i]
-        send_ts = time()
+    def on_successful_quorum():
         for i, r in enumerate(quorum_replicas):
-            gap = list(set(max_hist) - set(histories[i]))
-            send(('catch_up', gap), to=r)
+            gap = [j for j in longest_history if j not in quorum[i]]
+            send(('catch_up', gap), to=replicas[r])
 
-        #TODO change this logic to also check for pub keys for all replicas
-        if await( len((replica, ts), ts>= send_ts, received(('catch_up', replica, ts))) > len(histories)):
-            output_wrapper("Received replies from all replicas")
-        elif timeout(3):
-            output_wrapper("Timed out while waiting for caught up messages");
+    def receive(msg=('wedge', hist, replica_id)):
+        output_wrapper('Wedge message from Replica ' + str(replica_id))
+        if len(quorum) < num_failures + 1:
+            # check signature of replica #todo
+            for order_p in hist:
+                if not validate_order_proof(order_p):
+                    return
+            for i in range(len(hist)):
+                if i < len(longest_history):
+                    order_p = hist[i]
+                    order_p_lh = longest_history[i]
+                    if not (order_p[0] == order_p_lh[0] and order_p[1] == order_p_lh[1] and order_p[2] == order_p_lh[2]):
+                        return
+            quorum.append([o_p[:-1] for o_p in hist])
+            quorum_replicas.append(replica_id)
+            if len(hist) > len(longest_history):
+                longest_history = [o_p[:-1] for o_p in hist]
+            if len(quorum) == num_failures + 1:
+                on_successful_quorum()
 
-        #--wait for caught_up messages
-    def receive(msg=('wedge', _hist, _check_proof, _hash_running_state, replica)):
-        output_wrapper('Wedge msg handler from: ' + str(replica))
+    def validate_order_proof(order_p):
+        slot_number, operation, configuration, order_stmt = order_p
+        for stmt in order_stmt:
+            if stmt[0] != slot_number or stmt[1] != operation or stmt[2] != configuration:
+                return False
+        return True
 
-    def receive(msg=('caught_up', replica, timestamp)):
-        output_wrapper('Caught up msg handler from: ' + str(replica))
+    def receive(msg=('caught_up', hash_running_state, replica_id)):
+        output_wrapper('Caught up message received from Replica ' + str(replica_id))
+        if ignore_further_caught_up_messages: return
+        if not (chosen_running_state == None or hash_running_state == chosen_running_state):
+            output_wrapper('Chosen quorum is not valid as the hash of all running states don\'t match.')
+            output_wrapper('Selecting a new quorum.')
+            ignore_further_caught_up_messages = 1
+            select_quorum()
+            return
+        running_states_received += 1
+        chosen_running_state = hash_running_state
+        if running_states_received == len(quorum):
+            get_running_state_from_quorum()
+
+
+    def get_running_state_from_quorum():
+        output_wrapper('Getting the running state from the quorum.')
+        for i, r in enumerate(quorum_replicas):
+            if not running_state_validated:
+                send(('get_running_state'), to=replicas[r])
+                await(received(('response_get_running_state', None, None)))
 
     # Reconfiguration request. This may come from a client or a replica. Client sends proof of misbehavior, replica doesn't.
-    # This is not implemented in Phase 2. Will be done in Phase 3.
+    # replica piggybacks configuration onto proof_of_misbehavior variable
     def receive(msg=('Reconfiguration', sender, proof_of_misbehavior)):
         output_wrapper('Reconfiguration request received from ' + str(sender) + '.')
-        begin_reconfiguration()
-        # Reconfigure and send new configuration to client and replicas
+        if (isinstance(proof_of_misbehavior, int) and proof_of_misbehavior == configuration_number) or (isinstance(proof_of_misbehavior, list) and validate_proof_of_misbehavior(proof_of_misbehavior)):
+            output_wrapper('Reconfiguration request sent by ' + str(sender) + ' is valid. Starting reconfiguration.')
+            begin_reconfiguration() # Reconfigure and send new configuration to the replicas
+        else:
+            output_wrapper('Proof of misbehavior sent by ' + str(sender) + ' is not valid. If it is sent by replica, its configuration doesn\'t match and if its sent by client, proof of misbehavior is invalid.')
+
+    def receive(msg=('response_get_running_state', replica_id, replica_running_state)):
+        output_wrapper('Response to get_running_state from Replica ' + str(replica_id) + ' received by Olympus.')
+        output_wrapper('Validating the running_state with the quorum.')
+        if calculate_hash(replica_running_state) == chosen_running_state:
+            running_state_validated = 1
+            init_new_configuration(replica_running_state)
+
+    def validate_proof_of_misbehavior(proof_of_misbehavior):
+        result, result_proof = proof_of_misbehavior
+        if len(result_proof) < num_failures + 1:
+            return True
+        majority = 0
+        hash = calculate_hash(result)
+        for i in result_proof:
+            if hash == i[1]:
+                majority += 1
+        if majority < 2 * num_failures + 1:
+            return True
+        return False
+
+    # calculate the sha256 hash of value
+    def calculate_hash(val):
+        if isinstance(val, str):
+            return sha256(str.encode(val), encoder=HexEncoder)
+        elif isinstance(val, dict):
+            return sha256(str.encode(str(val)), encoder=HexEncoder)
+        return sha256(val, encoder=HexEncoder)
 
     # Encrypt data with own private key and send
     def sign_and_send(data, to_):
@@ -212,6 +200,60 @@ class Olympus(process):
             return literal_eval(data.message.decode('utf-8'))
         except BadSignatureError:
             return None
+
+    def init_new_configuration(new_running_state):
+        output('Shutting down replicas from old configuration.')
+        for i, r in replicas.items():
+            send(('Shutdown'), to=r)
+        configuration_number += 1 # new configuration
+        # resetting replicas
+        replicas = dict()
+        replica_private_keys = list()
+        replica_public_keys = list()
+        head = None
+        tail = None
+        # get all replica failures in current configuration
+        all_replica_failures = all_replica_conf_failures.get(configuration_number, {})
+        for i in range(num_replicas):
+            # get all failure scenarios in current replica
+            replica_failures = all_replica_failures.get(i, {})
+            if i == 0:
+                # create head replica
+                replica = new(replica_module.Replica, args=(i, 'Head', new_running_state, replica_failures, head_timeout, public_key))
+                head = replica
+            elif i == num_replicas - 1:
+                # create tail replica
+                replica = new(replica_module.Replica, args=(i, 'Tail', new_running_state, replica_failures, replica_timeout, public_key))
+                tail = replica
+            else:
+                # create other replica
+                replica = new(replica_module.Replica, args=(i, 'Replica ' + str(i), new_running_state, replica_failures, replica_timeout, public_key))
+            replicas[i] = replica
+            replica_name = 'Replica ' + str(i)
+            output_wrapper('Olympus created replica process: {}'.format(replica_name))
+            signing_key = SigningKey.generate()
+            verify_key = signing_key.verify_key.encode(encoder=HexEncoder)
+            output_wrapper(
+                'Olympus created keys for replica process: {}. Public key: {}'.format(replica_name, str(verify_key)))
+            replica_private_keys.append(signing_key)
+            replica_public_keys.append(verify_key)
+        
+        # reset variables used during reconfiguration
+        running_state_validated = 0
+        quorum = list()
+        quorum_replicas = list()
+        longest_history = list()
+        chosen_running_state = None
+        running_states_received = 0
+        ignore_further_caught_up_messages = 0
+
+        for i, r in replicas.items():
+            start(r)
+            sign_and_send(('Configuration', self, replicas, head, tail, [replica_public_keys, configuration_number]), r)
+            send(('Key', replica_private_keys[i]), to=r)
+        
+        state = 'NORMAL'
+        output_wrapper('Reconfiguration is successful.')
 
     # Run loop. Won't exit till Shutdown is received (never).
     # Start replicas and send them initial configuration message

@@ -24,15 +24,17 @@ class Client(process):
         self.public_key = self.private_key.verify_key.encode(encoder=HexEncoder)
         self.client_running_state = dict()
         self.client_running_state_sync = dict()
+        self.num_retries = 0
+        self.max_retries = 1
 
     # Receive configuration message from Olympus: references to all replicas and head
     def receive(msg=('Configuration', replicas_dict_, head_), from_=olympus):
-        self.replicas_dict = replicas_dict_
-        self.replicas = list()
+        replicas_dict = replicas_dict_
+        replicas = list()
         for i, replica in replicas_dict_.items():
-            self.replicas.append(replica)
+            replicas.append(replica)
         head = head_
-        output_wrapper(name + ' is configured.')
+        output_wrapper(name + ' is configured with ' + str(head))
         send(('ACK', name), to=olympus)
 
     # Receive keys message from Olympus: public keys of all replicas and Olympus
@@ -45,6 +47,13 @@ class Client(process):
 
     # receive operation result from replica
     def receive(msg=(sender_id, 'Operation_result', request_id, result_shuttle)):
+        # Check if head is IMMUTABLE
+        if isinstance(result_shuttle, str) and result_shuttle == 'ERROR':
+            # ask new configuration from Olympus
+            send(('Get_configuration', self, name, client_id, public_key), to=olympus)
+            await(received(('Configuration', replicas_dict, head)))
+            return
+
         # Verification of signature of replicas
         result_shuttle = verify_data_with_key(result_shuttle, replica_public_keys[sender_id])
         if result_shuttle == None:
@@ -84,11 +93,17 @@ class Client(process):
             update_client_running_state(client_running_state, op[0], op[1])
             retry = 0
             while True:
+                if num_retries > max_retries:
+                    output_wrapper('Number of retries exceeded max retries, trying to get latest configuration from olympus')
+                    send(('Get_configuration', self, name, client_id, public_key), to=olympus)
+                    await(received(('Configuration', replicas_dict, head)))
+                    num_retries = 0
                 send_request(op[0], op[1], retry)
                 if await(received(('Operation_result_' + str(request_id)))):
                     break
                 elif timeout(client_timeout):
                     output_wrapper('Timeout: Retrying request id: {}, sending to all replicas'.format(str(request_id)))
+                    num_retries += 1
                     retry = 1
         output_wrapper(
             'Local running state of client after the given set of operations: ' + str(client_running_state) + '.')
@@ -99,6 +114,7 @@ class Client(process):
             output_wrapper('\n\nTest case passed! Actual and expected running states match.\n\n')
         else:
             output_wrapper('\n\nTest case failed! Actual and expected running states don\'t match\n\n')
+        await(received(('Configuration', replicas_dict, head)))
         await(received('Shutdown'))
 
     def update_client_running_state(running_state, type, args):
@@ -132,9 +148,11 @@ class Client(process):
         args = private_key.sign(str(args).encode('utf-8'))  # sign the request
         if retry:
             for r in replicas:
+                output_wrapper(str(name) + ' is sending request for request id ' + str(request_id) + ' in retry mode.')
                 send((None, 'Request', type, self, self, request_id, client_id, args), to=r)
         else:
             request_id += 1
+            output_wrapper(str(name) + ' is sending request for request id ' + str(request_id) + '.')
             send((None, 'Request', type, self, self, request_id, client_id, args), to=head)
 
     # returns a tuple of booleans (is_valid_result_shuttle, send_reconfiguration_request)
@@ -158,9 +176,12 @@ class Client(process):
             return (True, True)
         return (True, False)
 
+    # calculate the sha256 hash of value
     def calculate_hash(val):
         if isinstance(val, str):
             return sha256(str.encode(val), encoder=HexEncoder)
+        elif isinstance(val, dict):
+            return sha256(str.encode(str(val)), encoder=HexEncoder)
         return sha256(val, encoder=HexEncoder)
 
     def output_wrapper(log):
