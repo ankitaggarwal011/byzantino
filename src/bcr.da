@@ -75,5 +75,5 @@ def main():
         output_wrapper('Workload for client {} : {}'.format(str(i), str(modified_ops)))
         client = new(client_module.Client, args=(
             i, olympus, request_id_counter - 1, client_config.client_timeout, modified_ops, client_config.num_failures))
-        start(client)
         clients[i] = client
+    start(clients.values())

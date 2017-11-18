@@ -45,15 +45,14 @@ class Client(process):
         output_wrapper('Received the public key of Olympus.')
         send(('ACK', name), to=olympus)
 
+    def receive(msg=(sender_id, 'Operation_result_error', request_id)):
+        output_wrapper('Result: Received ERROR message for request id ' + str(request_id) + ' from Replica ' + str(sender_id) + '.')
+        output_wrapper('Checking with Olympus for new configuration.')
+        send(('Get_configuration', self, name, client_id, public_key), to=olympus)
+        await(received(('Configuration', replicas_dict, head)))
+
     # receive operation result from replica
     def receive(msg=(sender_id, 'Operation_result', request_id, result_shuttle)):
-        # Check if head is IMMUTABLE
-        if isinstance(result_shuttle, str) and result_shuttle == 'ERROR':
-            # ask new configuration from Olympus
-            send(('Get_configuration', self, name, client_id, public_key), to=olympus)
-            await(received(('Configuration', replicas_dict, head)))
-            return
-
         # Verification of signature of replicas
         result_shuttle = verify_data_with_key(result_shuttle, replica_public_keys[sender_id])
         if result_shuttle == None:
@@ -66,7 +65,7 @@ class Client(process):
             if result != 'fail' or result != '':
                 update_client_running_state(client_running_state_sync, result_proof[0][0][0], result_proof[0][0][1])
                 # updating state from the tail response
-            output_wrapper('Valid result: {} received for request id: {}'.format(str(result), str(request_id)))
+            output_wrapper('Result: {} received for request id: {}'.format(str(result), str(request_id)))
         if is_reconfiguration_required:
             # send reconfiguration request to Olympus with proof of misbehavior
             output_wrapper('Misbehaviour detected in request id: {}! Sending reconfiguration request to Olympus'.format(
@@ -90,6 +89,7 @@ class Client(process):
             send(('Get_configuration', self, name, client_id, public_key), to=olympus)
             await(received(('Configuration', replicas_dict, head)))
         for op in operations:
+            -- handle_requests
             update_client_running_state(client_running_state, op[0], op[1])
             retry = 0
             while True:
@@ -114,7 +114,7 @@ class Client(process):
             output_wrapper('\n\nTest case passed! Actual and expected running states match.\n\n')
         else:
             output_wrapper('\n\nTest case failed! Actual and expected running states don\'t match\n\n')
-        await(received(('Configuration', replicas_dict, head)))
+        
         await(received('Shutdown'))
 
     def update_client_running_state(running_state, type, args):

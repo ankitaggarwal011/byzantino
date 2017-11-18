@@ -6,7 +6,7 @@ from nacl.exceptions import BadSignatureError
 # import for deserialization of message objects
 from ast import literal_eval
 replica_module = import_da('replica')
-from time import time
+from time import time,sleep
 from config import *
 import read_config
 
@@ -23,8 +23,9 @@ class Olympus(process):
         self.head = None
         self.tail = None
         self.running_state_validated = 0 # used during reconfiguration
+        self.wedged_responses = list()
+        self.quorum_start_index = 0
         self.quorum = list()
-        self.quorum_replicas = list()
         self.longest_history = list()
         self.chosen_running_state = None
         self.running_states_received = 0
@@ -84,41 +85,57 @@ class Olympus(process):
             output_wrapper('System is already in reconfiguration. Ignoring new reconfiguration command.')
             return
         state = 'RECONFIGURATION'
-        output('Changing states of replicas from old configuration to IMMUTABLE and spawning new replicas in the new configuration.')
+        output_wrapper('Changing states of replicas from old configuration to IMMUTABLE.')
         for i, r in replicas.items():
             send(('Immutable'), to=r)
-        select_quorum()
-
-    def select_quorum():
         output_wrapper('Sending wedge requests: checking replicas: ' + str(replicas))
         for i, r in replicas.items():
             output_wrapper('Sending wedge requests to replica: ' + str(i))
             send(('wedge_request'), to=r)
 
-    def on_successful_quorum():
-        for i, r in enumerate(quorum_replicas):
-            gap = [j for j in longest_history if j not in quorum[i]]
-            send(('catch_up', gap), to=replicas[r])
+    def select_quorum():
+        output_wrapper('Selecting a new quorum.')
+        quorum = list()
+        longest_history = list()
+        wedged_responses.sort(reverse=True, key=lambda x: len(x[0]))
+        while quorum_start_index < len(wedged_responses) and len(quorum) < num_failures + 1:
+            longest_history = wedged_responses[quorum_start_index][0]
+            for w_resp in wedged_responses[quorum_start_index:]:
+                if w_resp[0] == longest_history[:len(w_resp[0])]: # checking if a history is prefix of longest history
+                    quorum.append(w_resp)
+                if len(quorum) == num_failures + 1:
+                    break
+            quorum_start_index += 1
+        if len(quorum) == 0:
+            output_wrapper('No quorum formed. System can\'t handle more than ' + str(num_failures) + '.')
+            return
+        output_wrapper('Quorum is selected.')
+        ignore_further_caught_up_messages = 0 # reset
+        running_states_received = 0
+        chosen_running_state = None
+        for i in quorum:
+            gap = longest_history[len(i[0]):]
+            send(('catch_up', gap), to=replicas[i[1]])
+        if await(some(received(('caught_up', None, None)), has=(running_states_received == len(quorum)))):
+            pass
+        elif timeout(2): # wait for 2s and select new quorum if some running states in Q are missing
+            if running_states_received < len(quorum):
+                output_wrapper('Number of running states received are less than the size of quorum.')
+                select_quorum()
 
+    # get all wedged messages, make a sorted list out of all sorted valid histories [<s, o>, ...]
+    # choose first (longest history), and check if there other t consistent replicas, if yes, create quorum, save the index
+    # if this quorum fails, choose new quorum from the saved index
     def receive(msg=('wedge', hist, replica_id)):
         output_wrapper('Wedge message from Replica ' + str(replica_id))
-        if len(quorum) < num_failures + 1:
-            # check signature of replica #todo
-            for order_p in hist:
-                if not validate_order_proof(order_p):
-                    return
-            for i in range(len(hist)):
-                if i < len(longest_history):
-                    order_p = hist[i]
-                    order_p_lh = longest_history[i]
-                    if not (order_p[0] == order_p_lh[0] and order_p[1] == order_p_lh[1] and order_p[2] == order_p_lh[2]):
-                        return
-            quorum.append([o_p[:-1] for o_p in hist])
-            quorum_replicas.append(replica_id)
-            if len(hist) > len(longest_history):
-                longest_history = [o_p[:-1] for o_p in hist]
-            if len(quorum) == num_failures + 1:
-                on_successful_quorum()
+        # check signature of replica #todo
+        for order_p in hist:
+            if not validate_order_proof(order_p):
+                return
+        wedged_responses.append([sorted([o_p[:-1] for o_p in hist], key=lambda x: x[0]), replica_id])
+        if len(wedged_responses) == (num_failures + 1):
+            output_wrapper('Received ' + str(len(wedged_responses)) + ' wedged responses.')
+            select_quorum()
 
     def validate_order_proof(order_p):
         slot_number, operation, configuration, order_stmt = order_p
@@ -132,7 +149,6 @@ class Olympus(process):
         if ignore_further_caught_up_messages: return
         if not (chosen_running_state == None or hash_running_state == chosen_running_state):
             output_wrapper('Chosen quorum is not valid as the hash of all running states don\'t match.')
-            output_wrapper('Selecting a new quorum.')
             ignore_further_caught_up_messages = 1
             select_quorum()
             return
@@ -141,12 +157,11 @@ class Olympus(process):
         if running_states_received == len(quorum):
             get_running_state_from_quorum()
 
-
     def get_running_state_from_quorum():
         output_wrapper('Getting the running state from the quorum.')
-        for i, r in enumerate(quorum_replicas):
+        for each_member in quorum:
             if not running_state_validated:
-                send(('get_running_state'), to=replicas[r])
+                send(('get_running_state'), to=replicas[each_member[1]])
                 await(received(('response_get_running_state', None, None)))
 
     # Reconfiguration request. This may come from a client or a replica. Client sends proof of misbehavior, replica doesn't.
@@ -202,7 +217,7 @@ class Olympus(process):
             return None
 
     def init_new_configuration(new_running_state):
-        output('Shutting down replicas from old configuration.')
+        output_wrapper('Shutting down replicas from old configuration.')
         for i, r in replicas.items():
             send(('Shutdown'), to=r)
         configuration_number += 1 # new configuration
@@ -241,7 +256,8 @@ class Olympus(process):
         # reset variables used during reconfiguration
         running_state_validated = 0
         quorum = list()
-        quorum_replicas = list()
+        wedged_responses = list()
+        quorum_start_index = 0
         longest_history = list()
         chosen_running_state = None
         running_states_received = 0
@@ -254,6 +270,7 @@ class Olympus(process):
         
         state = 'NORMAL'
         output_wrapper('Reconfiguration is successful.')
+        output_wrapper('New replicas: ' + str(replicas))
 
     # Run loop. Won't exit till Shutdown is received (never).
     # Start replicas and send them initial configuration message

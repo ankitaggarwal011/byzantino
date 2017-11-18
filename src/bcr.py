@@ -62,5 +62,5 @@ class Node_(da.NodeProcess):
             modified_ops = list(map((lambda o: (o.type.name, o.args_list)), client_config.workloads[i]))
             output_wrapper('Workload for client {} : {}'.format(str(i), str(modified_ops)))
             client = self.new(client_module.Client, args=(i, olympus, (request_id_counter - 1), client_config.client_timeout, modified_ops, client_config.num_failures))
-            self._start(client)
             clients[i] = client
+        self._start(clients.values())

@@ -75,7 +75,7 @@ class Replica(process):
     # Replica receives its private key from Olympus, that it uses to sign results and proofs
     def receive(msg=('Key', private_key_), from_=olympus):
         private_key = private_key_
-        output_wrapper(name + ' has receives its private key from Olympus.')
+        output_wrapper(name + ' has received its private key from Olympus.')
         send(('ACK', name), to=olympus)
 
     # Replica receives client public key from Olympus, used to verify client requests
@@ -97,10 +97,9 @@ class Replica(process):
             output_wrapper(name + ' is in IMMUTABLE state.')
 
         if status != 1:  # if replica is not ACTIVE
-            output_wrapper('Replica is not in ACTIVE state. Not handling any messages.')
             if request_from == client and status == 2: # IMMUTABLE STATE
-                output_wrapper('Sending ERROR message to the client')
-                send((id, 'Operation_result', request_id, 'ERROR'), to=client)
+                output_wrapper('Sending ERROR message to the client.')
+                send((id, 'Operation_result_error', request_id), to=client)
                 send(('Operation_result_' + str(request_id)), to=client)
             return
 
