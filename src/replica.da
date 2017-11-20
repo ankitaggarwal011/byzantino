@@ -2,12 +2,16 @@ from nacl.hash import sha256
 from nacl.encoding import HexEncoder
 from nacl.signing import SigningKey, VerifyKey
 from nacl.exceptions import BadSignatureError
+from json import dumps
 
 # import for deserialization of message objects
 from ast import literal_eval
-from time import time
+from time import time, sleep
 from config import *
 import read_config
+
+# Configure a reliable FIFO channel
+config(channel='fifo')
 
 # Implementation of the Replica process
 # The replica process receives Olympus' public key, its timeout value in seconds, and its failure scenarios from Olympus
@@ -20,14 +24,15 @@ import read_config
 
 class Replica(process):
     ## Replica setup method called from
-    def setup(id, name, running_state, replica_failures, replica_timeout, olympus_public_key):
-        output_wrapper('replica failures: ' + str(replica_failures))
+    def setup(id, name, running_state, replica_failures, replica_timeout, olympus_public_key, checkpt_interval, slot_number):
+        output_wrapper('Replica failures: ' + str(replica_failures))
         self.status = 0  # PENDING
         self.order_proof = list()
         self.result_proof = list()
         self.result_cache = dict()
-        self.slot_number = 0
-        self.last_slot_number = 0
+        self.checkpoint = 0
+        self.checkpt_proof = list()
+        self.last_slot_number = slot_number
         self.olympus = None
         self.replicas = None
         self.head = None
@@ -44,17 +49,19 @@ class Replica(process):
         self.messages_forwarded_request = {}  # forwarded requests received for each client
         self.ongoing_request_id = None
         self.history = list()
+        self.most_recent_result = dict()
+        self.request_to_client = dict()
 
     # Replica starts off in the ACTIVE state. It verifies Olympus and then awaits other messages or Shutdown message.
     def run():
         status = 1  # ACTIVE
         olympus_public_key = VerifyKey(olympus_public_key, encoder=HexEncoder)
+        output_wrapper('A new replica (' + str(name) + ') ' + ' is created.')
         await(received(('Shutdown'), from_=olympus))
 
     # Replica will shut down if it receives the Shutdown message from Olympus (its waiting in run() will expire)
-    def receive(msg=('Immutable'), from_=olympus):
-        status = 2  # IMMUTABLE
-        output_wrapper(name + ' is now immutable.')
+    def receive(msg=('Shutdown'), from_=olympus):
+        output_wrapper(name + ' is now shutting down.\nIt\'s final running state is:\n' + str(running_state) + '.\n')
 
     # Each replica receives its configuration data from Olympus. This happens after replica is created.
     # It gets references to other replicas in chain, head, tail, Olympus, and public keys for other replicas
@@ -66,6 +73,7 @@ class Replica(process):
         config_data = verify_data_with_key(config_data, olympus_public_key)
         if config_data is None:
             output_wrapper('Verification of message sent by Olympus has failed.')
+            send(('Reconfiguration', name, configuration), to=olympus)
             return
         replica_public_keys_, configuration = config_data
         replica_public_keys = [VerifyKey(key, encoder=HexEncoder) for key in replica_public_keys_]
@@ -87,8 +95,9 @@ class Replica(process):
 
     # This is a primary message handler for requests for replicas. It handles all possible cases: requests directly
     # from the client, requests from replicas  before in the chain(shuttle)
-    def receive(msg=(sender_id, 'Request', type, request_from, client, request_id, client_id, args)):
-        output_wrapper(str(type) + ' request with request id ' + str(request_id) + ' received by ' + name + '.')
+    def receive(msg=(sender_id, 'Request', type, request_from, client, request_id, client_id, client_args, args)):
+        output_wrapper(str(type) + ' request with request id ' + str(request_id) + ' from ' + str(request_from) + ' is received by ' + str(name) + '.')
+        request_to_client[request_id] = client_id
         if status == 0:
             output_wrapper(name + ' is in PENDING state.')
         elif status == 1:
@@ -100,14 +109,13 @@ class Replica(process):
             if request_from == client and status == 2: # IMMUTABLE STATE
                 output_wrapper('Sending ERROR message to the client.')
                 send((id, 'Operation_result_error', request_id), to=client)
-                send(('Operation_result_' + str(request_id)), to=client)
             return
 
-        if ongoing_request_id == request_id:
-            output_wrapper('Request with id ' + str(request_id) + ' is already running.')
-            return
-
-        ongoing_request_id = request_id
+        if (isinstance(head, set) and self in head) or (not isinstance(head, set) and self == head):
+            if ongoing_request_id == request_id:
+                output_wrapper('Request id ' + str(request_id) + ' of Client ' + str(client_id) + ' is already running.')
+                return
+            ongoing_request_id = request_id
         
         if request_from == client:
             # client_request failure trigger
@@ -125,27 +133,45 @@ class Replica(process):
 
             messages_received_from_client[client_id] += 1
             # Verification of digital signature of client
-            args = verify_data_with_key(args, client_keys[client_id])
+            args = verify_data_with_key(client_args, client_keys[client_id])
             if args == None:
                 output_wrapper('Verification of message sent by Client ' + str(client_id) + ' has failed.')
+                send(('Reconfiguration', name, configuration), to=olympus)
                 return
 
             if request_id in result_cache:
-                sign_and_send(('Operation_result', result_cache[request_id]), client)
-                output_wrapper('Result sent from cache of ' + name + '.')
+                sign_and_send(('Operation_result', result_cache[(client_id, request_id)]), client)
+                send(('Operation_result_' + str(request_id)), to=client)
+                output_wrapper('Result sent to Client ' + str(client_id) + ' for request id ' + str(request_id) + ' from the cache of ' + name + '.')
                 return
             elif (isinstance(head, set) and self not in head) or (not isinstance(head, set) and self != head):
-                sign_and_send(('Request', type, self, client, request_id, client_id, args), head)
+                output_wrapper('Forwarding the request received from Client ' + str(client_id) + ' to HEAD.')
+                sign_and_send(('Request', type, self, client, request_id, client_id, client_args, client_args), head)
                 if await(received(('Result_shuttle_' + str(request_id)))):
-                    ongoing_request_id = None
+                    output_wrapper('Head-forwarded result shuttle is received at ' + str(name) + ' for request id ' + str(request_id))
                 elif timeout(replica_timeout):
+                    output_wrapper(str(name) + ' has timed out waiting for the result shuttle of head-forwarded request id ' + str(request_id) + ' from Client ' + str(client_id) + '. Sending reconfiguration request.')
                     send(('Reconfiguration', name, configuration), to=olympus)
                 return
         else:
+            # Verification of digital signature of client and content of request
+            # Ensures that the head is not faulty
+            _client_args = verify_data_with_key(client_args, client_keys[client_id])
+            if _client_args == None:
+                output_wrapper('Verification of message forwarded by head and sent by Client ' + str(client_id) + ' has failed.')
+                send(('Reconfiguration', name, configuration), to=olympus)
+                return
+
             # Verification of digital signature of replicas
             args = verify_data_with_key(args, replica_public_keys[sender_id])
             if args == None:
                 output_wrapper('Verification of message sent by Replica ' + str(sender_id) + ' has failed.')
+                send(('Reconfiguration', name, configuration), to=olympus)
+                return
+
+            if _client_args != args[0][1][1]:
+                output_wrapper('Verification of operations forwarded by head and sent by Client ' + str(client_id) + ' has failed. Head might be faulty.')
+                send(('Reconfiguration', name, configuration), to=olympus)
                 return
 
         if (isinstance(head, set) and self in head) or (not isinstance(head, set) and self == head):
@@ -163,9 +189,22 @@ class Replica(process):
                         'Replica {}: Trigger forwarded request failure for client_id: {} and message count: {}, '
                         'scenario: {}'.format(name, client_id, messages_forwarded_request[client_id], scenario))
                 messages_forwarded_request[client_id] += 1
+
+            slot_number += 1
+
             # update running state
             result = update_running_state(type, args)
-            slot_number += 1
+
+            if slot_number > 0 and slot_number % checkpt_interval == 0:
+                output_wrapper('Initiating checkpoint shuttle for slot number: ' + str(slot_number) + '.')
+                checkpt_proof = [[slot_number, calculate_hash(running_state)]]
+            else:
+                checkpt_proof = None
+            
+            # cache most recent result to aid during reconfiguration [new comments in project.txt]
+            res_stmt = [(type, args), calculate_hash(result)]
+            most_recent_result[client_id] = [result, res_stmt, request_id]
+
             # if there is a change_operation failure scenario to execute, do it. Else, proceed as normal.
             if FailureActionType.change_operation in pending_failures and pending_failures[
                 FailureActionType.change_operation] == 1:
@@ -180,13 +219,13 @@ class Replica(process):
                 stmt_args = args
             # generate order statement and order proof
             order_stmt = [[slot_number, (stmt_type, stmt_args), configuration]]  # (type, args) is operation (o)
-            order_proof = [slot_number, (type, args), configuration, order_stmt]
+            order_proof = [slot_number, (type, args), configuration, order_stmt, request_id]
             result_proof = [[(type, args), calculate_hash(result)]]  # add result stmt
-            shuttle = (order_proof, result_proof)
+            shuttle = (order_proof, result_proof, checkpt_proof)
             history.append(order_proof)
             # sign and send the shuttle (request shuttle) to the next replica in chain
-            output_wrapper('Shuttle sent from ' + str(name) + ' to next replica.')
-            sign_and_send(('Request', type, self, client, request_id, client_id, shuttle), replicas.get(id + 1))
+            output_wrapper('Shuttle with slot number ' + str(slot_number) + ' for request id ' + str(request_id) + ' and Client ' + str(client_id) + ' is sent from ' + str(name) + ' to next replica.')
+            sign_and_send(('Request', type, self, client, request_id, client_id, client_args, shuttle), replicas.get(id + 1))
             last_slot_number = slot_number
             if await(received(('Result_shuttle_' + str(request_id)))):
                 ongoing_request_id = None
@@ -196,6 +235,7 @@ class Replica(process):
                     'request to Olympus'.format(
                         name, str(request_id)))
                 send(('Reconfiguration', name, configuration), to=olympus)
+                return
         else:
             # case of shuttle from some previous replica
             # shuttle failure trigger
@@ -211,8 +251,9 @@ class Replica(process):
                     'Replica {}: Trigger shuttle failure for client_id: {} and message count: {}, scenario: {}'.format(
                         name, client_id, messages_shuttle[client_id], scenario));
             messages_shuttle[client_id] += 1
+            # wait to ensure that the slot numbers are sequentially executed
             # if the shuttle is invalid, trigger reconfiguration and return
-            if not validate_shuttle(args):
+            if not validate_shuttle(args[:-1]):
                 output_wrapper(
                     '{} failed to validate shuttle for request_id: {}. Triggering reconfiguration'.format(name,
                                                                                                           request_id))
@@ -220,12 +261,25 @@ class Replica(process):
                 return
 
             # unpack arguments
-            order_proof, result_proof = args
-            slot_number, operation, configuration, order_stmt = order_proof
-            last_slot_number = slot_number
+            order_proof, result_proof, checkpt_proof = args
+            slot_number, operation, configuration, order_stmt, request_id = order_proof
             type, operation_args = operation
+
             # update running state
             result = update_running_state(type, operation_args)
+
+            if checkpt_proof != None and slot_number > 0 and slot_number % checkpt_interval == 0:
+                if validate_checkpoint(checkpt_proof):
+                    checkpt_proof.append([slot_number, calculate_hash(running_state)])
+                else:
+                    output_wrapper('Checkpoint validation has failed at ' + str(name) + '. Sending reconfiguration request.')
+                    send(('Reconfiguration', name, configuration), to=olympus)
+                    return
+
+            # cache most recent result to aid during reconfiguration [new comments in project.txt]
+            res_stmt = [(type, operation_args), calculate_hash(result)]
+            most_recent_result[client_id] = [result, res_stmt, request_id]
+
             # if there is a pending change_operation failure scenario to perform, do it.
             if FailureActionType.change_operation in pending_failures and pending_failures[
                 FailureActionType.change_operation] == 1:
@@ -237,7 +291,7 @@ class Replica(process):
                 pending_failure_scenarios[FailureActionType.change_operation] = None
             order_proof[3].append([slot_number, (type, operation_args), configuration])  # append to order_stmt
             result_proof.append([(type, operation_args), calculate_hash(result)])  # append result stmt
-            shuttle = (order_proof, result_proof)
+            shuttle = (order_proof, result_proof, checkpt_proof)
             history.append(order_proof)
             # if tail, send result to client. Else, forward result to next replica in chain.
             if (isinstance(tail, set) and self in tail) or (not isinstance(tail, set) and self == tail):
@@ -261,16 +315,53 @@ class Replica(process):
 
                 # The tail sends a result_shuttle message to itself to initiate the result shuttle handler train
                 sign_and_send(('Result_shuttle', self, request_id, client_id, result_shuttle), tail)
+                send(('Result_shuttle_' + str(request_id)), to=tail)
+                if checkpt_proof != None and slot_number > 0 and slot_number % checkpt_interval == 0:
+                    sign_and_send(('Checkpoint_proof', checkpt_proof), self)
+                last_slot_number = slot_number
             else:
-                output_wrapper('Shuttle sent from ' + str(name) + ' to next replica.')
-                sign_and_send(('Request', type, self, client, request_id, client_id, shuttle), replicas.get(id + 1))
+                output_wrapper('Shuttle with slot number ' + str(slot_number) + ' for request id ' + str(request_id) + ' and Client ' + str(client_id) + ' is sent from ' + str(name) + ' to next replica.')
+                if checkpt_proof != None and slot_number > 0 and slot_number % checkpt_interval == 0:
+                    output_wrapper('Checkpoint shuttle for slot number: ' + str(slot_number) + ' is at ' + str(name) + '. Forwarding it to next Replica.')
+                sign_and_send(('Request', type, self, client, request_id, client_id, client_args, shuttle), replicas.get(id + 1))
+                last_slot_number = slot_number
                 if await(received(('Result_shuttle_' + str(request_id)))):
-                    ongoing_request_id = None
+                    pass
                 elif timeout(replica_timeout):
+                    output_wrapper(str(name) + ' has timed out waiting for the result shuttle of request id ' + str(request_id) + ' from Client ' + str(client_id) + '. Sending reconfiguration request.')
                     send(('Reconfiguration', name, configuration), to=olympus)
+                    return
+
+    # message handler for Checkpoint proof shuttle back the chain
+    def receive(msg=(sender_id, 'Checkpoint_proof', args)):
+        # Verification of digital signature of replicas
+        args = verify_data_with_key(args, replica_public_keys[sender_id])
+        if args == None:
+            output_wrapper('Verification of message sent by Replica ' + str(sender_id) + ' has failed.')
+            send(('Reconfiguration', name, configuration), to=olympus)
+            return
+        if not validate_checkpoint(args):
+            output_wrapper('Checkpoint proof validation back the chain has failed at ' + str(name) + '. Sending reconfiguration request.')
+            send(('Reconfiguration', name, configuration), to=olympus)
+            return
+        s_n = args[0][0]
+        checkpoint = s_n
+        history = history[checkpoint:]
+        output_wrapper('Truncating history at ' + str(name) + ' to validated checkpoint proof on the slot number ' + str(checkpoint) + '.')
+        if (isinstance(head, set) and self not in head) or (not isinstance(head, set) and self != head):
+            output_wrapper('Checkpoint proof shuttle back the chain for slot number: ' + str(s_n) + ' is at ' + str(name) + '. Forwarding it to next Replica back the chain.')
+            sign_and_send(('Checkpoint_proof', args), replicas.get(id - 1))
+        else:
+            output_wrapper('Checkpointing is complete at checkpoint ' + str(checkpoint))
+
+    def validate_checkpoint(checkpt_p):
+        if len(checkpt_p) == 0: return False
+        checkpt = checkpt_p[0]
+        if checkpt_p.count(checkpt) != len(checkpt_p) or checkpt[0] <= checkpoint:
+            return False
+        return True
 
     # message handler for Result shuttle message received from the next replica in chain
-
     def receive(msg=(sender_id, 'Result_shuttle', request_from, request_id, client_id, result_shuttle)):
         # mark result_shuttle failure trigger
         if client_id not in messages_result_shuttle:
@@ -282,21 +373,18 @@ class Replica(process):
             pending_failures[scenario.action_type] = 1
             pending_failure_scenarios[scenario.action_type] = scenario
             output_wrapper(
-                '{}: Trigger result shuttle failure for client_id: {} and message count: {}, scenario: {}'.format(name,
-                                                                                                                  client_id,
-                                                                                                                  messages_result_shuttle[
-                                                                                                                      client_id],
-                                                                                                                  scenario))
+                '{}: Trigger result shuttle failure for client_id: {} and message count: {}, scenario: {}'.format(name, client_id, messages_result_shuttle[client_id],scenario))
         messages_result_shuttle[client_id] += 1
 
         # Verification of signature of replicas sending result shuttles
         result_shuttle = verify_data_with_key(result_shuttle, replica_public_keys[sender_id])
         if result_shuttle == None:
             output_wrapper('Verification of message sent by Replica ' + str(sender_id) + ' has failed.')
+            send(('Reconfiguration', name, configuration), to=olympus)
             return
 
         if validate_result_shuttle(result_shuttle):
-            result_cache[request_id] = result_shuttle
+            result_cache[(client_id, request_id)] = result_shuttle
             if (isinstance(head, set) and self not in head) or (not isinstance(head, set) and self != head):
                 if FailureActionType.change_result in pending_failures and pending_failures[FailureActionType.change_result] == 1:
                     output_wrapper('Executing failure scenario: {}'.format(
@@ -315,29 +403,44 @@ class Replica(process):
                     pending_failure_scenarios[FailureActionType.drop_result_stmt] = None
                 sign_and_send(('Result_shuttle', self, request_id, client_id, result_shuttle), replicas.get(id - 1))
                 send(('Result_shuttle_' + str(request_id)), to=replicas.get(id - 1))
-            output_wrapper('Result shuttle is at ' + str(name) + '.')
+            output_wrapper('Result shuttle for request id ' + str(request_id) + ' of Client ' + str(client_id) + ' is at ' + str(name) + '.')
         else:
-            output_wrapper('Result shuttle sent by Replica ' + str(sender_id) + ' is not valid.')
+            output_wrapper('Result shuttle sent by Replica ' + str(sender_id) + ' for request id ' + str(request_id) + ' of Client ' + str(client_id) + ' is not valid.')
             send(('Reconfiguration', name, configuration), to=olympus)
+            return
 
     # wedge statement received from olympus!
     # TODO check that it is Olympus' public key!
     def receive(msg=('wedge_request'), from_=olympus):
         status = 2 # IMMUTABLE
+        output_wrapper(str(name) + ' is now IMMUTABLE.')
         output_wrapper('Received wedge request from Olympus')
-        send(('wedge', history, id), to=olympus)
+        send(('wedge', history, checkpt_proof, checkpoint, id), to=olympus)
 
     # catch up statement received from olympus!
     # TODO check that it is Olympus' public key!
     def receive(msg=('catch_up', gap), from_=olympus):
         for op_to_apply in gap:
-            update_running_state(op_to_apply[1][0], op_to_apply[1][1])
-        send(('caught_up', calculate_hash(running_state), id), to=olympus)
+            type = op_to_apply[1][0]
+            args = op_to_apply[1][1]
+            config = op_to_apply[2]
+            result = update_running_state(type, args)
+            request_id = op_to_apply[3]
+            # cache most recent result to aid during reconfiguration [new comments in project.txt]
+            res_stmt = [(type, args), calculate_hash(result)]
+            most_recent_result[request_to_client[request_id]] = [result, res_stmt, request_id]
+
+        send(('caught_up', calculate_hash(running_state), id, most_recent_result), to=olympus)
 
     # get_running_state from olympus
     def receive(msg=('get_running_state'), from_=olympus):
         output_wrapper('Response to get_running_state sent to Olympus by ' + str(name) + '.')
         send(('response_get_running_state', id, running_state), to=olympus)
+
+    # helper get_running_state from clients for validation
+    def receive(msg=('get_running_state', client, requests_)):
+        send(('running_state', running_state), to=client)
+        send(('running_state_' + str(requests_)), to=client)
 
     # method to update running state in replica. It performs one out of 4 supported operations.
     def update_running_state(type, args):
@@ -372,13 +475,13 @@ class Replica(process):
         if isinstance(val, str):
             return sha256(str.encode(val), encoder=HexEncoder)
         elif isinstance(val, dict):
-            return sha256(str.encode(str(val)), encoder=HexEncoder)
+            return sha256(str.encode(dumps(val, sort_keys=True)), encoder=HexEncoder)
         return sha256(val, encoder=HexEncoder)
 
     # validate the shuttle coming from previous replica
     def validate_shuttle(shuttle):
         order_proof, result_proof = shuttle
-        slot_number, operation, configuration, order_stmt = order_proof
+        slot_number, operation, configuration, order_stmt, request_id = order_proof
         if last_slot_number != slot_number - 1:
             return False
         for stmt in order_stmt:
@@ -424,4 +527,4 @@ class Replica(process):
 
     # Utility method for logging, prepends process name and time to each log statement
     def output_wrapper(log):
-        output('[{}][TS: {}]'.format(name, str(time())), log)
+        output('[TS: {}][{}]'.format(str(time()), name), log)

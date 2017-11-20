@@ -2,12 +2,16 @@ from nacl.hash import sha256
 from nacl.encoding import HexEncoder
 from nacl.signing import SigningKey, VerifyKey
 from nacl.exceptions import BadSignatureError
+from json import dumps
 
 # import for deserialization of message objects
 from ast import literal_eval
-from time import time
+from time import time, sleep
 from config import *
 import read_config
+
+# Configure a reliable FIFO channel
+config(channel='fifo')
 
 # The client process. It is created by the main process
 # Setup inputs: reference to olympus, initial request_id index, client timeout, operation_list, and number of system
@@ -24,8 +28,7 @@ class Client(process):
         self.public_key = self.private_key.verify_key.encode(encoder=HexEncoder)
         self.client_running_state = dict()
         self.client_running_state_sync = dict()
-        self.num_retries = 0
-        self.max_retries = 1
+        self.requests_sent = 0
 
     # Receive configuration message from Olympus: references to all replicas and head
     def receive(msg=('Configuration', replicas_dict_, head_), from_=olympus):
@@ -47,9 +50,9 @@ class Client(process):
 
     def receive(msg=(sender_id, 'Operation_result_error', request_id)):
         output_wrapper('Result: Received ERROR message for request id ' + str(request_id) + ' from Replica ' + str(sender_id) + '.')
-        output_wrapper('Checking with Olympus for new configuration.')
-        send(('Get_configuration', self, name, client_id, public_key), to=olympus)
-        await(received(('Configuration', replicas_dict, head)))
+
+    def receive(msg=('running_state', running_state)):
+        client_running_state_sync = running_state
 
     # receive operation result from replica
     def receive(msg=(sender_id, 'Operation_result', request_id, result_shuttle)):
@@ -72,6 +75,14 @@ class Client(process):
                 request_id))
             send(('Reconfiguration', name, result_shuttle), to=olympus)
 
+    # receive operation result from olympus during reconfiguration
+    def receive(msg=('Operation_result_reconfig', result_s), from_=olympus):
+        result, result_stmt, request_id_ = result_s
+        if result != 'fail' or result != '':
+            update_client_running_state(client_running_state_sync, result_stmt[0][0], result_stmt[0][1])
+            # updating state from the tail response
+        output_wrapper('Result: {} received from Olympus during reconfiguration for request id: {}'.format(str(result), str(request_id_)))
+
     def sign_and_send(data, to_):
         data = list(data)
         data[-1] = private_key.sign(str(data[-1]).encode('utf-8'))
@@ -85,35 +96,32 @@ class Client(process):
             return None
 
     def run():
-        if replicas is None:
-            send(('Get_configuration', self, name, client_id, public_key), to=olympus)
-            await(received(('Configuration', replicas_dict, head)))
-        for op in operations:
-            -- handle_requests
+        N = 2 # get configuration periodically for every Nth request
+        for op_n, op in enumerate(operations):
             update_client_running_state(client_running_state, op[0], op[1])
             retry = 0
             while True:
-                if num_retries > max_retries:
-                    output_wrapper('Number of retries exceeded max retries, trying to get latest configuration from olympus')
-                    send(('Get_configuration', self, name, client_id, public_key), to=olympus)
-                    await(received(('Configuration', replicas_dict, head)))
-                    num_retries = 0
+                # Checking for new configuration periodically every Nth and for last send request
+                if requests_sent % N == 0 or op_n == (len(operations) - 1):
+                    output_wrapper('Checking with Olympus for new configuration.')
+                    send(('Get_configuration', self, name, client_id, public_key, requests_sent), to=olympus)
+                    await(received(('Configuration_' + str(client_id) + '_' + str(requests_sent))))
                 send_request(op[0], op[1], retry)
-                if await(received(('Operation_result_' + str(request_id)))):
+                requests_sent += 1
+                if await(received(('Operation_result_' + str(request_id))) or received(('Operation_result_reconfig_' + str(request_id)))):
                     break
                 elif timeout(client_timeout):
                     output_wrapper('Timeout: Retrying request id: {}, sending to all replicas'.format(str(request_id)))
-                    num_retries += 1
                     retry = 1
-        output_wrapper(
-            'Local running state of client after the given set of operations: ' + str(client_running_state) + '.')
-        output_wrapper(
-            'Running state of client at the server (assuming no conflicting keys from other clients) after the given set of operations: ' + str(
-                client_running_state_sync) + '.')
-        if are_dicts_equal(client_running_state, client_running_state_sync):
-            output_wrapper('\n\nTest case passed! Actual and expected running states match.\n\n')
+                sleep(0.1)
+        output_wrapper('Local running state of client after the given set of operations: ' + str(client_running_state) + '.')
+        send(('get_running_state', self, requests_sent), to=head)
+        await(received(('running_state_' + str(requests_sent))))
+        output_wrapper('\n\nRunning state at the server after the given set of operations: ' + str(client_running_state_sync) + '.\n\n')
+        if are_dicts_valid(client_running_state, client_running_state_sync):
+            output_wrapper('Assuming no conflicting keys from other clients:\n\nTest case passed! Actual and expected running states match.\n\n')
         else:
-            output_wrapper('\n\nTest case failed! Actual and expected running states don\'t match\n\n')
+            output_wrapper('Assuming no conflicting keys from other clients:\n\nTest case failed! Actual and expected running states don\'t match\n\n')
         
         await(received('Shutdown'))
 
@@ -145,15 +153,16 @@ class Client(process):
                     return 'fail'
 
     def send_request(type, args, retry):
+        op_args = list(args)[:]
         args = private_key.sign(str(args).encode('utf-8'))  # sign the request
         if retry:
+            output_wrapper(str(name) + ' is sending ' + str(type) + ' request with args ' + str(op_args) + ' for request id ' + str(request_id) + ' in retry mode.')
             for r in replicas:
-                output_wrapper(str(name) + ' is sending request for request id ' + str(request_id) + ' in retry mode.')
-                send((None, 'Request', type, self, self, request_id, client_id, args), to=r)
+                send((None, 'Request', type, self, self, request_id, client_id, args, None), to=r)
         else:
             request_id += 1
-            output_wrapper(str(name) + ' is sending request for request id ' + str(request_id) + '.')
-            send((None, 'Request', type, self, self, request_id, client_id, args), to=head)
+            output_wrapper(str(name) + ' is sending ' + str(type) + ' request with args ' + str(op_args) + ' for request id ' + str(request_id) + '.')
+            send((None, 'Request', type, self, self, request_id, client_id, args, None), to=head)
 
     # returns a tuple of booleans (is_valid_result_shuttle, send_reconfiguration_request)
     def validate_result(result, result_proof):
@@ -181,12 +190,12 @@ class Client(process):
         if isinstance(val, str):
             return sha256(str.encode(val), encoder=HexEncoder)
         elif isinstance(val, dict):
-            return sha256(str.encode(str(val)), encoder=HexEncoder)
+            return sha256(str.encode(dumps(val, sort_keys=True)), encoder=HexEncoder)
         return sha256(val, encoder=HexEncoder)
 
     def output_wrapper(log):
-        output('[{}][TS: {}]'.format(name, str(time())), log)
+        output('[TS: {}][{}]'.format(str(time()), name), log)
 
 
-def are_dicts_equal(d1, d2):
-    return ((len(d1) == len(d2)) and all(((k in d2) for k in d1)))
+def are_dicts_valid(d1, d2):
+    return all(k in d2 for k in d1)

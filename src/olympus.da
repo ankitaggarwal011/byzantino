@@ -2,6 +2,7 @@ from nacl.hash import sha256
 from nacl.encoding import HexEncoder
 from nacl.signing import SigningKey, VerifyKey
 from nacl.exceptions import BadSignatureError
+from json import dumps
 
 # import for deserialization of message objects
 from ast import literal_eval
@@ -10,11 +11,14 @@ from time import time,sleep
 from config import *
 import read_config
 
+# Configure a reliable FIFO channel
+config(channel='fifo')
+
 # The Olympus process. It creates replicas, and co-ordinates the passing of public keys to and from clients and replicas
 # It also handles system reconfiguration, which is not implemented yet
 class Olympus(process):
     # Olympus setup method. It receives config information, and passes it to applicable replicas
-    def setup(name, num_replicas, num_failures, all_replica_conf_failures, head_timeout, replica_timeout):
+    def setup(name, num_replicas, num_failures, all_replica_conf_failures, head_timeout, replica_timeout, checkpt_interval):
         self.state = 'NORMAL'
         self.num_failures = num_failures
         self.replicas = dict()
@@ -26,32 +30,36 @@ class Olympus(process):
         self.wedged_responses = list()
         self.quorum_start_index = 0
         self.quorum = list()
-        self.longest_history = list()
         self.chosen_running_state = None
         self.running_states_received = 0
         self.ignore_further_caught_up_messages = 0
+        self.checkpoint = 0
+        self.recent_results = list()
+        self.slots_used = 0
         # generate own keys
         self.private_key = SigningKey.generate()
         self.public_key = self.private_key.verify_key.encode(encoder=HexEncoder)
-        self.configuration_number = 0  # default configuration for phase 2
-        self.client_keys = {}  # client keys will be obtained later in message passing
+        self.configuration_number = 0  # default configuration
+        self.clients = dict()
+        self.client_keys = dict()  # client keys will be obtained later in message passing
         # get all replica failures in current configuration
         all_replica_failures = all_replica_conf_failures.get(self.configuration_number, {})
         for i in range(num_replicas):
             # get all failure scenarios in current replica
             replica_failures = all_replica_failures.get(i, {})
             running_state = dict()
+            slot_number = 0
             if i == 0:
                 # create head replica
-                replica = new(replica_module.Replica, args=(i, 'Head', running_state, replica_failures, head_timeout, public_key))
+                replica = new(replica_module.Replica, args=(i, 'Head', running_state, replica_failures, head_timeout, public_key, checkpt_interval, slot_number))
                 self.head = replica
             elif i == num_replicas - 1:
                 # create tail replica
-                replica = new(replica_module.Replica, args=(i, 'Tail', running_state, replica_failures, replica_timeout, public_key))
+                replica = new(replica_module.Replica, args=(i, 'Tail', running_state, replica_failures, replica_timeout, public_key, checkpt_interval, slot_number))
                 self.tail = replica
             else:
                 # create other replica
-                replica = new(replica_module.Replica, args=(i, 'Replica ' + str(i), running_state, replica_failures, replica_timeout, public_key))
+                replica = new(replica_module.Replica, args=(i, 'Replica ' + str(i), running_state, replica_failures, replica_timeout, public_key, checkpt_interval, slot_number))
             self.replicas[i] = replica
             replica_name = 'Replica ' + str(i)
             output_wrapper('Olympus created replica process: {}'.format(replica_name))
@@ -64,44 +72,47 @@ class Olympus(process):
 
     # ACK message from client/replica
     def receive(msg=('ACK', sender)):
-        output_wrapper('ACK from ' + str(sender) + '.')
+        # output_wrapper('ACK from ' + str(sender) + '.') # this is for debugging purposes
+        pass
 
     # Get configuration message handler from client in which client passes its own reference and key
     # Pass required information to all replicas and reply to client with current configuration details (replicas, head)
-    def receive(msg=('Get_configuration', client, client_name, client_id, client_public_key)):
-        if state != 'NORMAL':
-            return
+    def receive(msg=('Get_configuration', client, client_name, client_id, client_public_key, request_num)):
         client_keys[client_id] = VerifyKey(client_public_key, encoder=HexEncoder)
+        clients[client_id] = client
         send(('Configuration', replicas, head), to=client)
         send(('Keys', replica_public_keys, public_key), to=client)
+        send(('Configuration_' + str(client_id) + '_' + str(request_num)), to=client)
         for i, r in replicas.items():
             send(('Client_keys', client_id, client_public_key), to=r)
         output_wrapper('Received public key: {} from client: {}'.format(str(client_public_key), str(client_name)))
         output_wrapper('Configuration sent to ' + str(client_name) + '.')
-
 
     def begin_reconfiguration():
         if state == 'RECONFIGURATION':
             output_wrapper('System is already in reconfiguration. Ignoring new reconfiguration command.')
             return
         state = 'RECONFIGURATION'
-        output_wrapper('Changing states of replicas from old configuration to IMMUTABLE.')
-        for i, r in replicas.items():
-            send(('Immutable'), to=r)
-        output_wrapper('Sending wedge requests: checking replicas: ' + str(replicas))
+        output_wrapper('Sending wedge requests to replicas: ' + str(replicas))
         for i, r in replicas.items():
             output_wrapper('Sending wedge requests to replica: ' + str(i))
             send(('wedge_request'), to=r)
 
+    # get all wedged messages, make a sorted list out of all sorted valid histories [<s, o>, ...]
+    # choose first (longest history), and check if there other t consistent replicas, if yes, create quorum, save the index
+    # if this quorum fails, choose new quorum from the saved index
     def select_quorum():
         output_wrapper('Selecting a new quorum.')
         quorum = list()
         longest_history = list()
-        wedged_responses.sort(reverse=True, key=lambda x: len(x[0]))
+        furthest_checkpoint = checkpoint
+        wedged_responses.sort(reverse=True, key=lambda x: (len(x[0]) + x[2])) # sorting with checkpoint and history size
         while quorum_start_index < len(wedged_responses) and len(quorum) < num_failures + 1:
             longest_history = wedged_responses[quorum_start_index][0]
+            furthest_checkpoint = wedged_responses[quorum_start_index][2]
             for w_resp in wedged_responses[quorum_start_index:]:
-                if w_resp[0] == longest_history[:len(w_resp[0])]: # checking if a history is prefix of longest history
+                replica_history = w_resp[0][(furthest_checkpoint - w_resp[2]):]
+                if replica_history == longest_history[:len(replica_history)]: # checking if a history is prefix of longest history
                     quorum.append(w_resp)
                 if len(quorum) == num_failures + 1:
                     break
@@ -109,12 +120,16 @@ class Olympus(process):
         if len(quorum) == 0:
             output_wrapper('No quorum formed. System can\'t handle more than ' + str(num_failures) + '.')
             return
-        output_wrapper('Quorum is selected.')
+        checkpoint = furthest_checkpoint
+        output_wrapper('Quorum is selected with checkpoint at ' + str(checkpoint) + '.')
+        slots_used = furthest_checkpoint + len(longest_history)
         ignore_further_caught_up_messages = 0 # reset
         running_states_received = 0
         chosen_running_state = None
+        recent_results = list()
         for i in quorum:
-            gap = longest_history[len(i[0]):]
+            replica_history = i[0][(furthest_checkpoint - i[2]):]
+            gap = longest_history[len(replica_history):]
             send(('catch_up', gap), to=replicas[i[1]])
         if await(some(received(('caught_up', None, None)), has=(running_states_received == len(quorum)))):
             pass
@@ -123,28 +138,34 @@ class Olympus(process):
                 output_wrapper('Number of running states received are less than the size of quorum.')
                 select_quorum()
 
-    # get all wedged messages, make a sorted list out of all sorted valid histories [<s, o>, ...]
-    # choose first (longest history), and check if there other t consistent replicas, if yes, create quorum, save the index
-    # if this quorum fails, choose new quorum from the saved index
-    def receive(msg=('wedge', hist, replica_id)):
+    def receive(msg=('wedge', hist, checkpt_proof, checkpoint, replica_id)):
         output_wrapper('Wedge message from Replica ' + str(replica_id))
         # check signature of replica #todo
         for order_p in hist:
             if not validate_order_proof(order_p):
                 return
-        wedged_responses.append([sorted([o_p[:-1] for o_p in hist], key=lambda x: x[0]), replica_id])
+        if checkpt_proof != None and not validate_checkpoint(checkpt_proof):
+            return
+        wedged_responses.append([sorted([(o_p[:-2] + o_p[-1:]) for o_p in hist], key=lambda x: x[0]), replica_id, checkpoint])
         if len(wedged_responses) == (num_failures + 1):
             output_wrapper('Received ' + str(len(wedged_responses)) + ' wedged responses.')
             select_quorum()
 
+    def validate_checkpoint(checkpt_p):
+        if len(checkpt_p) == 0: return False
+        checkpt = checkpt_p[0]
+        if checkpt_p.count(checkpt) != len(checkpt_p) or checkpt[0] <= checkpoint:
+            return False
+        return True
+
     def validate_order_proof(order_p):
-        slot_number, operation, configuration, order_stmt = order_p
+        slot_number, operation, configuration, order_stmt, request_id = order_p
         for stmt in order_stmt:
             if stmt[0] != slot_number or stmt[1] != operation or stmt[2] != configuration:
                 return False
         return True
 
-    def receive(msg=('caught_up', hash_running_state, replica_id)):
+    def receive(msg=('caught_up', hash_running_state, replica_id, most_recent_result)):
         output_wrapper('Caught up message received from Replica ' + str(replica_id))
         if ignore_further_caught_up_messages: return
         if not (chosen_running_state == None or hash_running_state == chosen_running_state):
@@ -153,9 +174,24 @@ class Olympus(process):
             select_quorum()
             return
         running_states_received += 1
+        recent_results.append(most_recent_result)
         chosen_running_state = hash_running_state
         if running_states_received == len(quorum):
+            send_most_recent_result_to_client()
             get_running_state_from_quorum()
+
+    def send_most_recent_result_to_client():
+        first_dict = recent_results[0]
+        for each_client, each_result in first_dict.items():
+            result_consistent = 1
+            for each_dict in recent_results:
+                if each_dict[each_client][1] != each_result[1]:
+                    result_consistent = 0
+            request_id = each_result[2]
+            if result_consistent:
+                output_wrapper('During reconfiguration, Olympus sending the most recent result for Client ' + str(each_client) + '.')
+                send(('Operation_result_reconfig', each_result), to=clients[each_client])
+                send(('Operation_result_reconfig_' + str(request_id)), to=clients[each_client])
 
     def get_running_state_from_quorum():
         output_wrapper('Getting the running state from the quorum.')
@@ -179,6 +215,7 @@ class Olympus(process):
         output_wrapper('Validating the running_state with the quorum.')
         if calculate_hash(replica_running_state) == chosen_running_state:
             running_state_validated = 1
+            output_wrapper('Running state validated with the Quorum. Initializing new configuration.')
             init_new_configuration(replica_running_state)
 
     def validate_proof_of_misbehavior(proof_of_misbehavior):
@@ -199,7 +236,7 @@ class Olympus(process):
         if isinstance(val, str):
             return sha256(str.encode(val), encoder=HexEncoder)
         elif isinstance(val, dict):
-            return sha256(str.encode(str(val)), encoder=HexEncoder)
+            return sha256(str.encode(dumps(val, sort_keys=True)), encoder=HexEncoder)
         return sha256(val, encoder=HexEncoder)
 
     # Encrypt data with own private key and send
@@ -217,9 +254,6 @@ class Olympus(process):
             return None
 
     def init_new_configuration(new_running_state):
-        output_wrapper('Shutting down replicas from old configuration.')
-        for i, r in replicas.items():
-            send(('Shutdown'), to=r)
         configuration_number += 1 # new configuration
         # resetting replicas
         replicas = dict()
@@ -234,15 +268,15 @@ class Olympus(process):
             replica_failures = all_replica_failures.get(i, {})
             if i == 0:
                 # create head replica
-                replica = new(replica_module.Replica, args=(i, 'Head', new_running_state, replica_failures, head_timeout, public_key))
+                replica = new(replica_module.Replica, args=(i, 'Head', new_running_state, replica_failures, head_timeout, public_key, checkpt_interval, slots_used))
                 head = replica
             elif i == num_replicas - 1:
                 # create tail replica
-                replica = new(replica_module.Replica, args=(i, 'Tail', new_running_state, replica_failures, replica_timeout, public_key))
+                replica = new(replica_module.Replica, args=(i, 'Tail', new_running_state, replica_failures, replica_timeout, public_key, checkpt_interval, slots_used))
                 tail = replica
             else:
                 # create other replica
-                replica = new(replica_module.Replica, args=(i, 'Replica ' + str(i), new_running_state, replica_failures, replica_timeout, public_key))
+                replica = new(replica_module.Replica, args=(i, 'Replica ' + str(i), new_running_state, replica_failures, replica_timeout, public_key, checkpt_interval, slots_used))
             replicas[i] = replica
             replica_name = 'Replica ' + str(i)
             output_wrapper('Olympus created replica process: {}'.format(replica_name))
@@ -258,19 +292,21 @@ class Olympus(process):
         quorum = list()
         wedged_responses = list()
         quorum_start_index = 0
-        longest_history = list()
         chosen_running_state = None
         running_states_received = 0
         ignore_further_caught_up_messages = 0
+        checkpoint = 0
+        recent_results = list()
 
+        output_wrapper('Replacing the old replicas with new replicas.')
         for i, r in replicas.items():
             start(r)
             sign_and_send(('Configuration', self, replicas, head, tail, [replica_public_keys, configuration_number]), r)
             send(('Key', replica_private_keys[i]), to=r)
         
-        state = 'NORMAL'
-        output_wrapper('Reconfiguration is successful.')
+        output_wrapper('Reconfiguration is successful. Configuration is changed from ' + str(configuration_number - 1) + ' to ' + str(configuration_number) + '.')
         output_wrapper('New replicas: ' + str(replicas))
+        state = 'NORMAL'
 
     # Run loop. Won't exit till Shutdown is received (never).
     # Start replicas and send them initial configuration message
@@ -285,4 +321,4 @@ class Olympus(process):
 
     # Utility method for logging, prepends process name and time to each log statement
     def output_wrapper(log):
-        output('[{}][TS: {}]'.format(name, str(time())), log)
+        output('[TS: {}][{}]'.format(str(time()), name), log)

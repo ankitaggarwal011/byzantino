@@ -17,18 +17,6 @@ class ClientConfig:
         self.num_client = int(dict['num_client'])
         self.num_failures = int(dict['t'])
         self.client_timeout = int(dict['client_timeout']) / 1000
-        self.hosts = dict['hosts'].split(';')
-        for i, host in enumerate(self.hosts):
-            self.hosts[i] = host.strip()
-        client_hosts = dict['client_hosts'].split(';')
-        if len(client_hosts) != self.num_client:
-            raise ValueError("Client host mapping must be of size num_client: " + self.num_client.__str__())
-        self.client_host_mapping = {}
-        for i, host_str in enumerate(client_hosts):
-            host_str = host_str.strip()
-            if not str.isdecimal(host_str):
-                raise ValueError("client host must be an integer")
-            self.client_host_mapping[i] = int(host_str)
 
         self.workloads = {}
         for i in range(0, self.num_client):
@@ -37,10 +25,9 @@ class ClientConfig:
             self.workloads[i] = workload
 
     def __str__(self):
-        return "Test case name: {}, # of clients: {}, # of failures = {}, Client timeout in ms: {}, hosts: {}, " \
-               "client-host mapping: {}, Workloads: {}".format(self.test_case_name, self.num_client, self.num_failures,
-                                                               self.client_timeout, self.hosts,
-                                                               self.client_host_mapping, self.workloads)
+        return "Test case name: {}, # of clients: {}, # of failures = {}, Client timeout in ms: {}, " \
+               "Workloads: {}".format(self.test_case_name, self.num_client, self.num_failures,
+                                                               self.client_timeout, self.workloads)
 
     __repr__ = __str__
 
@@ -131,18 +118,7 @@ class ReplicaConfig:
         self.num_replica = 2 * self.num_failures + 1
         self.head_timeout = int(dict['head_timeout']) / 1000
         self.nonhead_timeout = int(dict['nonhead_timeout']) / 1000
-        self.hosts = dict['hosts'].split(';')
-        for i, host in enumerate(self.hosts):
-            self.hosts[i] = host.strip()
-        replica_hosts = dict['replica_hosts'].split(';')
-        if len(replica_hosts) != self.num_replica:
-            raise ValueError("Replica host mapping must be of size num_client: " + self.num_replica.__str__())
-        self.replica_host_mapping = {}
-        for i, host_str in enumerate(replica_hosts):
-            host_str = host_str.strip()
-            if not str.isdecimal(host_str):
-                raise ValueError("replica host must be an integer")
-            self.replica_host_mapping[i] = int(host_str)
+        self.checkpt_interval = int(dict['checkpt_interval'])
         # get failure scenarios from config
         self.failures = {}
         for key, value in list(dict.items()):
@@ -161,10 +137,10 @@ class ReplicaConfig:
 
     def __str__(self):
         return "Test case name: {}, # of replicas: {}, # of failures = {}, Head timeout in ms: {}, nonhead timeout in " \
-               "ms:{}, hosts: {}, " \
-               "replica-host mapping: {}, Failures: {}".format(self.test_case_name, self.num_replica, self.num_failures,
-                                                               self.head_timeout, self.nonhead_timeout, self.hosts,
-                                                               self.replica_host_mapping, self.failures)
+               "ms:{}, checkpt_interval: {}, " \
+               "Failures: {}".format(self.test_case_name, self.num_replica, self.num_failures,
+                                                               self.head_timeout, self.nonhead_timeout, self.checkpt_interval,
+                                                               self.failures)
 
     __repr__ = __str__
 

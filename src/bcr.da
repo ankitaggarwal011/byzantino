@@ -18,8 +18,8 @@ import getopt
 from time import time
 
 # Configure a reliable FIFO channel
-config(channel={'reliable', 'fifo'})
-config(clock='Lamport')
+config(channel='fifo')
+
 # Utility method for parsing program arguments
 def parse_program_args(argv):
     inputfile = ''
@@ -36,11 +36,9 @@ def parse_program_args(argv):
             output_wrapperfile = arg
     return [inputfile, output_wrapperfile]
 
-
 # Utility method to find if two dictionaries are equal
-def are_dicts_equal(d1, d2):
-    return (len(d1) == len(d2) and all(k in d2 for k in d1))
-
+def are_dicts_valid(d1, d2):
+    return all(k in d2 for k in d1)
 
 # Main entry point
 def main():
@@ -65,7 +63,7 @@ def main():
     output_wrapper('Running BCR simulation for test case: ' + global_config.test_case_name)
     olympus = new(olympus_module.Olympus, args=(
         'Olympus', replica_config.num_replica, replica_config.num_failures, replica_config.failures, replica_config.head_timeout,
-        replica_config.nonhead_timeout))
+        replica_config.nonhead_timeout, replica_config.checkpt_interval))
     start(olympus)
     clients = dict()
 
@@ -76,4 +74,4 @@ def main():
         client = new(client_module.Client, args=(
             i, olympus, request_id_counter - 1, client_config.client_timeout, modified_ops, client_config.num_failures))
         clients[i] = client
-    start(clients.values())
+    start(set(clients.values()))

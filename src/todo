@@ -1,11 +1,7 @@
-Checkpointing
-Additional changes
 Failure and Failure injection
 Digital Signing
 Logging
 Testing
 Documentation
 Multi-host support
-
-Known bugs:
-configuration handlers in client is not getting triggered after reconfiguration
+PEP8

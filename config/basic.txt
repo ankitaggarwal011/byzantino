@@ -5,10 +5,7 @@ num_client = 2
 client_timeout = 3000
 head_timeout = 3000
 nonhead_timeout = 3000
-
-hosts = localhost
-client_hosts = 1; 1
-replica_hosts = 0; 1; 2
+checkpt_interval = 3
 
 # CLIENT WORKLOAD
 workload[0] = put('movie','star'); append('movie',' wars'); get('movie'); get('test')
