@@ -11,7 +11,7 @@ from config import *
 import read_config
 
 # Configure a reliable FIFO channel
-config(channel='fifo')
+config(channel={'reliable', 'fifo'})
 
 # The client process. It is created by the main process
 # Setup inputs: reference to olympus, initial request_id index, client timeout, operation_list, and number of system
@@ -49,7 +49,7 @@ class Client(process):
         send(('ACK', name), to=olympus)
 
     def receive(msg=(sender_id, 'Operation_result_error', request_id)):
-        output_wrapper('Result: Received ERROR message for request id ' + str(request_id) + ' from Replica ' + str(sender_id) + '.')
+        output_wrapper('Result during reconfiguration: Received ERROR message for request id ' + str(request_id) + ' from Replica ' + str(sender_id) + '.')
 
     def receive(msg=('running_state', running_state)):
         client_running_state_sync = running_state
@@ -81,7 +81,7 @@ class Client(process):
         if result != 'fail' or result != '':
             update_client_running_state(client_running_state_sync, result_stmt[0][0], result_stmt[0][1])
             # updating state from the tail response
-        output_wrapper('Result: {} received from Olympus during reconfiguration for request id: {}'.format(str(result), str(request_id_)))
+        output_wrapper('Result from Olympus: {} received from Olympus during reconfiguration for request id: {}'.format(str(result), str(request_id_)))
 
     def sign_and_send(data, to_):
         data = list(data)
@@ -117,7 +117,7 @@ class Client(process):
         output_wrapper('Local running state of client after the given set of operations: ' + str(client_running_state) + '.')
         send(('get_running_state', self, requests_sent), to=head)
         await(received(('running_state_' + str(requests_sent))))
-        output_wrapper('\n\nRunning state at the server after the given set of operations: ' + str(client_running_state_sync) + '.\n\n')
+        output_wrapper('\n\nRunning state at the server after the given set of operations: ' + str(dumps(client_running_state_sync, sort_keys=True)) + '.\n\n')
         if are_dicts_valid(client_running_state, client_running_state_sync):
             output_wrapper('Assuming no conflicting keys from other clients:\n\nTest case passed! Actual and expected running states match.\n\n')
         else:

@@ -5,3 +5,13 @@ Testing
 Documentation
 Multi-host support
 PEP8
+
+Distalgo issue:
+some output logs are omitted for large number of requests
+
+Doubts:
+new_configuration(m): receipt of m'th new_configuration message from Olympus.  it doesn't matter whether your implementation actually sends a new_configuration message for the initial configuration; either way, m=0 corresponds to the first configuration change after the initial configuration.
+
+checkpoint(m): receipt of m'th checkpoint message [2017-09-12: added this item.]
+
+completed_checkpoint(m): receipt of m'th completed checkpoint message [2017-09-12: added this item.]

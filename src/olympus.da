@@ -12,7 +12,7 @@ from config import *
 import read_config
 
 # Configure a reliable FIFO channel
-config(channel='fifo')
+config(channel={'reliable', 'fifo'})
 
 # The Olympus process. It creates replicas, and co-ordinates the passing of public keys to and from clients and replicas
 # It also handles system reconfiguration, which is not implemented yet

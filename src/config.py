@@ -118,7 +118,7 @@ class ReplicaConfig:
         self.num_replica = 2 * self.num_failures + 1
         self.head_timeout = int(dict['head_timeout']) / 1000
         self.nonhead_timeout = int(dict['nonhead_timeout']) / 1000
-        self.checkpt_interval = int(dict['checkpt_interval'])
+        self.checkpt_interval = (int(dict['checkpt_interval']) if 'checkpt_interval' in dict else 1000)
         # get failure scenarios from config
         self.failures = {}
         for key, value in list(dict.items()):
