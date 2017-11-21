@@ -1,0 +1,18 @@
+test_case_name = basic_pseudo_random_workload
+
+t = 1
+num_client = 1
+client_timeout = 1
+head_timeout = 3000
+nonhead_timeout = 3000
+checkpt_interval = 2
+
+# CLIENT WORKLOAD
+workload[0] = get('horror'); append('movie',' wars'); get('movie')
+
+# FAILURE SCENARIO
+# failures(c,r) is the failure scenario for replica r in configuration c.
+# configurations are numbered starting with 0.  replicas are numbered by
+# position in the chain, starting from 0.  replicas without a specified
+# failure scenario are failure-free.
+failures[0,2] = shuttle(0, 0), change_result()

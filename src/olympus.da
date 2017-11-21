@@ -121,7 +121,8 @@ class Olympus(process):
             output_wrapper('No quorum formed. System can\'t handle more than ' + str(num_failures) + '.')
             return
         checkpoint = furthest_checkpoint
-        output_wrapper('Quorum is selected with checkpoint at ' + str(checkpoint) + '.')
+        quorum_replicas = [i[1] for i in quorum]
+        output_wrapper('Quorum is selected with Replicas ' + str(quorum_replicas) + ' and checkpoint at ' + str(checkpoint) + '.')
         slots_used = furthest_checkpoint + len(longest_history)
         ignore_further_caught_up_messages = 0 # reset
         running_states_received = 0
@@ -143,16 +144,18 @@ class Olympus(process):
         # check signature of replica #todo
         for order_p in hist:
             if not validate_order_proof(order_p):
+                output_wrapper('Order Proof in history: ' + str(order_p) + ', sent with wedge response of Replica ' + str(replica_id) + ' are invalid.')
                 return
-        if checkpt_proof != None and not validate_checkpoint(checkpt_proof):
+        if checkpt_proof != None and not validate_checkpoint_proof(checkpt_proof):
+            output_wrapper('Checkpoint Proof: ' + str(checkpt_proof) + ', sent with wedge response of Replica ' + str(replica_id) + ' is invalid.')
             return
         wedged_responses.append([sorted([(o_p[:-2] + o_p[-1:]) for o_p in hist], key=lambda x: x[0]), replica_id, checkpoint])
         if len(wedged_responses) == (num_failures + 1):
             output_wrapper('Received ' + str(len(wedged_responses)) + ' wedged responses.')
             select_quorum()
 
-    def validate_checkpoint(checkpt_p):
-        if len(checkpt_p) == 0: return False
+    def validate_checkpoint_proof(checkpt_p):
+        if len(checkpt_p) == 0 or len(checkpt_p) != len(replicas): return False
         checkpt = checkpt_p[0]
         if checkpt_p.count(checkpt) != len(checkpt_p) or checkpt[0] <= checkpoint:
             return False

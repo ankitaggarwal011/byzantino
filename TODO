@@ -1,0 +1,9 @@
+Sign and validate order/result/checkpt statements separately
+Implement corrupt_sign_and_send
+Digital Signing
+Enable python logging (some output logs are omitted for large number of requests in distalgo)
+Multi-host support
+Exit program to calculate time
+Increase recursion limit
+PEP8
+Documentation (testing.txt, README.txt)

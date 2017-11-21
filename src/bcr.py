@@ -29,9 +29,6 @@ def parse_program_args(argv):
             output_wrapperfile = arg
     return [inputfile, output_wrapperfile]
 
-def are_dicts_valid(d1, d2):
-    return all(((k in d2) for k in d1))
-
 class Node_(da.NodeProcess):
 
     def __init__(self, procimpl, props):

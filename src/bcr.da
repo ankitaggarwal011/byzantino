@@ -36,10 +36,6 @@ def parse_program_args(argv):
             output_wrapperfile = arg
     return [inputfile, output_wrapperfile]
 
-# Utility method to find if two dictionaries are equal
-def are_dicts_valid(d1, d2):
-    return all(k in d2 for k in d1)
-
 # Main entry point
 def main():
     def output_wrapper(log):

@@ -1,0 +1,20 @@
+test_case_name = stress_p3
+
+# number of failures to tolerate.  number of replicas is 2t+1.
+t = 2
+# number of clients
+num_client = 3
+# client timeout, in milliseconds. 
+client_timeout = 3000
+# timeout, in milliseconds, for head and non-head servers, respectively
+head_timeout = 3000
+nonhead_timeout = 3000
+checkpt_interval = 20
+
+# CLIENT WORKLOAD
+workload[0] = pseudorandom(190,30)
+workload[1] = pseudorandom(191,30)
+workload[2] = pseudorandom(192,30)
+
+# FAILURE SCENARIO
+# no failures

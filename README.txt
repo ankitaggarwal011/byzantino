@@ -1,6 +1,6 @@
 PLATFORM
 ========
-DistAlgo version: 1.0.9
+DistAlgo version: 1.0.11
 Python3 (CPython) version: 3.5.1
 Operating System: Windows 7, MAC OS
 Hosts: Laptop (without VMs), VM on Google Cloud Compute Engine
@@ -14,8 +14,7 @@ e.g.
 python3 -m da src/bcr.da -i config/basic_multi_client.txt
 
 For multi-node:
-python3 -m da -n OlympusNode src/bcr_multi_node.da -i config/basic_multi_client.txt
-python3 -m da -n ClientNode src/bcr_multi_node.da -i config/basic_multi_client.txt
+
 
 
 WORKLOAD GENERATION
@@ -26,62 +25,69 @@ As a convention, all keys and values generated have a fixed length of 3 to keep 
 
 BUGS AND LIMITATIONS
 ====================
-1. Multi-node setup produces unhashable set error.
 
-2. Stress testing works for 5 clients with around 50 requests. For any more requests, the program produces TCP transport error on my 4 GB Windows system. 
 
-3. Olympus and Client communication is partially signed, and will be extended in Phase 3.
+COMPARISON WITH RAFT
+====================
 
-4. In case of a failure, the client keeps retransmitting the requests because there is no reconfiguration mechanism implemented yet for phase 2. This is an expected limitation, which will be taken care of in phase 3.
+
 
 CONTRIBUTIONS
 =============
 
 Ankit Aggarwal (anaaggarwal, 111485578):
-Replica Implementation
-Olympus Implementation
+Reconfiguration
+Checkpointing
+Failure Triggers and Injection
 Digital Signing and Verification
+Multi-host support
 Logging
 Testing
 
 Saraj Munjal (smunjal, 111497962):
-Client Implementation
-Configuration file parsing
-Pseudorandom and other workload generation
+Reconfiguration
+Checkpointing
+Failure Triggers and Injection
+Digital Signing and Verification
+Multi-host support
 Logging
 Testing
 
 MAIN FILES
 ==========
 
-Implementation of the Replica, Olympus, and Client: src/bcr.da
+Main entry: src/bcr.da
+Implementation of the Replica: src/replica.da
+Implementation of the Olympus: src/olympus.da
+Implementation of the Client: src/client.da
 Setting up configuration for the program and workload generation: src/config.py
 Parsing the configuration file: src/read_config.py
 
-Implementation for multi-node setup: src/bcr_multi_node.da
+Implementation for multi-node setup: 
 
 CODE SIZE
 =========
 
 (1a) Lines of code for:
-    Algorithm: ~400
-    Other: ~350
-    Total: ~750
+    Algorithm: ~800
+    Other: ~700
+    Total: ~1500
 
 (1b) Counts are obtained using: https://github.com/AlDanial/cloc
 
 (2) Lines of code for:
-    Core Algorithm: ~320
-    Interleaved testing: ~80
+    Core Algorithm: ~600
+    Interleaved testing: ~200
 
 LANGUAGE FEATURE USAGE
 ====================== 
 
-List Comprehensions: ~5
-Dictionary Comprehensions: 0
-Set Comprehensions: ~1-2
+List Comprehensions: ~15
+Dictionary Comprehensions: ~2-3
+Set Comprehensions: ~8-9
 Aggregations: 0
-Quantifications: 0
+Quantifications: ~2-3
 Classes: 5
 Enums: 3
-
+Lambda: ~10
+Map: ~10

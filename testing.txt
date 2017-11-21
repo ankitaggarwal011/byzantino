@@ -4,213 +4,38 @@ Test cases
 
 -------------- Client -----------------------
 
--- Generate pseudorandom workload
+-- <Test Case>
     Description:-
-    The algorithm for pseudo-random workload generation is described in the README file.
-    In the main() function while constructing client processes, their workload is printed to output.
-
-    An example of pseudorandom workload is:
-    Workload for client 2 : [('put', ['qhz', 'prg']), ('get', ['dih']), ('get', ['cvh']), ('put', ['xjd', 'pkg']), ('get', ['jpq']), ('put', ['twk', 'jdq']), ('slice', ['inb', 2]), ('slice', ['fby', 2]), ('get', ['yyd']), ('put', ['flk', 'xqq'])]
-
-    This is a random distribution of supported operations with applicable random operands.
 
     Command:-
-    python3 -m da --logfile --logfilename=logs/client-pseudo-random-log.txt --logfilelevel=info src/bcr.da -i config/client-pseudo-random.txt
-
--- Generate request sequence
-    Description:-
-    A client can take either a pseudorandom workload, or a specific request sequence.
-    In the main() function while constructing client processes, their workload is printed to output.
-
-    An example of specific workload sequence is:
-    Workload for client 1 : [('put', ['name', 'saraj']), ('append', ['name', ' munjal']), ('get', ['age'])]
-
-    Command(same config file as pseudo random):-
-    python3 -m da --logfile --logfilename=logs/client-pseudo-random-log.txt --logfilelevel=info src/bcr.da -i config/client-pseudo-random.txt
-
--- Client retransmission
-    Description:-
-    In an environment with t = 1 (3 replicas) and 1 client, we introduce a byzantine failure for the first client request
-    at replica 1(in the middle), through the operation change_result(). As a result, the tail detects misbehavior and
-    triggers reconfiguration, hence not sending the response to the client. The client times out and retries its request.
-
-    Command:-
-    python3 -m da --logfile --logfilename=logs/client-retransmission-log.txt --logfilelevel=info src/bcr.da -i config/client-retransmission.txt
-
-
--- Client validation
-    Description:-
-
-    In an environment with t = 1 (3 replicas) and 1 client, we introduce a byzantine failure for the first client request
-    at the tail through the operation drop_result_stmt(). As a result, there is one missing operation in the result proofs
-    that are sent to the client. The client detects this misbehavior and prints:
-
-    Number of correct result proofs received :2, required majority: 2
-
-    This is still enough to make progress, but the client nonetheless triggers reconfiguration.
-
-    Command:-
-    python3 -m da --logfile --logfilename=logs/client-validation-log.txt --logfilelevel=info src/bcr.da -i config/client-validation.txt
-
--- Client: check that dictionary contains expected content at the end of test case
-    Description:-
-    The client must verify that all operations have been performed correctly after completing its request workload.
-    The client keeps two running dictionaries for running state: one is for the client's expected result of operations, and
-    the second for the actual result of operations.
-
-    When the client has processed its workload, we match these two dictionaries to determine output
-
-    Command: Can be verified in every test case
+    python3 -m da --logfile --logfilename=logs/-log.txt --logfilelevel=info src/bcr.da -i config/.txt
 
 -------------- Olympus -----------------------
 
+-- <Test Case>
     Description:-
-    Olympus creates replica processes, their public and private keys. It also parses the failure scenarios for each replica
-    from a config file and passes it to the replica while creating it.
-    Clients are created separately in the main process, to keep their creation decoupled from Olympus
-
-    Sample logs from Olympus:
-    [289] bcr.Replica<Replica:29803>:OUTPUT: [Head][TS: 1508723924.076395] replica failures: {}
-    [294] bcr.Olympus<Olympus:29802>:OUTPUT: [Olympus][TS: 1508723924.080791] Olympus created replica process: Replica 0
-    [295] bcr.Olympus<Olympus:29802>:OUTPUT: [Olympus][TS: 1508723924.082797] Olympus created keys for replica process: Replica 0. Public key: b'28463be0a63d8a023f4c589c771fd97fa2b5f5a395ce10ae73b8faf3b3ec7260'
-    [313] bcr.Replica<Replica:29804>:OUTPUT: [Replica 1][TS: 1508723924.1004622] replica failures: [shuttle(0,2), drop_result_stmt()]
-    [314] bcr.Olympus<Olympus:29802>:OUTPUT: [Olympus][TS: 1508723924.1016982] Olympus created replica process: Replica 1
-    [315] bcr.Olympus<Olympus:29802>:OUTPUT: [Olympus][TS: 1508723924.1025221] Olympus created keys for replica process: Replica 1. Public key: b'7f21660b4c175b9100a27b16c886140b6a413dfa88fa62167d11e06db1975e18'
-    [332] bcr.Replica<Replica:29805>:OUTPUT: [Tail][TS: 1508723924.119277] replica failures: [shuttle(0,0), change_result(), result_shuttle(0,0), drop_result_stmt()]
-    [334] bcr.Olympus<Olympus:29802>:OUTPUT: [Olympus][TS: 1508723924.120876] Olympus created replica process: Replica 2
-    [335] bcr.Olympus<Olympus:29802>:OUTPUT: [Olympus][TS: 1508723924.122046] Olympus created keys for replica process: Replica 2. Public key: b'1fbed03f55c613645db5eacba5087dd70bb44ac52aa586ad69db433568d04fe5'
-
-    Clients send their own public keys to Olympus while asking for configuration.
-    In response, clients get the public keys of Olympus and replicas while asking for configuration
-
-    Sample logs from Olympus:
-    [415] bcr.Olympus<Olympus:c0402>:OUTPUT: [Olympus][TS: 1508725072.153437] Received public key: b'b8fcc2e6a696a471b2c8cc5492fca4e41c5dd9fe481af933b776b4c512a29981' from client: Client 0
-    Sample logs from Client:
-    [417] bcr.Client<Client:c0403>:OUTPUT: [Client 0][TS: 1508725072.1556768] Received the public keys of replicas from Olympus
-    [418] bcr.Client<Client:c0403>:OUTPUT: [Client 0][TS: 1508725072.1563818] Received the public key of Olympus.
 
     Command:-
-    This happens in all test scenarios.
-    Example: python3 -m da --logfile --logfilename=logs/client-pseudo-random-log.txt --logfilelevel=info src/bcr.da -i config/client-pseudo-random.txt
+    python3 -m da --logfile --logfilename=logs/-log.txt --logfilelevel=info src/bcr.da -i config/.txt
 
 -------------- Replicas -----------------------
 
-    -- Replicas: dictionary object: support put, get, slice, append
+-- <Test Case>
     Description:-
-    All replicas support the put, get, slice, and append operations. They are updated with the update_running_state function in the Replicas class.
-
-    Sample logs from Replica:
-    [2017-10-22 23:02:45,709] bcr.Node_<Node_:ed001>:OUTPUT: [Main][TS: 1508727765.708353] Workload for client 0 : [('put', ['movie', 'star']), ('append', ['movie', ' wars']), ('slice', ['movie', ' 0:4']), ('get', ['movie'])]
-    [2017-10-22 23:02:46,080] bcr.Replica<Replica:08003>:OUTPUT: [Tail][TS: 1508727766.0803742] get request with request id 3 received by Tail.
-    [2017-10-22 23:02:46,080] bcr.Replica<Replica:08003>:OUTPUT: [Tail][TS: 1508727766.0803742] Tail is in ACTIVE state.
-    [2017-10-22 23:02:46,086] bcr.Replica<Replica:08003>:OUTPUT: [Tail][TS: 1508727766.0863745] Result shuttle is at Tail.
-    [2017-10-22 23:02:46,088] bcr.Replica<Replica:08002>:OUTPUT: [Replica 1][TS: 1508727766.0883746] Result shuttle is at Replica 1.
-
-    Sample logs from Client:
-    [2017-10-22 23:02:46,084] bcr.Client<Client:f9003>:OUTPUT: [Client 0][TS: 1508727766.0843744] Number of correct result proofs received :3, required majority: 2
-    [2017-10-22 23:02:46,084] bcr.Client<Client:f9003>:OUTPUT: [Client 0][TS: 1508727766.0843744] Valid result: star received for request id: 3
-    [2017-10-22 23:02:46,085] bcr.Client<Client:f9003>:OUTPUT: [Client 0][TS: 1508727766.0853746] Local running state of client after the given set of operations: {'movie': 'star'}.
-    [2017-10-22 23:02:46,089] bcr.Client<Client:f9003>:OUTPUT: [Client 0][TS: 1508727766.0893748] 
-    [2017-10-22 23:02:46,087] bcr.Client<Client:f9003>:OUTPUT: [Client 0][TS: 1508727766.0873747] Running state of client at the server (assuming no conflicting keys from other clients) after the given set of operations: {'movie': 'star'}.
-    Test case passed! Actual and expected running states match.
 
     Command:-
-    This happens in all test scenarios with valid operations.
-    Example: python3 -m da --logfile --logfilename logs/replica-dict-object.log -F output src/bcr.da -i config/replica-dict-object.txt
+    python3 -m da --logfile --logfilename=logs/-log.txt --logfilelevel=info src/bcr.da -i config/.txt
 
-    -- Replicas: head: handle new request: assign slot, sign order stmt & result stmt, send shuttle
+---------- Stress test ------------------------
+-- <Test Case>
     Description:-
-    Head Replica handles new request, assigns a new slot number (0 at the start), and signs shuttle containing order proof and result proof and forwards it to next replica.
-
-    Sample logs from Head:
-    [2017-10-22 23:02:45,998] bcr.Replica<Replica:08001>:OUTPUT: [Head][TS: 1508727765.9983697] put request with request id 0 received by Head.
-    [2017-10-22 23:02:45,998] bcr.Replica<Replica:08001>:OUTPUT: [Head][TS: 1508727765.9983697] Head is in ACTIVE state.
-    2017-10-22 23:02:46,002] bcr.Replica<Replica:08002>:OUTPUT: [Replica 1][TS: 1508727766.0023699] put request with request id 0 received by Replica 1.
-    [2017-10-22 23:02:46,003] bcr.Replica<Replica:08002>:OUTPUT: [Replica 1][TS: 1508727766.0033698] Replica 1 is in ACTIVE state.
-    [2017-10-22 23:02:46,017] bcr.Replica<Replica:08003>:OUTPUT: [Tail][TS: 1508727766.0173707] put request with request id 0 received by Tail.
-    [2017-10-22 23:02:46,017] bcr.Replica<Replica:08003>:OUTPUT: [Tail][TS: 1508727766.0173707] Tail is in ACTIVE state.
 
     Command:-
-    This happens in all test scenarios.
-    Example: python3 -m da --logfile --logfilename logs/replica-dict-object.log -F output src/bcr.da -i config/replica-dict-object.txt    
+    python3 -m da --logfile --logfilename=logs/-log.txt --logfilelevel=info src/bcr.da -i config/.txt
 
-    -- Replica: head: handle retransmitted request as described in paper
+---------- RAFT Comparison --------------------
+-- <Test Case>
     Description:-
-    Upon receiving a retransmitted request, head checks whether a result for the same request is available in cache, if yes, it sends the result to client, otherwise head creates a new shuttle with a new slot and sends it across the chain.
 
     Command:-
-    This happens in all test scenarios.
-    Example: python3 -m da --logfile --logfilename logs/replica-dict-object.log -F output src/bcr.da -i config/replica-dict-object.txt  
-
-    -- Replica: handle shuttle: check validity of order proof (incl. signatures), add signed order 10 statement and signed result statement, send updated shuttle
-
-    Command:-
-    This happens in all test scenarios.
-    Example: python3 -m da --logfile --logfilename logs/replica-dict-object.log -F output src/bcr.da -i config/replica-dict-object.txt  
-
-    -- Replica: handle result shuttle: validate, save, and forward it
-
-    Command:-
-    This happens in all test scenarios.
-    Example: python3 -m da --logfile --logfilename logs/replica-dict-object.log -F output src/bcr.da -i config/replica-dict-object.txt  
-
-    -- Replica: non-head: handle request: send cached result, send error, or forward request
-
-    Command:-
-    This happens in all test scenarios.
-    Example: python3 -m da --logfile --logfilename logs/replica-dict-object.log -F output src/bcr.da -i config/replica-dict-object.txt
-
-    -- Replica: fault-injection: required triggers
-    -- Replica: fault-injection: fault-injection: required failures
-
-    Sample Logs:
-    [2017-10-22 23:23:31,662] bcr.Node_<Node_:b8001>:OUTPUT: [Main][TS: 1508729011.6626174] Running BCR simulation for test case: basic_multi_client
-    [2017-10-22 23:23:32,223] bcr.Replica<Replica:86001>:OUTPUT: [Head][TS: 1508729012.2236495] replica failures: [forwarded_request(0,1), change_operation()]
-    [2017-10-22 23:23:32,224] bcr.Olympus<Olympus:48002>:OUTPUT: [Olympus][TS: 1508729012.2246497] Olympus created replica process: Replica 0
-    [2017-10-22 23:23:32,224] bcr.Olympus<Olympus:48002>:OUTPUT: [Olympus][TS: 1508729012.2246497] Olympus created keys for replica process: Replica 0. Public key: b'0575a82100dde2f73c0ec90c1794b7e7834a0fad6e98834a4de9040418fa3814'
-    [2017-10-22 23:23:32,557] bcr.Replica<Replica:86002>:OUTPUT: [Replica 1][TS: 1508729012.5576687] replica failures: [client_request(0,1), drop_result_stmt()]
-    [2017-10-22 23:23:32,558] bcr.Olympus<Olympus:48002>:OUTPUT: [Olympus][TS: 1508729012.5586686] Olympus created replica process: Replica 1
-    [2017-10-22 23:23:32,559] bcr.Olympus<Olympus:48002>:OUTPUT: [Olympus][TS: 1508729012.5596688] Olympus created keys for replica process: Replica 1. Public key: b'212e817a3ab9ce510a26859ee41f4283fc0a42c42a78980097b0727aa550b6f9'
-    [2017-10-22 23:23:32,821] bcr.Replica<Replica:86003>:OUTPUT: [Tail][TS: 1508729012.821684] replica failures: [shuttle(0,0), change_result(), result_shuttle(0,0), drop_result_stmt()]
-    [2017-10-22 23:23:32,825] bcr.Node_<Node_:b8001>:OUTPUT: [Main][TS: 1508729012.825684] Workload for client 0 : [('put', ['movie', 'star']), ('append', ['movie', ' wars']), ('get', ['movie']), ('get', ['test'])]
-    [2017-10-22 23:23:33,155] bcr.Replica<Replica:86003>:OUTPUT: [Tail][TS: 1508729013.1557028] Replica Tail: Trigger shuttle failure for client_id: 0 and message count: 0, scenario: shuttle(0,0), change_result()
-    [2017-10-22 23:23:33,158] bcr.Replica<Replica:86003>:OUTPUT: [Tail][TS: 1508729013.158703] Tail: Trigger result shuttle failure for client_id: 0 and message count: 0, scenario: result_shuttle(0,0), drop_result_stmt()
-    [2017-10-22 23:23:33,158] bcr.Client<Client:48003>:OUTPUT: [Client 0][TS: 1508729013.158703] Number of correct result proofs received :3, required majority: 2
-    [2017-10-22 23:23:33,159] bcr.Client<Client:48003>:OUTPUT: [Client 0][TS: 1508729013.159703] Valid result: OK received for request id: 0
-    [2017-10-22 23:23:33,160] bcr.Replica<Replica:86003>:OUTPUT: [Tail][TS: 1508729013.1607032] Executing failure scenario: shuttle(0,0), change_result()
-    [2017-10-22 23:23:33,161] bcr.Replica<Replica:86003>:OUTPUT: [Tail][TS: 1508729013.161703] Executing failure scenario: result_shuttle(0,0), drop_result_stmt()
-    [2017-10-22 23:23:33,162] bcr.Replica<Replica:86001>:OUTPUT: [Head][TS: 1508729013.1627033] append request with request id 1 received by Head.
-    [2017-10-22 23:23:33,163] bcr.Replica<Replica:86001>:OUTPUT: [Head][TS: 1508729013.1637034] Head is in ACTIVE state.
-    [2017-10-22 23:23:33,165] bcr.Replica<Replica:86003>:OUTPUT: [Tail][TS: 1508729013.1657035] Result shuttle is at Tail.
-    [2017-10-22 23:23:33,166] bcr.Replica<Replica:86002>:OUTPUT: [Replica 1][TS: 1508729013.1667035] Result shuttle sent by Replica 2 is not valid.
-    [2017-10-22 23:23:33,168] bcr.Olympus<Olympus:48002>:OUTPUT: [Olympus][TS: 1508729013.1687036] Reconfiguration request received from Replica 1.
-    [2017-10-22 23:23:33,168] bcr.Replica<Replica:86002>:OUTPUT: [Replica 1][TS: 1508729013.1687036] append request with request id 1 received by Replica 1.
-    [2017-10-22 23:23:33,168] bcr.Olympus<Olympus:48002>:OUTPUT: [Olympus][TS: 1508729013.1687036] No reconfiguration mechanism implemented yet.
-    [2017-10-22 23:23:33,169] bcr.Replica<Replica:86002>:OUTPUT: [Replica 1][TS: 1508729013.1697037] Replica 1 is in ACTIVE state.
-    [2017-10-22 23:23:33,172] bcr.Replica<Replica:86003>:OUTPUT: [Tail][TS: 1508729013.172704] append request with request id 1 received by Tail.
-    [2017-10-22 23:23:33,172] bcr.Replica<Replica:86003>:OUTPUT: [Tail][TS: 1508729013.172704] Tail is in ACTIVE state.
-    [2017-10-22 23:23:33,176] bcr.Client<Client:48003>:OUTPUT: [Client 0][TS: 1508729013.1767042] Number of correct result proofs received :3, required majority: 2
-    [2017-10-22 23:23:33,176] bcr.Client<Client:48003>:OUTPUT: [Client 0][TS: 1508729013.1767042] Valid result: OK received for request id: 1
-    [2017-10-22 23:23:33,177] bcr.Replica<Replica:86003>:OUTPUT: [Tail][TS: 1508729013.177704] Result shuttle is at Tail.
-    [2017-10-22 23:23:33,179] bcr.Replica<Replica:86001>:OUTPUT: [Head][TS: 1508729013.1797042] get request with request id 2 received by Head.
-    [2017-10-22 23:23:33,181] bcr.Replica<Replica:86001>:OUTPUT: [Head][TS: 1508729013.1817043] Head is in ACTIVE state.
-    [2017-10-22 23:23:33,182] bcr.Replica<Replica:86002>:OUTPUT: [Replica 1][TS: 1508729013.1827044] Result shuttle is at Replica 1.
-    [2017-10-22 23:23:33,184] bcr.Replica<Replica:86002>:OUTPUT: [Replica 1][TS: 1508729013.1847045] get request with request id 2 received by Replica 1.
-    [2017-10-22 23:23:33,184] bcr.Replica<Replica:86001>:OUTPUT: [Head][TS: 1508729013.1847045] Result shuttle is at Head.
-    [2017-10-22 23:23:33,184] bcr.Replica<Replica:86002>:OUTPUT: [Replica 1][TS: 1508729013.1847045] Replica 1 is in ACTIVE state.
-    [2017-10-22 23:23:33,187] bcr.Replica<Replica:86003>:OUTPUT: [Tail][TS: 1508729013.1877048] get request with request id 2 received by Tail.
-    [2017-10-22 23:23:33,188] bcr.Replica<Replica:86003>:OUTPUT: [Tail][TS: 1508729013.1887047] Tail is in ACTIVE state.
-    [2017-10-22 23:23:33,191] bcr.Client<Client:48003>:OUTPUT: [Client 0][TS: 1508729013.191705] Number of correct result proofs received :3, required majority: 2
-    [2017-10-22 23:23:33,192] bcr.Client<Client:48003>:OUTPUT: [Client 0][TS: 1508729013.192705] Valid result: star wars received for request id: 2
-
-    Command:-
-    This happens in all test scenarios with given failure triggers with failures.
-    Example: python3 -m da --logfile --logfilename logs/replica-failures.log -F output src/bcr.da -i config/replica-failures.txt
-
----------- Stress test --------------------
-Description:-
-    In stress test, we generate 3 clients with workload of 50 to load test system.
-    Expected output: no crash.
-
-    Command:-
-    python3 -m da --logfile --logfilename=logs/stress_test.txt --logfilelevel=info src/bcr.da -i config/stress_test.txt
+    python3 -m da --logfile --logfilename=logs/-log.txt --logfilelevel=info src/bcr.da -i config/.txt

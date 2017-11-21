@@ -2,17 +2,17 @@
 import da
 PatternExpr_529 = da.pat.TuplePattern([da.pat.ConstantPattern('ACK'), da.pat.FreePattern('sender')])
 PatternExpr_539 = da.pat.TuplePattern([da.pat.ConstantPattern('Get_configuration'), da.pat.FreePattern('client'), da.pat.FreePattern('client_name'), da.pat.FreePattern('client_id'), da.pat.FreePattern('client_public_key'), da.pat.FreePattern('request_num')])
-PatternExpr_870 = da.pat.TuplePattern([da.pat.ConstantPattern('caught_up'), da.pat.ConstantPattern(None), da.pat.ConstantPattern(None)])
-PatternExpr_915 = da.pat.TuplePattern([da.pat.ConstantPattern('wedge'), da.pat.FreePattern('hist'), da.pat.FreePattern('checkpt_proof'), da.pat.FreePattern('checkpoint'), da.pat.FreePattern('replica_id')])
-PatternExpr_1092 = da.pat.TuplePattern([da.pat.ConstantPattern('caught_up'), da.pat.FreePattern('hash_running_state'), da.pat.FreePattern('replica_id'), da.pat.FreePattern('most_recent_result')])
-PatternExpr_1258 = da.pat.TuplePattern([da.pat.ConstantPattern('response_get_running_state'), da.pat.ConstantPattern(None), da.pat.ConstantPattern(None)])
-PatternExpr_1284 = da.pat.TuplePattern([da.pat.ConstantPattern('Reconfiguration'), da.pat.FreePattern('sender'), da.pat.FreePattern('proof_of_misbehavior')])
-PatternExpr_1346 = da.pat.TuplePattern([da.pat.ConstantPattern('response_get_running_state'), da.pat.FreePattern('replica_id'), da.pat.FreePattern('replica_running_state')])
-PatternExpr_1830 = da.pat.TuplePattern([da.pat.ConstantPattern('ACK'), da.pat.ConstantPattern(None)])
-PatternExpr_1853 = da.pat.ConstantPattern('Shutdown')
-PatternExpr_1837 = da.pat.TuplePattern([da.pat.FreePattern(None), da.pat.TuplePattern([da.pat.FreePattern(None), da.pat.FreePattern(None), da.pat.FreePattern(None)]), da.pat.TuplePattern([da.pat.ConstantPattern('ACK'), da.pat.ConstantPattern(None)])])
-PatternExpr_1857 = da.pat.TuplePattern([da.pat.FreePattern(None), da.pat.TuplePattern([da.pat.FreePattern(None), da.pat.FreePattern(None), da.pat.FreePattern(None)]), da.pat.ConstantPattern('Shutdown')])
-PatternExpr_1267 = da.pat.TuplePattern([da.pat.FreePattern(None), da.pat.TuplePattern([da.pat.FreePattern(None), da.pat.FreePattern(None), da.pat.FreePattern(None)]), da.pat.TuplePattern([da.pat.ConstantPattern('response_get_running_state'), da.pat.ConstantPattern(None), da.pat.ConstantPattern(None)])])
+PatternExpr_887 = da.pat.TuplePattern([da.pat.ConstantPattern('caught_up'), da.pat.ConstantPattern(None), da.pat.ConstantPattern(None)])
+PatternExpr_932 = da.pat.TuplePattern([da.pat.ConstantPattern('wedge'), da.pat.FreePattern('hist'), da.pat.FreePattern('checkpt_proof'), da.pat.FreePattern('checkpoint'), da.pat.FreePattern('replica_id')])
+PatternExpr_1148 = da.pat.TuplePattern([da.pat.ConstantPattern('caught_up'), da.pat.FreePattern('hash_running_state'), da.pat.FreePattern('replica_id'), da.pat.FreePattern('most_recent_result')])
+PatternExpr_1314 = da.pat.TuplePattern([da.pat.ConstantPattern('response_get_running_state'), da.pat.ConstantPattern(None), da.pat.ConstantPattern(None)])
+PatternExpr_1340 = da.pat.TuplePattern([da.pat.ConstantPattern('Reconfiguration'), da.pat.FreePattern('sender'), da.pat.FreePattern('proof_of_misbehavior')])
+PatternExpr_1402 = da.pat.TuplePattern([da.pat.ConstantPattern('response_get_running_state'), da.pat.FreePattern('replica_id'), da.pat.FreePattern('replica_running_state')])
+PatternExpr_1886 = da.pat.TuplePattern([da.pat.ConstantPattern('ACK'), da.pat.ConstantPattern(None)])
+PatternExpr_1909 = da.pat.ConstantPattern('Shutdown')
+PatternExpr_1893 = da.pat.TuplePattern([da.pat.FreePattern(None), da.pat.TuplePattern([da.pat.FreePattern(None), da.pat.FreePattern(None), da.pat.FreePattern(None)]), da.pat.TuplePattern([da.pat.ConstantPattern('ACK'), da.pat.ConstantPattern(None)])])
+PatternExpr_1913 = da.pat.TuplePattern([da.pat.FreePattern(None), da.pat.TuplePattern([da.pat.FreePattern(None), da.pat.FreePattern(None), da.pat.FreePattern(None)]), da.pat.ConstantPattern('Shutdown')])
+PatternExpr_1323 = da.pat.TuplePattern([da.pat.FreePattern(None), da.pat.TuplePattern([da.pat.FreePattern(None), da.pat.FreePattern(None), da.pat.FreePattern(None)]), da.pat.TuplePattern([da.pat.ConstantPattern('response_get_running_state'), da.pat.ConstantPattern(None), da.pat.ConstantPattern(None)])])
 _config_object = {'channel': {'reliable', 'fifo'}}
 from nacl.hash import sha256
 from nacl.encoding import HexEncoder
@@ -33,10 +33,10 @@ class Olympus(da.DistProcess):
         self._OlympusReceivedEvent_5 = []
         self._OlympusReceivedEvent_8 = []
         self._OlympusReceivedEvent_9 = []
-        self._events.extend([da.pat.EventPattern(da.pat.ReceivedEvent, '_OlympusReceivedEvent_0', PatternExpr_529, sources=None, destinations=None, timestamps=None, record_history=None, handlers=[self._Olympus_handler_528]), da.pat.EventPattern(da.pat.ReceivedEvent, '_OlympusReceivedEvent_1', PatternExpr_539, sources=None, destinations=None, timestamps=None, record_history=None, handlers=[self._Olympus_handler_538]), da.pat.EventPattern(da.pat.ReceivedEvent, '_OlympusReceivedEvent_2', PatternExpr_870, sources=None, destinations=None, timestamps=None, record_history=True, handlers=[]), da.pat.EventPattern(da.pat.ReceivedEvent, '_OlympusReceivedEvent_3', PatternExpr_915, sources=None, destinations=None, timestamps=None, record_history=None, handlers=[self._Olympus_handler_914]), da.pat.EventPattern(da.pat.ReceivedEvent, '_OlympusReceivedEvent_4', PatternExpr_1092, sources=None, destinations=None, timestamps=None, record_history=None, handlers=[self._Olympus_handler_1091]), da.pat.EventPattern(da.pat.ReceivedEvent, '_OlympusReceivedEvent_5', PatternExpr_1258, sources=None, destinations=None, timestamps=None, record_history=True, handlers=[]), da.pat.EventPattern(da.pat.ReceivedEvent, '_OlympusReceivedEvent_6', PatternExpr_1284, sources=None, destinations=None, timestamps=None, record_history=None, handlers=[self._Olympus_handler_1283]), da.pat.EventPattern(da.pat.ReceivedEvent, '_OlympusReceivedEvent_7', PatternExpr_1346, sources=None, destinations=None, timestamps=None, record_history=None, handlers=[self._Olympus_handler_1345]), da.pat.EventPattern(da.pat.ReceivedEvent, '_OlympusReceivedEvent_8', PatternExpr_1830, sources=None, destinations=None, timestamps=None, record_history=True, handlers=[]), da.pat.EventPattern(da.pat.ReceivedEvent, '_OlympusReceivedEvent_9', PatternExpr_1853, sources=None, destinations=None, timestamps=None, record_history=True, handlers=[])])
+        self._events.extend([da.pat.EventPattern(da.pat.ReceivedEvent, '_OlympusReceivedEvent_0', PatternExpr_529, sources=None, destinations=None, timestamps=None, record_history=None, handlers=[self._Olympus_handler_528]), da.pat.EventPattern(da.pat.ReceivedEvent, '_OlympusReceivedEvent_1', PatternExpr_539, sources=None, destinations=None, timestamps=None, record_history=None, handlers=[self._Olympus_handler_538]), da.pat.EventPattern(da.pat.ReceivedEvent, '_OlympusReceivedEvent_2', PatternExpr_887, sources=None, destinations=None, timestamps=None, record_history=True, handlers=[]), da.pat.EventPattern(da.pat.ReceivedEvent, '_OlympusReceivedEvent_3', PatternExpr_932, sources=None, destinations=None, timestamps=None, record_history=None, handlers=[self._Olympus_handler_931]), da.pat.EventPattern(da.pat.ReceivedEvent, '_OlympusReceivedEvent_4', PatternExpr_1148, sources=None, destinations=None, timestamps=None, record_history=None, handlers=[self._Olympus_handler_1147]), da.pat.EventPattern(da.pat.ReceivedEvent, '_OlympusReceivedEvent_5', PatternExpr_1314, sources=None, destinations=None, timestamps=None, record_history=True, handlers=[]), da.pat.EventPattern(da.pat.ReceivedEvent, '_OlympusReceivedEvent_6', PatternExpr_1340, sources=None, destinations=None, timestamps=None, record_history=None, handlers=[self._Olympus_handler_1339]), da.pat.EventPattern(da.pat.ReceivedEvent, '_OlympusReceivedEvent_7', PatternExpr_1402, sources=None, destinations=None, timestamps=None, record_history=None, handlers=[self._Olympus_handler_1401]), da.pat.EventPattern(da.pat.ReceivedEvent, '_OlympusReceivedEvent_8', PatternExpr_1886, sources=None, destinations=None, timestamps=None, record_history=True, handlers=[]), da.pat.EventPattern(da.pat.ReceivedEvent, '_OlympusReceivedEvent_9', PatternExpr_1909, sources=None, destinations=None, timestamps=None, record_history=True, handlers=[])])
 
-    def setup(self, name, num_replicas, num_failures, all_replica_conf_failures, head_timeout, replica_timeout, checkpt_interval, **rest_1879):
-        super().setup(name=name, num_replicas=num_replicas, num_failures=num_failures, all_replica_conf_failures=all_replica_conf_failures, head_timeout=head_timeout, replica_timeout=replica_timeout, checkpt_interval=checkpt_interval, **rest_1879)
+    def setup(self, name, num_replicas, num_failures, all_replica_conf_failures, head_timeout, replica_timeout, checkpt_interval, **rest_1935):
+        super().setup(name=name, num_replicas=num_replicas, num_failures=num_failures, all_replica_conf_failures=all_replica_conf_failures, head_timeout=head_timeout, replica_timeout=replica_timeout, checkpt_interval=checkpt_interval, **rest_1935)
         self._state.name = name
         self._state.num_replicas = num_replicas
         self._state.num_failures = num_failures
@@ -93,24 +93,24 @@ class Olympus(da.DistProcess):
             self._start(r)
             self.sign_and_send(('Configuration', self._id, self._state.replicas, self._state.head, self._state.tail, [self._state.replica_public_keys, self._state.configuration_number]), r)
             self.send(('Key', self._state.replica_private_keys[i]), to=r)
-        super()._label('_st_label_1827', block=False)
-        _st_label_1827 = 0
-        while (_st_label_1827 == 0):
-            _st_label_1827 += 1
-            if PatternExpr_1837.match_iter(self._OlympusReceivedEvent_8, SELF_ID=self._id):
-                _st_label_1827 += 1
+        super()._label('_st_label_1883', block=False)
+        _st_label_1883 = 0
+        while (_st_label_1883 == 0):
+            _st_label_1883 += 1
+            if PatternExpr_1893.match_iter(self._OlympusReceivedEvent_8, SELF_ID=self._id):
+                _st_label_1883 += 1
             else:
-                super()._label('_st_label_1827', block=True)
-                _st_label_1827 -= 1
-        super()._label('_st_label_1850', block=False)
-        _st_label_1850 = 0
-        while (_st_label_1850 == 0):
-            _st_label_1850 += 1
-            if PatternExpr_1857.match_iter(self._OlympusReceivedEvent_9, SELF_ID=self._id):
-                _st_label_1850 += 1
+                super()._label('_st_label_1883', block=True)
+                _st_label_1883 -= 1
+        super()._label('_st_label_1906', block=False)
+        _st_label_1906 = 0
+        while (_st_label_1906 == 0):
+            _st_label_1906 += 1
+            if PatternExpr_1913.match_iter(self._OlympusReceivedEvent_9, SELF_ID=self._id):
+                _st_label_1906 += 1
             else:
-                super()._label('_st_label_1850', block=True)
-                _st_label_1850 -= 1
+                super()._label('_st_label_1906', block=True)
+                _st_label_1906 -= 1
 
     def begin_reconfiguration(self):
         if (self._state.state == 'RECONFIGURATION'):
@@ -142,7 +142,8 @@ class Olympus(da.DistProcess):
             self.output_wrapper((("No quorum formed. System can't handle more than " + str(self._state.num_failures)) + '.'))
             return
         self._state.checkpoint = furthest_checkpoint
-        self.output_wrapper((('Quorum is selected with checkpoint at ' + str(self._state.checkpoint)) + '.'))
+        quorum_replicas = [i[1] for i in self._state.quorum]
+        self.output_wrapper((((('Quorum is selected with Replicas ' + str(quorum_replicas)) + ' and checkpoint at ') + str(self._state.checkpoint)) + '.'))
         self._state.slots_used = (furthest_checkpoint + len(longest_history))
         self._state.ignore_further_caught_up_messages = 0
         self._state.running_states_received = 0
@@ -152,34 +153,34 @@ class Olympus(da.DistProcess):
             replica_history = i[0][(furthest_checkpoint - i[2]):]
             gap = longest_history[len(replica_history):]
             self.send(('catch_up', gap), to=self._state.replicas[i[1]])
-        super()._label('_st_label_867', block=False)
+        super()._label('_st_label_884', block=False)
 
-        def ExistentialOpExpr_868():
-            for (_, _, (_ConstantPattern887_, _ConstantPattern889_, _ConstantPattern891_)) in self._OlympusReceivedEvent_2:
-                if (_ConstantPattern887_ == 'caught_up'):
-                    if (_ConstantPattern889_ == None):
-                        if (_ConstantPattern891_ == None):
+        def ExistentialOpExpr_885():
+            for (_, _, (_ConstantPattern904_, _ConstantPattern906_, _ConstantPattern908_)) in self._OlympusReceivedEvent_2:
+                if (_ConstantPattern904_ == 'caught_up'):
+                    if (_ConstantPattern906_ == None):
+                        if (_ConstantPattern908_ == None):
                             if (self._state.running_states_received == len(self._state.quorum)):
                                 return True
             return False
-        _st_label_867 = 0
+        _st_label_884 = 0
         self._timer_start()
-        while (_st_label_867 == 0):
-            _st_label_867 += 1
-            if ExistentialOpExpr_868():
+        while (_st_label_884 == 0):
+            _st_label_884 += 1
+            if ExistentialOpExpr_885():
                 pass
-                _st_label_867 += 1
+                _st_label_884 += 1
             elif self._timer_expired:
                 if (self._state.running_states_received < len(self._state.quorum)):
                     self.output_wrapper('Number of running states received are less than the size of quorum.')
                     self.select_quorum()
-                _st_label_867 += 1
+                _st_label_884 += 1
             else:
-                super()._label('_st_label_867', block=True, timeout=2)
-                _st_label_867 -= 1
+                super()._label('_st_label_884', block=True, timeout=2)
+                _st_label_884 -= 1
 
-    def validate_checkpoint(self, checkpt_p):
-        if (len(checkpt_p) == 0):
+    def validate_checkpoint_proof(self, checkpt_p):
+        if ((len(checkpt_p) == 0) or (not (len(checkpt_p) == len(self._state.replicas)))):
             return False
         checkpt = checkpt_p[0]
         if ((not (checkpt_p.count(checkpt) == len(checkpt_p))) or (checkpt[0] <= self._state.checkpoint)):
@@ -211,19 +212,19 @@ class Olympus(da.DistProcess):
         for each_member in self._state.quorum:
             if (not self._state.running_state_validated):
                 self.send('get_running_state', to=self._state.replicas[each_member[1]])
-                super()._label('_st_label_1255', block=False)
-                _st_label_1255 = 0
-                while (_st_label_1255 == 0):
-                    _st_label_1255 += 1
-                    if PatternExpr_1267.match_iter(self._OlympusReceivedEvent_5, SELF_ID=self._id):
-                        _st_label_1255 += 1
+                super()._label('_st_label_1311', block=False)
+                _st_label_1311 = 0
+                while (_st_label_1311 == 0):
+                    _st_label_1311 += 1
+                    if PatternExpr_1323.match_iter(self._OlympusReceivedEvent_5, SELF_ID=self._id):
+                        _st_label_1311 += 1
                     else:
-                        super()._label('_st_label_1255', block=True)
-                        _st_label_1255 -= 1
+                        super()._label('_st_label_1311', block=True)
+                        _st_label_1311 -= 1
                 else:
-                    if (_st_label_1255 != 2):
+                    if (_st_label_1311 != 2):
                         continue
-                if (_st_label_1255 != 2):
+                if (_st_label_1311 != 2):
                     break
 
     def validate_proof_of_misbehavior(self, proof_of_misbehavior):
@@ -323,21 +324,23 @@ class Olympus(da.DistProcess):
     _Olympus_handler_538._labels = None
     _Olympus_handler_538._notlabels = None
 
-    def _Olympus_handler_914(self, hist, checkpt_proof, checkpoint, replica_id):
+    def _Olympus_handler_931(self, hist, checkpt_proof, checkpoint, replica_id):
         self.output_wrapper(('Wedge message from Replica ' + str(replica_id)))
         for order_p in hist:
             if (not self.validate_order_proof(order_p)):
+                self.output_wrapper((((('Order Proof in history: ' + str(order_p)) + ', sent with wedge response of Replica ') + str(replica_id)) + ' are invalid.'))
                 return
-        if ((not (checkpt_proof == None)) and (not self.validate_checkpoint(checkpt_proof))):
+        if ((not (checkpt_proof == None)) and (not self.validate_checkpoint_proof(checkpt_proof))):
+            self.output_wrapper((((('Checkpoint Proof: ' + str(checkpt_proof)) + ', sent with wedge response of Replica ') + str(replica_id)) + ' is invalid.'))
             return
         self._state.wedged_responses.append([sorted([(o_p[:(- 2)] + o_p[(- 1):]) for o_p in hist], key=(lambda x: x[0])), replica_id, checkpoint])
         if (len(self._state.wedged_responses) == (self._state.num_failures + 1)):
             self.output_wrapper((('Received ' + str(len(self._state.wedged_responses))) + ' wedged responses.'))
             self.select_quorum()
-    _Olympus_handler_914._labels = None
-    _Olympus_handler_914._notlabels = None
+    _Olympus_handler_931._labels = None
+    _Olympus_handler_931._notlabels = None
 
-    def _Olympus_handler_1091(self, hash_running_state, replica_id, most_recent_result):
+    def _Olympus_handler_1147(self, hash_running_state, replica_id, most_recent_result):
         self.output_wrapper(('Caught up message received from Replica ' + str(replica_id)))
         if self._state.ignore_further_caught_up_messages:
             return
@@ -352,25 +355,25 @@ class Olympus(da.DistProcess):
         if (self._state.running_states_received == len(self._state.quorum)):
             self.send_most_recent_result_to_client()
             self.get_running_state_from_quorum()
-    _Olympus_handler_1091._labels = None
-    _Olympus_handler_1091._notlabels = None
+    _Olympus_handler_1147._labels = None
+    _Olympus_handler_1147._notlabels = None
 
-    def _Olympus_handler_1283(self, sender, proof_of_misbehavior):
+    def _Olympus_handler_1339(self, sender, proof_of_misbehavior):
         self.output_wrapper((('Reconfiguration request received from ' + str(sender)) + '.'))
         if ((isinstance(proof_of_misbehavior, int) and (proof_of_misbehavior == self._state.configuration_number)) or (isinstance(proof_of_misbehavior, list) and self.validate_proof_of_misbehavior(proof_of_misbehavior))):
             self.output_wrapper((('Reconfiguration request sent by ' + str(sender)) + ' is valid. Starting reconfiguration.'))
             self.begin_reconfiguration()
         else:
             self.output_wrapper((('Proof of misbehavior sent by ' + str(sender)) + " is not valid. If it is sent by replica, its configuration doesn't match and if its sent by client, proof of misbehavior is invalid."))
-    _Olympus_handler_1283._labels = None
-    _Olympus_handler_1283._notlabels = None
+    _Olympus_handler_1339._labels = None
+    _Olympus_handler_1339._notlabels = None
 
-    def _Olympus_handler_1345(self, replica_id, replica_running_state):
+    def _Olympus_handler_1401(self, replica_id, replica_running_state):
         self.output_wrapper((('Response to get_running_state from Replica ' + str(replica_id)) + ' received by Olympus.'))
         self.output_wrapper('Validating the running_state with the quorum.')
         if (self.calculate_hash(replica_running_state) == self._state.chosen_running_state):
             self._state.running_state_validated = 1
             self.output_wrapper('Running state validated with the Quorum. Initializing new configuration.')
             self.init_new_configuration(replica_running_state)
-    _Olympus_handler_1345._labels = None
-    _Olympus_handler_1345._notlabels = None
+    _Olympus_handler_1401._labels = None
+    _Olympus_handler_1401._notlabels = None

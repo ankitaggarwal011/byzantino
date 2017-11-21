@@ -53,7 +53,7 @@ class ClientOperation:
         self.args_list = args_list
 
     def __str__(self):
-        return "op: {}, args: {}".format(self.type, self.args_list)
+        return "Operation: {}, Arguments: {}".format(self.type, self.args_list)
 
     __repr__ = __str__
 
@@ -160,14 +160,23 @@ class FailureScenario:
         trigger_str = trigger_str.strip()
         lidx = trigger_str.find('(')
         self.failure_type = FailureType.value_of(trigger_str[:lidx])
-        self.operands = list(map(lambda s: int(s.strip()), trigger_str[lidx + 1:].split(',')))
+        triggs = trigger_str[lidx + 1:].split(',')
+        self.operands = []
+        for trig in triggs:
+            if len(trig.strip()) > 0:
+                self.operands.append(int(trig.strip()))
         action_str = action_str.strip()
         idx = action_str.find('(')
         self.action_type = FailureActionType.value_of(action_str[:idx])
+        actions = action_str[idx + 1:-1].split(',')
+        self.action_operands = []
+        for act in actions:
+            if len(act.strip()) > 0:
+                self.action_operands.append(int(act.strip()))
 
     def __str__(self):
-        return '{}({}), {}()'.format(self.failure_type.name, ','.join(list(map(lambda i: str(i), self.operands))),
-                                     self.action_type.name)
+        return '{}({}), {}({})'.format(self.failure_type.name, ','.join(list(map(lambda i: str(i), self.operands))),
+                                     self.action_type.name, ','.join(list(map(lambda i: str(i), self.action_operands))))
 
     __repr__ = __str__
 
@@ -177,6 +186,12 @@ class FailureType(Enum):
     forwarded_request = 2
     shuttle = 3
     result_shuttle = 4
+    wedge_request = 5
+    new_configuration = 6
+    checkpoint = 7
+    completed_checkpoint = 8
+    get_running_state = 9
+    catch_up = 10
 
     @classmethod
     def value_of(cls, name):
@@ -194,11 +209,19 @@ class FailureType(Enum):
 
         return None
 
-
 class FailureActionType(Enum):
     change_operation = 1
     change_result = 2
     drop_result_stmt = 3
+    crash = 4
+    truncate_history = 5
+    sleep = 6
+    drop = 7
+    increment_slot = 8
+    extra_op = 9
+    invalid_order_sig = 10
+    invalid_result_sig = 11
+    drop_checkpt_stmts = 12
 
     @classmethod
     def value_of(cls, name):
