@@ -57,15 +57,19 @@ class Client(process):
         client_running_state_sync = running_state
 
     # receive operation result from replica
-    def receive(msg=(sender_id, 'Operation_result', request_id, result_shuttle)):
-        # Verification of signature of 
-        result_shuttle_signed = deepcopy(result_shuttle)
-        result_shuttle = verify_data_with_key(result_shuttle, replica_public_keys[sender_id])
-        if result_shuttle == None:
+    def receive(msg=(sender_id, 'Operation_result', request_id, r_s)):
+        # Verification of signature
+        r_s = verify_data_with_key(r_s, replica_public_keys[sender_id])
+        if r_s == None:
             output_wrapper('Signature verification of message sent by Replica ' + str(sender_id) + ' has failed.')
+            return
+
+        result_shuttle, result_shuttle_signed = r_s
+        if not validate_signature_result_stmt(result_shuttle_signed):
+            output_wrapper('Signature verification of result stmt sent by Replica ' + str(sender_id) + ' has failed.')
             output_wrapper('Misbehaviour detected in request id: {}! Sending reconfiguration request to Olympus'.format(
                 request_id))
-            send(('Reconfiguration', name, [result_shuttle_signed, result_shuttle]), to=olympus)
+            send(('Reconfiguration', name, r_s), to=olympus)
             return
 
         result, result_proof = result_shuttle
@@ -129,6 +133,7 @@ class Client(process):
         else:
             output_wrapper('Assuming no conflicting keys from other clients:\n\nTest case failed! Actual and expected running states don\'t match\n\n')
         
+        send(('Done',), to=parent())
         await(received('Shutdown'))
 
     def update_client_running_state(running_state, type, args):
@@ -196,6 +201,12 @@ class Client(process):
         if isinstance(val, str):
             return sha256(str.encode(val), encoder=HexEncoder)
         return sha256(str.encode(dump_to(val, sort_keys=True)), encoder=HexEncoder)
+
+    def validate_signature_result_stmt(r_shuttle):
+        r, r_p = r_shuttle
+        for i in range(len(r_p)):
+            if r_p != None and verify_data_with_key(r_p[i], replica_public_keys[i]) == None: return False
+        return True
 
     def output_wrapper(log):
         output('[TS: {}][{}]'.format(str(time()), name), log)

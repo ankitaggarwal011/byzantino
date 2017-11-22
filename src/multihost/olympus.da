@@ -203,13 +203,19 @@ class Olympus(process):
                 send(('get_running_state'), to=replicas[each_member[1]])
                 await(received(('response_get_running_state_' + str(each_member[1]))))
 
+    def validate_signature_result_stmt(r_shuttle):
+        r, r_p = r_shuttle
+        for i in range(len(r_p)):
+            if r_p != None and (isinstance(r_p[i], bytes) or verify_data_with_key(r_p[i], replica_public_keys[i]) == None): return False
+        return True
+
     # Reconfiguration request. This may come from a client or a replica. Client sends proof of misbehavior, replica doesn't.
     # replica piggybacks configuration onto proof_of_misbehavior variable
     def receive(msg=('Reconfiguration', sender, proof_of_misbehavior)):
         output_wrapper('Reconfiguration request received from ' + str(sender) + '.')
         if (isinstance(proof_of_misbehavior, list) and len(proof_of_misbehavior) == 2):
-            r_shuttle_signed, r_shuttle = proof_of_misbehavior
-            if r_shuttle == None:
+            r_shuttle, r_shuttle_signed = proof_of_misbehavior
+            if not validate_signature_result_stmt(r_shuttle_signed):
                 output_wrapper('Reconfiguration request sent by ' + str(sender) + ' is valid. Tail\'s signature is invalid. Starting reconfiguration.')
                 begin_reconfiguration() # Reconfigure and send new configuration to the replicas
         elif (isinstance(proof_of_misbehavior, int) and proof_of_misbehavior == configuration_number) or (isinstance(proof_of_misbehavior, list) and validate_proof_of_misbehavior(proof_of_misbehavior)):
