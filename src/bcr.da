@@ -4,8 +4,8 @@ from nacl.encoding import HexEncoder
 from nacl.signing import SigningKey, VerifyKey
 from nacl.exceptions import BadSignatureError
 
-# import for deserialization of message objects
-from ast import literal_eval
+# import for serialization/deserialization of objects
+from pickle import dumps, loads
 
 # import all config objects and functions
 from config import *

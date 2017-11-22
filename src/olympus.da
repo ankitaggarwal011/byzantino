@@ -2,10 +2,10 @@ from nacl.hash import sha256
 from nacl.encoding import HexEncoder
 from nacl.signing import SigningKey, VerifyKey
 from nacl.exceptions import BadSignatureError
-from json import dumps
+# import for serialization/deserialization of objects
+from pickle import dumps, loads
+from json import dumps as dump_to
 
-# import for deserialization of message objects
-from ast import literal_eval
 replica_module = import_da('replica')
 from time import time,sleep
 from config import *
@@ -201,13 +201,18 @@ class Olympus(process):
         for each_member in quorum:
             if not running_state_validated:
                 send(('get_running_state'), to=replicas[each_member[1]])
-                await(received(('response_get_running_state', None, None)))
+                await(received(('response_get_running_state_' + str(each_member[1]))))
 
     # Reconfiguration request. This may come from a client or a replica. Client sends proof of misbehavior, replica doesn't.
     # replica piggybacks configuration onto proof_of_misbehavior variable
     def receive(msg=('Reconfiguration', sender, proof_of_misbehavior)):
         output_wrapper('Reconfiguration request received from ' + str(sender) + '.')
-        if (isinstance(proof_of_misbehavior, int) and proof_of_misbehavior == configuration_number) or (isinstance(proof_of_misbehavior, list) and validate_proof_of_misbehavior(proof_of_misbehavior)):
+        if (isinstance(proof_of_misbehavior, list) and len(proof_of_misbehavior) == 2):
+            r_shuttle_signed, r_shuttle = proof_of_misbehavior
+            if r_shuttle == None:
+                output_wrapper('Reconfiguration request sent by ' + str(sender) + ' is valid. Tail\'s signature is invalid. Starting reconfiguration.')
+                begin_reconfiguration() # Reconfigure and send new configuration to the replicas
+        elif (isinstance(proof_of_misbehavior, int) and proof_of_misbehavior == configuration_number) or (isinstance(proof_of_misbehavior, list) and validate_proof_of_misbehavior(proof_of_misbehavior)):
             output_wrapper('Reconfiguration request sent by ' + str(sender) + ' is valid. Starting reconfiguration.')
             begin_reconfiguration() # Reconfigure and send new configuration to the replicas
         else:
@@ -220,6 +225,8 @@ class Olympus(process):
             running_state_validated = 1
             output_wrapper('Running state validated with the Quorum. Initializing new configuration.')
             init_new_configuration(replica_running_state)
+        else:
+            output_wrapper('Running state of Replica ' + str(replica_id) + ' is not validated with the quorum. Trying the next replica.')
 
     def validate_proof_of_misbehavior(proof_of_misbehavior):
         result, result_proof = proof_of_misbehavior
@@ -238,21 +245,19 @@ class Olympus(process):
     def calculate_hash(val):
         if isinstance(val, str):
             return sha256(str.encode(val), encoder=HexEncoder)
-        elif isinstance(val, dict):
-            return sha256(str.encode(dumps(val, sort_keys=True)), encoder=HexEncoder)
-        return sha256(val, encoder=HexEncoder)
+        return sha256(str.encode(dump_to(val, sort_keys=True)), encoder=HexEncoder)
 
     # Encrypt data with own private key and send
     def sign_and_send(data, to_):
         data = list(data)
-        data[-1] = private_key.sign(str(data[-1]).encode('utf-8'))
+        data[-1] = private_key.sign(dumps(data[-1]))
         send(tuple(data), to=to_)
 
     # Verify and unpack data with someone else's public key
     def verify_data_with_key(data, pub_key):
         try:
             pub_key.verify(data)
-            return literal_eval(data.message.decode('utf-8'))
+            return loads(data.message)
         except BadSignatureError:
             return None
 

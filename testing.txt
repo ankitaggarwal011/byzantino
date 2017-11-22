@@ -38,4 +38,4 @@ Test cases
     Description:-
 
     Command:-
-    python3 -m da --logfile --logfilename=logs/-log.txt --logfilelevel=info src/bcr.da -i config/.txt
+    python3 -m da --logfile --logfilename=logs/-log.txt --logfilelevel=info --message-buffer-size=80000 src/bcr.da -i config/.txt

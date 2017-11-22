@@ -15,4 +15,4 @@ workload[0] = put('movie','star'); append('movie',' wars'); get('movie'); get('t
 # configurations are numbered starting with 0.  replicas are numbered by
 # position in the chain, starting from 0.  replicas without a specified
 # failure scenario are failure-free.
-failures[0,1] = shuttle(0,0),invalid_order_sig()
+failures[0,2] = shuttle(0,0),invalid_result_sig()

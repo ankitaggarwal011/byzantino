@@ -2,10 +2,12 @@ from nacl.hash import sha256
 from nacl.encoding import HexEncoder
 from nacl.signing import SigningKey, VerifyKey
 from nacl.exceptions import BadSignatureError
-from json import dumps
+from copy import deepcopy
 
-# import for deserialization of message objects
-from ast import literal_eval
+# import for serialization/deserialization of objects
+from pickle import dumps, loads
+from json import dumps as dump_to
+
 from time import time, sleep
 from config import *
 import read_config
@@ -56,10 +58,14 @@ class Client(process):
 
     # receive operation result from replica
     def receive(msg=(sender_id, 'Operation_result', request_id, result_shuttle)):
-        # Verification of signature of replicas
+        # Verification of signature of 
+        result_shuttle_signed = deepcopy(result_shuttle)
         result_shuttle = verify_data_with_key(result_shuttle, replica_public_keys[sender_id])
         if result_shuttle == None:
-            output_wrapper('Verification of message sent by Replica ' + str(sender_id) + ' has failed.')
+            output_wrapper('Signature verification of message sent by Replica ' + str(sender_id) + ' has failed.')
+            output_wrapper('Misbehaviour detected in request id: {}! Sending reconfiguration request to Olympus'.format(
+                request_id))
+            send(('Reconfiguration', name, [result_shuttle_signed, result_shuttle]), to=olympus)
             return
 
         result, result_proof = result_shuttle
@@ -85,13 +91,13 @@ class Client(process):
 
     def sign_and_send(data, to_):
         data = list(data)
-        data[-1] = private_key.sign(str(data[-1]).encode('utf-8'))
+        data[-1] = private_key.sign(dumps(data[-1]))
         send(tuple(data), to=to_)
 
     def verify_data_with_key(data, pub_key):
         try:
             pub_key.verify(data)
-            return literal_eval(data.message.decode('utf-8'))
+            return loads(data.message)
         except BadSignatureError:
             return None
 
@@ -117,7 +123,7 @@ class Client(process):
         output_wrapper('Local running state of client after the given set of operations: ' + str(client_running_state) + '.')
         send(('get_running_state', self, requests_sent), to=head)
         await(received(('running_state_' + str(requests_sent))))
-        output_wrapper('\n\nRunning state at the server after the given set of operations: ' + str(dumps(client_running_state_sync, sort_keys=True)) + '.\n\n')
+        output_wrapper('\n\nRunning state at the server after the given set of operations: ' + str(dump_to(client_running_state_sync, sort_keys=True)) + '.\n\n')
         if are_dicts_valid(client_running_state, client_running_state_sync):
             output_wrapper('Assuming no conflicting keys from other clients:\n\nTest case passed! Actual and expected running states match.\n\n')
         else:
@@ -154,7 +160,7 @@ class Client(process):
 
     def send_request(type, args, retry):
         op_args = list(args)[:]
-        args = private_key.sign(str(args).encode('utf-8'))  # sign the request
+        args = private_key.sign(dumps(args)) # sign the request
         if retry:
             output_wrapper(str(name) + ' is sending ' + str(type) + ' request with args ' + str(op_args) + ' for request id ' + str(request_id) + ' in retry mode.')
             for r in replicas:
@@ -189,13 +195,10 @@ class Client(process):
     def calculate_hash(val):
         if isinstance(val, str):
             return sha256(str.encode(val), encoder=HexEncoder)
-        elif isinstance(val, dict):
-            return sha256(str.encode(dumps(val, sort_keys=True)), encoder=HexEncoder)
-        return sha256(val, encoder=HexEncoder)
+        return sha256(str.encode(dump_to(val, sort_keys=True)), encoder=HexEncoder)
 
     def output_wrapper(log):
         output('[TS: {}][{}]'.format(str(time()), name), log)
 
-
-def are_dicts_valid(d1, d2):
-    return all(k in d2 for k in d1)
+    def are_dicts_valid(d1, d2):
+        return all(k in d2 for k in d1)
