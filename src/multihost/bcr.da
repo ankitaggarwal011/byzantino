@@ -1,0 +1,73 @@
+# imports for encryption and hashing
+from nacl.hash import sha256
+from nacl.encoding import HexEncoder
+from nacl.signing import SigningKey, VerifyKey
+from nacl.exceptions import BadSignatureError
+
+# import for serialization/deserialization of objects
+from pickle import dumps, loads
+
+# import all config objects and functions
+from config import *
+import read_config
+client_module = import_da('client')
+olympus_module = import_da('olympus')
+# misc imports
+import sys
+import getopt
+from time import time
+
+# Configure a reliable FIFO channel
+config(channel={'reliable', 'fifo'})
+
+# Utility method for parsing program arguments
+def parse_program_args(argv):
+    inputfile = ''
+    output_wrapperfile = ''
+    try:
+        opts, args = getopt.getopt(argv, 'hi:o:', ['ifile=', 'ofile='])
+    except getopt.GetoptError:
+        output_wrapper('Error in parsing arguments')
+        return None
+    for opt, arg in opts:
+        if opt in ('-i', '--ifile'):
+            inputfile = arg
+        elif opt in ('-o', '--ofile'):
+            output_wrapperfile = arg
+    return [inputfile, output_wrapperfile]
+
+# Main entry point
+def main():
+    def output_wrapper(log):
+        output('[Main][TS: {}]'.format(str(time())), log)
+
+    # ignore the 1st argument because it will be the program binary path
+    if len(sys.argv) < 2:
+        output_wrapper('Incorrect argument count. Must specify the input configuration file atleast')
+        return
+
+    [infile, outfile] = parse_program_args(sys.argv[1:])
+    if infile == None:
+        output_wrapper('Must specify input configuration file!')
+        sys.exit(2)
+
+    config_dict = read_config.parse_config_file(infile)
+    global_config = GlobalConfig(config_dict)
+    client_config = ClientConfig(config_dict)
+    replica_config = ReplicaConfig(config_dict)
+
+    output_wrapper('Running BCR simulation for test case: ' + global_config.test_case_name)
+    olympus = new(olympus_module.Olympus, args=(
+        'Olympus', replica_config.num_replica, replica_config.num_failures, replica_config.failures, replica_config.head_timeout,
+        replica_config.nonhead_timeout, replica_config.checkpt_interval), at='Node1')
+    start(olympus)
+    clients = dict()
+
+    for i in range(client_config.num_client):
+        request_id_counter = i * 10000  # assuming each client will not perform more than 10000 operations in a single run
+        modified_ops = list(map(lambda o: (o.type.name, o.args_list), client_config.workloads[i]))
+        output_wrapper('Workload for client {} : {}'.format(str(i), str(modified_ops)))
+        client = new(client_module.Client, args=(
+            i, olympus, request_id_counter - 1, client_config.client_timeout, modified_ops, client_config.num_failures), at='Node1')
+        clients[i] = client
+        start(client)

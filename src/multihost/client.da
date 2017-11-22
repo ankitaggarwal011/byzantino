@@ -129,7 +129,6 @@ class Client(process):
         else:
             output_wrapper('Assuming no conflicting keys from other clients:\n\nTest case failed! Actual and expected running states don\'t match\n\n')
         
-        send(('Done',), to=parent())
         await(received('Shutdown'))
 
     def update_client_running_state(running_state, type, args):

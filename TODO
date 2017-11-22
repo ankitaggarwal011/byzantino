@@ -1,8 +1,8 @@
-Digital Signing
+Multi-host support (multi-terminal working) [TODO]
+Increase recursion limit (for 900 requests) [Needs to be tested for RAFT] [TODO]
+PEP8 [TODO]
+Generate logs for each test case [TODO]
 
-Enable python logging (some output logs are omitted for large number of requests in distalgo)
-Multi-host support
-Exit program to calculate time
-Increase recursion limit
-PEP8
-Documentation (testing.txt, README.txt)
+Exit program to calculate time [No simple way to do it, distalgo complications] [Use (time) Linux utility to time it]
+Documentation (testing.txt, README.txt) [Done, minor edits left]
+Digital Signing [a little bit left, might leave [not that important]]

@@ -11,10 +11,11 @@ INSTRUCTIONS
 python3 -m da <src file> -i <config file>
 
 e.g.
-python3 -m da src/bcr.da -i config/basic_multi_client.txt
+python3 -m da src/bcr.da -i config/phase3/test_phase3.txt
 
 For multi-node:
-
+python3 -m da -n Node1 src/multihost/bcr.da -i config/phase3/simple.txt
+python3 -m da -n Node2 src/multihost/bcr.da -i config/phase3/simple.txt
 
 
 WORKLOAD GENERATION
@@ -25,11 +26,14 @@ As a convention, all keys and values generated have a fixed length of 3 to keep 
 
 BUGS AND LIMITATIONS
 ====================
+1. For large workloads, some of logs randomly gets omitted even if those commands have been executed. It has been reproduced by other students as well, thus this appears to be a bug in Python/DistAlgo.
 
 
 COMPARISON WITH RAFT
 ====================
-
+RAFT2: ~10s
+BCR on single host: ~20s [approximately] [print output to stdout takes a lot of time]
+BCR on multiple host: ~16s [approximately] [print output to stdout takes a lot of time]
 
 
 CONTRIBUTIONS
@@ -64,20 +68,27 @@ Setting up configuration for the program and workload generation: src/config.py
 Parsing the configuration file: src/read_config.py
 
 Implementation for multi-node setup: 
+Main entry: src/multihost/bcr.da
+Implementation of the Replica: src/multihost/replica.da
+Implementation of the Olympus: src/multihost/olympus.da
+Implementation of the Client: src/multihost/client.da
+Setting up configuration for the program and workload generation: src/multihost/config.py
+Parsing the configuration file: src/multihost/read_config.py
+
 
 CODE SIZE
 =========
 
 (1a) Lines of code for:
-    Algorithm: ~800
-    Other: ~700
-    Total: ~1500
+    Algorithm: ~1200
+    Other: ~500
+    Total: ~1700
 
 (1b) Counts are obtained using: https://github.com/AlDanial/cloc
 
 (2) Lines of code for:
-    Core Algorithm: ~600
-    Interleaved testing: ~200
+    Core Algorithm: ~800
+    Interleaved testing: ~400
 
 LANGUAGE FEATURE USAGE
 ====================== 
@@ -85,7 +96,7 @@ LANGUAGE FEATURE USAGE
 List Comprehensions: ~15
 Dictionary Comprehensions: ~2-3
 Set Comprehensions: ~8-9
-Aggregations: 0
+Aggregations: 1
 Quantifications: ~2-3
 Classes: 5
 Enums: 3

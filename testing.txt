@@ -4,38 +4,84 @@ Test cases
 
 -------------- Client -----------------------
 
--- <Test Case>
-    Description:-
-
+--  Simple
+    
     Command:-
-    python3 -m da --logfile --logfilename=logs/-log.txt --logfilelevel=info src/bcr.da -i config/.txt
+    python3 -m da --logfile --logfilename=logs/simple-log.txt --logfilelevel=info --message-buffer-size=96000 src/bcr.da -i config/phase3/simple.txt
 
 -------------- Olympus -----------------------
 
--- <Test Case>
-    Description:-
+--  Test Phase 3 [Reconfiguration and Failures]
 
     Command:-
-    python3 -m da --logfile --logfilename=logs/-log.txt --logfilelevel=info src/bcr.da -i config/.txt
+    python3 -m da --logfile --logfilename=logs/test_phase3-log.txt --logfilelevel=info --message-buffer-size=96000 src/bcr.da -i config/phase3/test_phase3.txt
 
 -------------- Replicas -----------------------
 
--- <Test Case>
-    Description:-
-
+--  Pseudorandom Workload
+    
     Command:-
-    python3 -m da --logfile --logfilename=logs/-log.txt --logfilelevel=info src/bcr.da -i config/.txt
+    python3 -m da --logfile --logfilename=logs/pseudorandom_workload-log.txt --logfilelevel=info --message-buffer-size=96000 src/bcr.da -i config/phase3/pseudorandom_workload.txt
+
+
+--------------Failures-------------------------
+
+
+--  Failure Crash
+    
+    Command:-
+    python3 -m da --logfile --logfilename=logs/failures_crash-log.txt --logfilelevel=info --message-buffer-size=96000 src/bcr.da -i config/phase3/failures_crash.txt
+
+--  Failure Drop
+    
+    Command:-
+    python3 -m da --logfile --logfilename=logs/failures_drop-log.txt --logfilelevel=info --message-buffer-size=96000 src/bcr.da -i config/phase3/failures_drop.txt
+
+--  Failure Drop Checkpt Stmts
+    
+    Command:-
+    python3 -m da --logfile --logfilename=logs/failures_drop_checkpt_stmts-log.txt --logfilelevel=info --message-buffer-size=96000 src/bcr.da -i config/phase3/failures_drop_checkpt_stmts.txt
+
+--  Failure Extra Op
+    
+    Command:-
+    python3 -m da --logfile --logfilename=logs/failures_extra_op-log.txt --logfilelevel=info --message-buffer-size=96000 src/bcr.da -i config/phase3/failures_extra_op.txt
+
+--  Failure Increment Slot
+    
+    Command:-
+    python3 -m da --logfile --logfilename=logs/failures_increment_slot-log.txt --logfilelevel=info --message-buffer-size=96000 src/bcr.da -i config/phase3/failures_increment_slot.txt
+
+--  Failures Increment Slot on Replica > Head [No Effect]
+    
+    Command:-
+    python3 -m da --logfile --logfilename=logs/failures_increment_slot_non_trigger-log.txt --logfilelevel=info --message-buffer-size=96000 src/bcr.da -i config/phase3/failures_increment_slot_non_trigger.txt
+
+--  Failure Invalid Signatures
+    
+    Command:-
+    python3 -m da --logfile --logfilename=logs/failures_invalid_sig-log.txt --logfilelevel=info --message-buffer-size=96000 src/bcr.da -i config/phase3/failures_invalid_sig.txt
+
+--  Failure Sleep
+    
+    Command:-
+    python3 -m da --logfile --logfilename=logs/failures_sleep-log.txt --logfilelevel=info --message-buffer-size=96000 src/bcr.da -i config/phase3/failures_sleep.txt
+
+--  Failure Truncate History
+    
+    Command:-
+    python3 -m da --logfile --logfilename=logs/failures_truncate_history-log.txt --logfilelevel=info --message-buffer-size=96000 src/bcr.da -i config/phase3/failures_truncate_history.txt
+
 
 ---------- Stress test ------------------------
--- <Test Case>
-    Description:-
+--  Stress Test
 
     Command:-
-    python3 -m da --logfile --logfilename=logs/-log.txt --logfilelevel=info src/bcr.da -i config/.txt
+    python3 -m da --logfile --logfilename=logs/stress_phase3-log.txt --logfilelevel=info --message-buffer-size=96000 src/bcr.da -i config/phase3/stress_phase3.txt
+
 
 ---------- RAFT Comparison --------------------
--- <Test Case>
-    Description:-
+--  perform900 [from project.txt]
 
     Command:-
-    python3 -m da --logfile --logfilename=logs/-log.txt --logfilelevel=info --message-buffer-size=80000 src/bcr.da -i config/.txt
+    python3 -m da --logfile --logfilename=logs/perform900-log.txt --logfilelevel=info --message-buffer-size=96000 src/bcr.da -i config/perform900.txt

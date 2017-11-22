@@ -9,12 +9,12 @@ client_timeout = 3000
 # timeout, in milliseconds, for head and non-head servers, respectively
 head_timeout = 3000
 nonhead_timeout = 3000
-checkpt_interval = 300
+checkpt_interval = 30
 
 # CLIENT WORKLOAD
-workload[0] = pseudorandom(190,300)
-workload[1] = pseudorandom(191,300)
-workload[2] = pseudorandom(192,300)
+workload[0] = pseudorandom(190,30)
+workload[1] = pseudorandom(191,30)
+workload[2] = pseudorandom(192,30)
 
 # FAILURE SCENARIO
 # no failures
