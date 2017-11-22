@@ -23,9 +23,8 @@ e.g.
 python3 -m da src/bcr.da -i config/phase3/test_phase3.txt
 
 For multi-node:
-python3 -m da -n Node1 src/multihost/bcr.da -i config/phase3/simple.txt
-python3 -m da -n Node2 src/multihost/bcr.da -i config/phase3/simple.txt
-
+python3.6 -m da --logfile --logfilename=logs/simple-log.txt --logfilelevel=info --message-buffer-size=96000 -n Node1 -H <Node1's own IP> -R <Other node's IP> src/multihost/bcr.da -i config/phase3/simple.txt
+python3.6 -m da --logfile --logfilename=logs/simple-log.txt --logfilelevel=info --message-buffer-size=96000 -n Node2 -D -H <Node2's own IP> -R <Other node's IP> src/multihost/bcr.da -i config/phase3/simple.txt
 
 WORKLOAD GENERATION
 ===================
