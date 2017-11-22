@@ -123,6 +123,7 @@ class Replica(process):
 
     # Replica receives client public key from Olympus, used to verify client requests
     def receive(msg=('Client_keys', client_id, client_public_key)):
+        client_public_key = verify_data_with_key(client_public_key, olympus_public_key)
         client_keys[client_id] = VerifyKey(client_public_key, encoder=HexEncoder)
         output_wrapper(
             '{} has received client public key: {} for client {}'.format(name, str(client_public_key), str(client_id)))

@@ -80,11 +80,11 @@ class Olympus(process):
     def receive(msg=('Get_configuration', client, client_name, client_id, client_public_key, request_num)):
         client_keys[client_id] = VerifyKey(client_public_key, encoder=HexEncoder)
         clients[client_id] = client
-        send(('Configuration', replicas, head), to=client)
         send(('Keys', replica_public_keys, public_key), to=client)
+        sign_and_send(('Configuration', replicas, head), client)
         send(('Configuration_' + str(client_id) + '_' + str(request_num)), to=client)
         for i, r in replicas.items():
-            send(('Client_keys', client_id, client_public_key), to=r)
+            sign_and_send(('Client_keys', client_id, client_public_key), r)
         output_wrapper('Received public key: {} from client: {}'.format(str(client_public_key), str(client_name)))
         output_wrapper('Configuration sent to ' + str(client_name) + '.')
 
@@ -96,7 +96,7 @@ class Olympus(process):
         output_wrapper('Sending wedge requests to replicas: ' + str(replicas))
         for i, r in replicas.items():
             output_wrapper('Sending wedge requests to replica: ' + str(i))
-            send(('wedge_request'), to=r)
+            sign_and_send_2(('wedge_request'), r)
 
     # get all wedged messages, make a sorted list out of all sorted valid histories [<s, o>, ...]
     # choose first (longest history), and check if there other t consistent replicas, if yes, create quorum, save the index
@@ -131,7 +131,7 @@ class Olympus(process):
         for i in quorum:
             replica_history = i[0][(furthest_checkpoint - i[2]):]
             gap = longest_history[len(replica_history):]
-            send(('catch_up', gap), to=replicas[i[1]])
+            sign_and_send_2(('catch_up', gap), replicas[i[1]])
         if await(some(received(('caught_up', None, None)), has=(running_states_received == len(quorum)))):
             pass
         elif timeout(2): # wait for 2s and select new quorum if some running states in Q are missing
@@ -200,13 +200,13 @@ class Olympus(process):
         output_wrapper('Getting the running state from the quorum.')
         for each_member in quorum:
             if not running_state_validated:
-                send(('get_running_state'), to=replicas[each_member[1]])
+                sign_and_send_2(('get_running_state'), replicas[each_member[1]])
                 await(received(('response_get_running_state_' + str(each_member[1]))))
 
     def validate_signature_result_stmt(r_shuttle):
         r, r_p = r_shuttle
         for i in range(len(r_p)):
-            if r_p != None and (isinstance(r_p[i], bytes) or verify_data_with_key(r_p[i], replica_public_keys[i]) == None): return False
+            if (r_p != None and (not (isinstance(r_p[i], bytes) and verify_data_with_key(r_p[i], replica_public_keys[i]) == None))): return False
         return True
 
     # Reconfiguration request. This may come from a client or a replica. Client sends proof of misbehavior, replica doesn't.
@@ -258,6 +258,9 @@ class Olympus(process):
         data = list(data)
         data[-1] = private_key.sign(dumps(data[-1]))
         send(tuple(data), to=to_)
+
+    def sign_and_send_2(data, to_):
+        send(data, to=to_)
 
     # Verify and unpack data with someone else's public key
     def verify_data_with_key(data, pub_key):

@@ -34,6 +34,7 @@ class Client(process):
 
     # Receive configuration message from Olympus: references to all replicas and head
     def receive(msg=('Configuration', replicas_dict_, head_), from_=olympus):
+        head_ = verify_data_with_key(head_, olympus_public_key)
         replicas_dict = replicas_dict_
         replicas = list()
         for i, replica in replicas_dict_.items():
@@ -133,7 +134,6 @@ class Client(process):
         else:
             output_wrapper('Assuming no conflicting keys from other clients:\n\nTest case failed! Actual and expected running states don\'t match\n\n')
         
-        send(('Done',), to=parent())
         await(received('Shutdown'))
 
     def update_client_running_state(running_state, type, args):
