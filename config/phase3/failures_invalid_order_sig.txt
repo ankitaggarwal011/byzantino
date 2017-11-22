@@ -1,4 +1,4 @@
-test_case_name = failures_invalid_sig
+test_case_name = failures_invalid_order_sig
 
 t = 1
 num_client = 1

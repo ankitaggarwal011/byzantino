@@ -58,10 +58,15 @@ Phase 2 test cases can also be used as given in config/phase2/.
     Command:-
     python3 -m da --logfile --logfilename=logs/failures_increment_slot_non_trigger-log.txt --logfilelevel=info --message-buffer-size=96000 src/bcr.da -i config/phase3/failures_increment_slot_non_trigger.txt
 
---  Failure Invalid Signatures
+--  Failure Invalid Order Signature
     
     Command:-
-    python3 -m da --logfile --logfilename=logs/failures_invalid_sig-log.txt --logfilelevel=info --message-buffer-size=96000 src/bcr.da -i config/phase3/failures_invalid_sig.txt
+    python3 -m da --logfile --logfilename=logs/failures_invalid_order_sig-log.txt --logfilelevel=info --message-buffer-size=96000 src/bcr.da -i config/phase3/failures_invalid_order_sig.txt
+
+--  Failure Invalid Result Signature
+    
+    Command:-
+    python3 -m da --logfile --logfilename=logs/failures_invalid_result_sig-log.txt --logfilelevel=info --message-buffer-size=96000 src/bcr.da -i config/phase3/failures_invalid_result_sig.txt
 
 --  Failure Sleep
     
