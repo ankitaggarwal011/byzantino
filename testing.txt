@@ -1,17 +1,18 @@
-Note: Please note that some logs given for clarity purpose in this file are not most upto date with the current version of the program, for the latest logs, please run the program with commands given here.
+Note: Please note that some logs given for explanation purposes in this file are not most upto date with the current version of the program. For the latest logs, please run the program with commands given here.
 
-Test cases
+Test cases [config/phase3/]
+Phase 2 test cases can also be used as given in config/phase2/.
 
 -------------- Client -----------------------
 
---  Simple
+--  Simple: 1 client, 3 replicas, without any failures
     
     Command:-
     python3 -m da --logfile --logfilename=logs/simple-log.txt --logfilelevel=info --message-buffer-size=96000 src/bcr.da -i config/phase3/simple.txt
 
 -------------- Olympus -----------------------
 
---  Test Phase 3 [Reconfiguration and Failures]
+--  Test Phase 3 [Reconfiguration and Failures]: Covers almost all the requirements 
 
     Command:-
     python3 -m da --logfile --logfilename=logs/test_phase3-log.txt --logfilelevel=info --message-buffer-size=96000 src/bcr.da -i config/phase3/test_phase3.txt

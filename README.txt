@@ -5,6 +5,15 @@ Python3 (CPython) version: 3.5.1
 Operating System: Windows 7, MAC OS
 Hosts: Laptop (without VMs), VM on Google Cloud Compute Engine
 
+DEPENDENCIES
+============
+PyDistAlgo
+PyNacl
+Pickle [Pre-installed]
+JSON [Pre-installed]
+
+pip install --upgrade pydistalgo pynacl
+
 INSTRUCTIONS
 ============
 
@@ -31,6 +40,12 @@ BUGS AND LIMITATIONS
 
 COMPARISON WITH RAFT
 ====================
+Considering the design of our program, gracefully exiting all nodes was a challenge, so instead we used time utility given in Linux systems for calculating program running times.
+
+e.g. time <python command>
+
+After the logs were printed, we just used Ctrl + C to end the execution and get the timing stats.
+
 RAFT2: ~10s
 BCR on single host: ~20s [approximately] [print output to stdout takes a lot of time]
 BCR on multiple host: ~16s [approximately] [print output to stdout takes a lot of time]
@@ -67,7 +82,7 @@ Implementation of the Client: src/client.da
 Setting up configuration for the program and workload generation: src/config.py
 Parsing the configuration file: src/read_config.py
 
-Implementation for multi-node setup: 
+Implementation for multi-node setup: Head on Node2, everything else on Node1
 Main entry: src/multihost/bcr.da
 Implementation of the Replica: src/multihost/replica.da
 Implementation of the Olympus: src/multihost/olympus.da
