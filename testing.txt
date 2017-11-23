@@ -2,10 +2,12 @@ Note: Please note that some logs given for explanation purposes in this file are
 
 Test cases [config/phase3/]
 Phase 2 test cases can also be used as given in config/phase2/.
+Results of the test cases can be found in the logs/ directory.
 
 -------------- Client -----------------------
 
 --  Simple: 1 client, 3 replicas, without any failures
+    This is a simple test case to test the basic setup of the application.
     
     Command:-
     python3 -m da --logfile --logfilename=logs/simple-log.txt --logfilelevel=info --message-buffer-size=96000 src/bcr.da -i config/phase3/simple.txt
@@ -13,6 +15,7 @@ Phase 2 test cases can also be used as given in config/phase2/.
 -------------- Olympus -----------------------
 
 --  Test Phase 3 [Reconfiguration and Failures]: Covers almost all the requirements 
+    This is a more extensive test case with multiple clients and failures, which covers almost all aspects of the BCR algorithm along with phase 3 requirements. This test case causes the Olympus into reconfiguration, after which the system stabilizes and finishes the remaining client requests. It also covers checkpointing.
 
     Command:-
     python3 -m da --logfile --logfilename=logs/test_phase3-log.txt --logfilelevel=info --message-buffer-size=96000 src/bcr.da -i config/phase3/test_phase3.txt
@@ -20,6 +23,7 @@ Phase 2 test cases can also be used as given in config/phase2/.
 -------------- Replicas -----------------------
 
 --  Pseudorandom Workload
+    This is a classic example of the pseudorandom workload, which is a good way to test the various operations supported by the replica.
     
     Command:-
     python3 -m da --logfile --logfilename=logs/pseudorandom_workload-log.txt --logfilelevel=info --message-buffer-size=96000 src/bcr.da -i config/phase3/pseudorandom_workload.txt
@@ -29,61 +33,73 @@ Phase 2 test cases can also be used as given in config/phase2/.
 
 
 --  Failure Crash
+    This simulates the crash failure on the given replica, and system goes into reconfiguration and then stabilizes to serve further requests from the client.
     
     Command:-
     python3 -m da --logfile --logfilename=logs/failures_crash-log.txt --logfilelevel=info --message-buffer-size=96000 src/bcr.da -i config/phase3/failures_crash.txt
 
 --  Failure Drop
+    This simulates the drop failure on the given replica, and system goes into reconfiguration and then stabilizes to serve further requests from the client.
     
     Command:-
     python3 -m da --logfile --logfilename=logs/failures_drop-log.txt --logfilelevel=info --message-buffer-size=96000 src/bcr.da -i config/phase3/failures_drop.txt
 
 --  Failure Drop Checkpt Stmts
+    This simulates the above failure on the given replica, and system goes into reconfiguration and then stabilizes to serve further requests from the client.
     
     Command:-
     python3 -m da --logfile --logfilename=logs/failures_drop_checkpt_stmts-log.txt --logfilelevel=info --message-buffer-size=96000 src/bcr.da -i config/phase3/failures_drop_checkpt_stmts.txt
 
 --  Failure Extra Op
+    This simulates the above failure on the given replica, and system goes into reconfiguration and then stabilizes to serve further requests from the client.
     
     Command:-
     python3 -m da --logfile --logfilename=logs/failures_extra_op-log.txt --logfilelevel=info --message-buffer-size=96000 src/bcr.da -i config/phase3/failures_extra_op.txt
 
 --  Failure Increment Slot
+    This simulates the above failure on the given replica, and system goes into reconfiguration and then stabilizes to serve further requests from the client.
     
     Command:-
     python3 -m da --logfile --logfilename=logs/failures_increment_slot-log.txt --logfilelevel=info --message-buffer-size=96000 src/bcr.da -i config/phase3/failures_increment_slot.txt
 
 --  Failures Increment Slot on Replica > Head [No Effect]
-    
+    This simulates the above failure on the given replica. However, the increment slot failure on a replica has no effect on the system, since this failure only applied to the Head.
+
     Command:-
     python3 -m da --logfile --logfilename=logs/failures_increment_slot_non_trigger-log.txt --logfilelevel=info --message-buffer-size=96000 src/bcr.da -i config/phase3/failures_increment_slot_non_trigger.txt
 
 --  Failure Invalid Order Signature
+    This simulates the above failure on the given replica. In the usual case, order, result, and checkpoint statements are properly signed by each replica. This failure corrupts the signature of the order statement of the given replica, causing system to reconfigure and then stabilizes to serve further requests from the client.
     
     Command:-
     python3 -m da --logfile --logfilename=logs/failures_invalid_order_sig-log.txt --logfilelevel=info --message-buffer-size=96000 src/bcr.da -i config/phase3/failures_invalid_order_sig.txt
 
 --  Failure Invalid Result Signature
+    This simulates the above failure on the given replica. In the usual case, order, result, and checkpoint statements are properly signed by each replica. This failure corrupts the signature of the result statement of the given replica, causing either next replica or client (in case of the tail) to detect faulty replica. Then, system to reconfigure and stabilizes to serve further requests from the client.
     
     Command:-
     python3 -m da --logfile --logfilename=logs/failures_invalid_result_sig-log.txt --logfilelevel=info --message-buffer-size=96000 src/bcr.da -i config/phase3/failures_invalid_result_sig.txt
 
 --  Failure Sleep
+    This simulates the above failure on the given replica.
     
     Command:-
     python3 -m da --logfile --logfilename=logs/failures_sleep-log.txt --logfilelevel=info --message-buffer-size=96000 src/bcr.da -i config/phase3/failures_sleep.txt
 
 --  Failure Truncate History
+    This simulates the above failure on the given replica.
     
     Command:-
     python3 -m da --logfile --logfilename=logs/failures_truncate_history-log.txt --logfilelevel=info --message-buffer-size=96000 src/bcr.da -i config/phase3/failures_truncate_history.txt
 
 --  Failure Trigger Checkpoint
+    This simulates the above failure on the given replica.
     
     Command:-
     python3 -m da --logfile --logfilename=logs/failure_trigger_checkpoint-log.txt --logfilelevel=info --message-buffer-size=96000 src/bcr.da -i config/phase3/failure_trigger_checkpoint.txt
 
 --  Failure Trigger Completed Checkpoint
+    This simulates the above failure on the given replica.
     
     Command:-
     python3 -m da --logfile --logfilename=logs/failure_trigger_completed_checkpoint-log.txt --logfilelevel=info --message-buffer-size=96000 src/bcr.da -i config/phase3/failure_trigger_completed_checkpoint.txt
@@ -98,6 +114,19 @@ Phase 2 test cases can also be used as given in config/phase2/.
 
 ---------- RAFT Comparison --------------------
 --  perform900 [from project.txt]
+    For such a large workload, we increased the recursion limit of Python. In case of multi-host setup, we also had to increase the RAM given to the docker images.
+
+    Single-host Log file: perform900-log.txt
+    Multi-host Log file: perform900-multihost-log.txt
 
     Command:-
     python3 -m da --logfile --logfilename=logs/perform900-log.txt --logfilelevel=info --message-buffer-size=96000 src/bcr.da -i config/perform900.txt
+
+--------------------Multi-Host------------------
+--  Simple test case
+    This is a simple test case for running multi-host setup for the application with Head on Node 2 and the rest of the replicas, Olympus, and clients on Node 1.
+
+    Command:-
+    python3 -m da --logfile --logfilename=logs/simple-log.txt --logfilelevel=info --message-buffer-size=96000 -n Node1 -H <Node1's own IP> -R <Other node's IP> src/multihost/bcr.da -i config/phase3/simple.txt
+    
+    python3 -m da --logfile --logfilename=logs/simple-log.txt --logfilelevel=info --message-buffer-size=96000 -n Node2 -D -H <Node2's own IP> -R <Other node's IP> src/multihost/bcr.da -i config/phase3/simple.txt

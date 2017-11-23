@@ -1,9 +1,9 @@
 PLATFORM
 ========
 DistAlgo version: 1.0.11
-Python3 (CPython) version: 3.5.1
+Python3 (CPython) version: 3.5.1, 3.6 (for multi-host on Docker)
 Operating System: Windows 7, MAC OS
-Hosts: Laptop (without VMs), VM on Google Cloud Compute Engine
+Hosts: Laptop (without VMs), Docker Images
 
 DEPENDENCIES
 ============
@@ -22,9 +22,14 @@ python3 -m da <src file> -i <config file>
 e.g.
 python3 -m da src/bcr.da -i config/phase3/test_phase3.txt
 
+For large workloads, we increased the recursion limit of Python.
+
 For multi-node:
-python3.6 -m da --logfile --logfilename=logs/simple-log.txt --logfilelevel=info --message-buffer-size=96000 -n Node1 -H <Node1's own IP> -R <Other node's IP> src/multihost/bcr.da -i config/phase3/simple.txt
-python3.6 -m da --logfile --logfilename=logs/simple-log.txt --logfilelevel=info --message-buffer-size=96000 -n Node2 -D -H <Node2's own IP> -R <Other node's IP> src/multihost/bcr.da -i config/phase3/simple.txt
+Node 1: Other Replicas, Client, Olympus
+Node 2 : Head
+
+python3 -m da --logfile --logfilename=logs/simple-log.txt --logfilelevel=info --message-buffer-size=96000 -n Node1 -H <Node1's own IP> -R <Other node's IP> src/multihost/bcr.da -i config/phase3/simple.txt
+python3 -m da --logfile --logfilename=logs/simple-log.txt --logfilelevel=info --message-buffer-size=96000 -n Node2 -D -H <Node2's own IP> -R <Other node's IP> src/multihost/bcr.da -i config/phase3/simple.txt
 
 WORKLOAD GENERATION
 ===================
@@ -34,8 +39,7 @@ As a convention, all keys and values generated have a fixed length of 3 to keep 
 
 BUGS AND LIMITATIONS
 ====================
-1. For large workloads, some of logs randomly gets omitted even if those commands have been executed. It has been reproduced by other students as well, thus this appears to be a bug in Python/DistAlgo.
-
+1. For large workloads, some of logs randomly gets omitted even if those commands have been executed. It has been reproduced by other students as well, thus this appears to be a bug in Python/DistAlgo [Windows 7]. We didn't face this issue yet when running on Unix system.
 
 COMPARISON WITH RAFT
 ====================
@@ -49,6 +53,10 @@ RAFT2: ~10s
 BCR on single host: ~20s [approximately] [print output to stdout takes a lot of time]
 BCR on multiple host: ~16s [approximately] [print output to stdout takes a lot of time]
 
+Multi-Host Setup
+================
+We used two docker images (on Mac) with Python 3.6 and PyDistAlgo 1.0.11 to simulate multi-host setup. 
+For large workloads, we increased the recursion limit of Python and RAM given to the docker images.
 
 CONTRIBUTIONS
 =============
