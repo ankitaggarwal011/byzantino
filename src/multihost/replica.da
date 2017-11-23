@@ -181,7 +181,7 @@ class Replica(process):
         # executing failures if it has been triggered
         failure_list = [FailureActionType.crash,
                         FailureActionType.sleep, FailureActionType.drop]
-        if exec_failures(failure_list) == 1:
+        if exec_failures(failure_list) == 1:  # drop() failure
             return
 
         if FailureActionType.extra_op in pending_failures and pending_failures[FailureActionType.extra_op] == 1:
@@ -261,15 +261,16 @@ class Replica(process):
                 send(('Reconfiguration', name, configuration), to=olympus)
                 return
 
-            _operation = args[0][0][1][1]
-            if _client_args != _operation:
-                output_wrapper('Verification of operations forwarded by head and sent by Client ' +
-                               str(client_id) + ' has failed. Head might be faulty.')
-                send(('Reconfiguration', name, configuration), to=olympus)
-                return
+            if not is_head():
+                _operation = args[0][0][1][1]
+                if _client_args != _operation:
+                    output_wrapper('Verification of operations forwarded by head and sent by Client ' +
+                                   str(client_id) + ' has failed. Head might be faulty.')
+                    send(('Reconfiguration', name, configuration), to=olympus)
+                    return
 
-            output_wrapper(
-                'Client request (with client\'s signature) forwarded by the head is validated. Head is not faulty.')
+                output_wrapper(
+                    'Client request (with client\'s signature) forwarded by the head is validated. Head is not faulty.')
 
         if is_head():
             if not is_client(request_from, client):
@@ -280,7 +281,6 @@ class Replica(process):
 
             output_wrapper('Request with id ' + str(request_id) + ' from client ' + str(
                 client_id) + ' has been assigned to the slot number ' + str(slot_number) + '.')
-
             # update running state
             result = update_running_state(type, args)
 

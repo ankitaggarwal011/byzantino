@@ -78,6 +78,16 @@ Phase 2 test cases can also be used as given in config/phase2/.
     Command:-
     python3 -m da --logfile --logfilename=logs/failures_truncate_history-log.txt --logfilelevel=info --message-buffer-size=96000 src/bcr.da -i config/phase3/failures_truncate_history.txt
 
+--  Failure Trigger Checkpoint
+    
+    Command:-
+    python3 -m da --logfile --logfilename=logs/failure_trigger_checkpoint-log.txt --logfilelevel=info --message-buffer-size=96000 src/bcr.da -i config/phase3/failure_trigger_checkpoint.txt
+
+--  Failure Trigger Completed Checkpoint
+    
+    Command:-
+    python3 -m da --logfile --logfilename=logs/failure_trigger_completed_checkpoint-log.txt --logfilelevel=info --message-buffer-size=96000 src/bcr.da -i config/phase3/failure_trigger_completed_checkpoint.txt
+
 
 ---------- Stress test ------------------------
 --  Stress Test
