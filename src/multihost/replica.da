@@ -24,11 +24,13 @@ config(channel={'reliable', 'fifo'})
 # Failure handling: for each replica, we maintain two dictionaries
 #                pending_failures[scenario.action_type] = 1
 #                pending_failure_scenarios[scenario.action_type] = scenario
-# Key is the scenario action type enum in config.py. This lets us keep track of what scenarios to execute later
+# Key is the scenario action type enum in config.py. This lets us keep
+# track of what scenarios to execute later
 
 
 class Replica(process):
     # Replica setup method
+
     def setup(id, name, running_state, replica_failures, replica_timeout, olympus_public_key, checkpt_interval, slot_number):
         output_wrapper('Replica failures: ' + str(replica_failures))
         self.status = 0  # PENDING
@@ -51,7 +53,8 @@ class Replica(process):
         self.messages_received_from_client = {}  # messages received for each client
         self.messages_shuttle = {}  # shuttles received for each client
         self.messages_result_shuttle = {}  # result shuttles received for each client
-        self.messages_forwarded_request = {}  # forwarded requests received for each client
+        # forwarded requests received for each client
+        self.messages_forwarded_request = {}
         self.ongoing_request_id = None
         self.history = list()
         self.most_recent_result = dict()
@@ -63,19 +66,23 @@ class Replica(process):
         self.checkpt_proof_messages = 0
         self.new_configuration_messages = 0
 
-    # Replica starts off in the ACTIVE state. It verifies Olympus and then awaits other messages or Shutdown message.
+    # Replica starts off in the ACTIVE state. It verifies Olympus and then
+    # awaits other messages or Shutdown message.
     def run():
         status = 1  # ACTIVE
         olympus_public_key = VerifyKey(olympus_public_key, encoder=HexEncoder)
         output_wrapper('A new replica (' + str(name) + ')' + ' is created.')
         await(received(('Shutdown'), from_=olympus))
 
-    # Replica will shut down if it receives the Shutdown message from Olympus (its waiting in run() will expire)
+    # Replica will shut down if it receives the Shutdown message from Olympus
+    # (its waiting in run() will expire)
     def receive(msg=('Shutdown'), from_=olympus):
-        output_wrapper(name + ' is now shutting down.\nIt\'s final running state is:\n' + str(running_state) + '.\n')
+        output_wrapper(
+            name + ' is now shutting down.\nIt\'s final running state is:\n' + str(running_state) + '.\n')
 
     # Each replica receives its configuration data from Olympus. This happens after replica is created.
-    # It gets references to other replicas in chain, head, tail, Olympus, and public keys for other replicas
+    # It gets references to other replicas in chain, head, tail, Olympus, and
+    # public keys for other replicas
     def receive(msg=('Configuration', olympus_, replicas_, head_, tail_, config_data)):
         olympus = olympus_
         replicas = replicas_
@@ -83,23 +90,28 @@ class Replica(process):
         tail = tail_
         config_data = verify_data_with_key(config_data, olympus_public_key)
         if config_data is None:
-            output_wrapper('Verification of message sent by Olympus has failed.')
+            output_wrapper(
+                'Verification of message sent by Olympus has failed.')
             send(('Reconfiguration', name, configuration), to=olympus)
             return
         replica_public_keys_, configuration = config_data
-        replica_public_keys = [VerifyKey(key, encoder=HexEncoder) for key in replica_public_keys_]
+        replica_public_keys = [
+            VerifyKey(key, encoder=HexEncoder) for key in replica_public_keys_]
 
         check_all_failures(None)
         new_configuration_messages += 1
         # executing failures if it has been triggered
-        failure_list = [FailureActionType.crash, FailureActionType.sleep, FailureActionType.drop]
-        if exec_failures(failure_list) == 1: return
+        failure_list = [FailureActionType.crash,
+                        FailureActionType.sleep, FailureActionType.drop]
+        if exec_failures(failure_list) == 1:
+            return
 
         if FailureActionType.extra_op in pending_failures and pending_failures[FailureActionType.extra_op] == 1:
             output_wrapper('Executing failure scenario: {}'.format(
                 str(pending_failure_scenarios[FailureActionType.extra_op])))
-            update_running_state('put', ('a','a'))
-            output_wrapper('extra_op failure: Applying put(\'a\',\'a\') to the running state.')
+            update_running_state('put', ('a', 'a'))
+            output_wrapper(
+                'extra_op failure: Applying put(\'a\',\'a\') to the running state.')
             pending_failures[FailureActionType.extra_op] = 0
             pending_failure_scenarios[FailureActionType.extra_op] = None
 
@@ -108,23 +120,30 @@ class Replica(process):
                 output_wrapper('Executing failure scenario: {}'.format(
                     str(pending_failure_scenarios[FailureActionType.increment_slot])))
                 slot_number += 1
-                output_wrapper('increment_slot failure: Incrementing slot number at head by 1.')
+                output_wrapper(
+                    'increment_slot failure: Incrementing slot number at head by 1.')
                 pending_failures[FailureActionType.increment_slot] = 0
-                pending_failure_scenarios[FailureActionType.increment_slot] = None
+                pending_failure_scenarios[
+                    FailureActionType.increment_slot] = None
 
-        output_wrapper('{} received replica references and public keys from Olympus'.format(name))
+        output_wrapper(
+            '{} received replica references and public keys from Olympus'.format(name))
         send(('ACK', name), to=olympus)
 
-    # Replica receives its private key from Olympus, that it uses to sign results and proofs
+    # Replica receives its private key from Olympus, that it uses to sign
+    # results and proofs
     def receive(msg=('Key', private_key_), from_=olympus):
         private_key = private_key_
         output_wrapper(name + ' has received its private key from Olympus.')
         send(('ACK', name), to=olympus)
 
-    # Replica receives client public key from Olympus, used to verify client requests
+    # Replica receives client public key from Olympus, used to verify client
+    # requests
     def receive(msg=('Client_keys', client_id, client_public_key)):
-        client_public_key = verify_data_with_key(client_public_key, olympus_public_key)
-        client_keys[client_id] = VerifyKey(client_public_key, encoder=HexEncoder)
+        client_public_key = verify_data_with_key(
+            client_public_key, olympus_public_key)
+        client_keys[client_id] = VerifyKey(
+            client_public_key, encoder=HexEncoder)
         output_wrapper(
             '{} has received client public key: {} for client {}'.format(name, str(client_public_key), str(client_id)))
         send(('ACK', name), to=olympus)
@@ -133,7 +152,8 @@ class Replica(process):
     # from the client, requests from replicas  before in the chain(shuttle)
     def receive(msg=(sender_id, 'Request', type, request_from, client, request_id, client_id, client_args, args)):
         if is_client(request_from, client):
-            output_wrapper(str(type) + ' request with request id ' + str(request_id) + ' from ' + str(request_from) + ' is received by ' + str(name) + '.')
+            output_wrapper(str(type) + ' request with request id ' + str(request_id) +
+                           ' from ' + str(request_from) + ' is received by ' + str(name) + '.')
         request_to_client[request_id] = client_id
         if status == 0:
             output_wrapper(name + ' is in PENDING state.')
@@ -143,7 +163,7 @@ class Replica(process):
             output_wrapper(name + ' is in IMMUTABLE state.')
 
         if status != 1:  # if replica is not ACTIVE
-            if request_from == client and status == 2: # IMMUTABLE STATE
+            if request_from == client and status == 2:  # IMMUTABLE STATE
                 output_wrapper('Sending ERROR message to the client.')
                 send((id, 'Operation_result_error', request_id), to=client)
             return
@@ -156,17 +176,20 @@ class Replica(process):
             messages_shuttle[client_id] = 0
         if client_id not in messages_result_shuttle:
             messages_result_shuttle[client_id] = 0
-        
+
         check_all_failures(client_id)
         # executing failures if it has been triggered
-        failure_list = [FailureActionType.crash, FailureActionType.sleep, FailureActionType.drop]
-        if exec_failures(failure_list) == 1: return
+        failure_list = [FailureActionType.crash,
+                        FailureActionType.sleep, FailureActionType.drop]
+        if exec_failures(failure_list) == 1:
+            return
 
         if FailureActionType.extra_op in pending_failures and pending_failures[FailureActionType.extra_op] == 1:
             output_wrapper('Executing failure scenario: {}'.format(
                 str(pending_failure_scenarios[FailureActionType.extra_op])))
-            update_running_state('put', ('a','a'))
-            output_wrapper('extra_op failure: Applying put(\'a\',\'a\') to the running state.')
+            update_running_state('put', ('a', 'a'))
+            output_wrapper(
+                'extra_op failure: Applying put(\'a\',\'a\') to the running state.')
             pending_failures[FailureActionType.extra_op] = 0
             pending_failure_scenarios[FailureActionType.extra_op] = None
 
@@ -175,15 +198,18 @@ class Replica(process):
                 output_wrapper('Executing failure scenario: {}'.format(
                     str(pending_failure_scenarios[FailureActionType.increment_slot])))
                 slot_number += 1
-                output_wrapper('increment_slot failure: Incrementing slot number at head by 1.')
+                output_wrapper(
+                    'increment_slot failure: Incrementing slot number at head by 1.')
                 pending_failures[FailureActionType.increment_slot] = 0
-                pending_failure_scenarios[FailureActionType.increment_slot] = None
+                pending_failure_scenarios[
+                    FailureActionType.increment_slot] = None
 
             if ongoing_request_id == request_id:
-                output_wrapper('Request id ' + str(request_id) + ' of Client ' + str(client_id) + ' is already running.')
+                output_wrapper('Request id ' + str(request_id) +
+                               ' of Client ' + str(client_id) + ' is already running.')
                 return
             ongoing_request_id = request_id
-        
+
         if request_from == client:
             # client_request failure trigger
             messages_received_from_client[client_id] += 1
@@ -191,47 +217,59 @@ class Replica(process):
             # Verification of digital signature of client
             args = verify_data_with_key(client_args, client_keys[client_id])
             if args == None:
-                output_wrapper('Verification of message sent by Client ' + str(client_id) + ' has failed.')
+                output_wrapper(
+                    'Verification of message sent by Client ' + str(client_id) + ' has failed.')
                 send(('Reconfiguration', name, configuration), to=olympus)
                 return
 
             if request_id in result_cache:
-                sign_and_send(('Operation_result', request_id, result_cache[(client_id, request_id)]), client)
+                sign_and_send(('Operation_result', request_id, result_cache[
+                              (client_id, request_id)]), client)
                 send(('Operation_result_' + str(request_id)), to=client)
-                output_wrapper('Result sent to Client ' + str(client_id) + ' for request id ' + str(request_id) + ' from the cache of ' + name + '.')
+                output_wrapper('Result sent to Client ' + str(client_id) +
+                               ' for request id ' + str(request_id) + ' from the cache of ' + name + '.')
                 return
             elif not is_head():
-                output_wrapper('Forwarding the request received from Client ' + str(client_id) + ' to HEAD.')
-                sign_and_send(('Request', type, self, client, request_id, client_id, client_args, client_args), head)
+                output_wrapper(
+                    'Forwarding the request received from Client ' + str(client_id) + ' to HEAD.')
+                sign_and_send(('Request', type, self, client, request_id,
+                               client_id, client_args, client_args), head)
                 if await(received(('Result_shuttle_' + str(request_id)))):
-                    output_wrapper('Head-forwarded result shuttle is received at ' + str(name) + ' for request id ' + str(request_id))
+                    output_wrapper('Head-forwarded result shuttle is received at ' +
+                                   str(name) + ' for request id ' + str(request_id))
                 elif timeout(replica_timeout):
-                    output_wrapper(str(name) + ' has timed out waiting for the result shuttle of head-forwarded request id ' + str(request_id) + ' from Client ' + str(client_id) + '. Sending reconfiguration request.')
+                    output_wrapper(str(name) + ' has timed out waiting for the result shuttle of head-forwarded request id ' + str(
+                        request_id) + ' from Client ' + str(client_id) + '. Sending reconfiguration request.')
                     send(('Reconfiguration', name, configuration), to=olympus)
                 return
         else:
             # Verification of digital signature of client and content of request
             # Ensures that the head is not faulty
-            _client_args = verify_data_with_key(client_args, client_keys[client_id])
+            _client_args = verify_data_with_key(
+                client_args, client_keys[client_id])
             if _client_args == None:
-                output_wrapper('Verification of client message forwarded by head and sent by Client ' + str(client_id) + ' has failed.')
+                output_wrapper(
+                    'Verification of client message forwarded by head and sent by Client ' + str(client_id) + ' has failed.')
                 send(('Reconfiguration', name, configuration), to=olympus)
                 return
 
             # Verification of digital signature of replicas
             args = verify_data_with_key(args, replica_public_keys[sender_id])
             if args == None:
-                output_wrapper('Verification of message sent by Replica ' + str(sender_id) + ' has failed.')
+                output_wrapper(
+                    'Verification of message sent by Replica ' + str(sender_id) + ' has failed.')
                 send(('Reconfiguration', name, configuration), to=olympus)
                 return
 
             _operation = args[0][0][1][1]
             if _client_args != _operation:
-                output_wrapper('Verification of operations forwarded by head and sent by Client ' + str(client_id) + ' has failed. Head might be faulty.')
+                output_wrapper('Verification of operations forwarded by head and sent by Client ' +
+                               str(client_id) + ' has failed. Head might be faulty.')
                 send(('Reconfiguration', name, configuration), to=olympus)
                 return
 
-            output_wrapper('Client request (with client\'s signature) forwarded by the head is validated. Head is not faulty.')
+            output_wrapper(
+                'Client request (with client\'s signature) forwarded by the head is validated. Head is not faulty.')
 
         if is_head():
             if not is_client(request_from, client):
@@ -240,38 +278,47 @@ class Replica(process):
 
             slot_number += 1
 
-            output_wrapper('Request with id ' + str(request_id) + ' from client ' + str(client_id) + ' has been assigned to the slot number ' + str(slot_number) + '.')
+            output_wrapper('Request with id ' + str(request_id) + ' from client ' + str(
+                client_id) + ' has been assigned to the slot number ' + str(slot_number) + '.')
 
             # update running state
             result = update_running_state(type, args)
 
             if slot_number > 0 and slot_number % checkpt_interval == 0:
-                output_wrapper('Initiating checkpoint shuttle for slot number: ' + str(slot_number) + '.')
+                output_wrapper(
+                    'Initiating checkpoint shuttle for slot number: ' + str(slot_number) + '.')
                 checkpt_proof = [[slot_number, calculate_hash(running_state)]]
             else:
                 checkpt_proof = None
-            
-            # cache most recent result to aid during reconfiguration [new comments in project.txt]
+
+            # cache most recent result to aid during reconfiguration [new
+            # comments in project.txt]
             res_stmt = [(type, args), calculate_hash(result)]
             most_recent_result[client_id] = [result, res_stmt, request_id]
 
-            # if there is a change_operation failure scenario to execute, do it. Else, proceed as normal.
+            # if there is a change_operation failure scenario to execute, do
+            # it. Else, proceed as normal.
             if FailureActionType.change_operation in pending_failures and pending_failures[
-                FailureActionType.change_operation] == 1:
+                    FailureActionType.change_operation] == 1:
                 stmt_type = 'get'
                 stmt_args = ['x']
                 output_wrapper('Executing failure scenario: {}'.format(
                     str(pending_failure_scenarios[FailureActionType.change_operation])))
-                output_wrapper('change_operation failure: replica uses get(\'x\') as the operation in its order statement and result statement in the next outgoing shuttle message.')
+                output_wrapper(
+                    'change_operation failure: replica uses get(\'x\') as the operation in its order statement and result statement in the next outgoing shuttle message.')
                 pending_failures[FailureActionType.change_operation] = 0
-                pending_failure_scenarios[FailureActionType.change_operation] = None
+                pending_failure_scenarios[
+                    FailureActionType.change_operation] = None
             else:
                 stmt_type = type
                 stmt_args = args
             # generate order statement and order proof
-            order_stmt = [[slot_number, (stmt_type, stmt_args), configuration]]  # (type, args) is operation (o)
-            order_proof = [slot_number, (type, args), configuration, order_stmt, request_id]
-            result_proof = [[(type, args), calculate_hash(result)]]  # add result stmt
+            # (type, args) is operation (o)
+            order_stmt = [[slot_number, (stmt_type, stmt_args), configuration]]
+            order_proof = [slot_number,
+                           (type, args), configuration, order_stmt, request_id]
+            # add result stmt
+            result_proof = [[(type, args), calculate_hash(result)]]
             shuttle = (order_proof, result_proof, checkpt_proof)
 
             signed_shuttle = deepcopy(shuttle)
@@ -279,26 +326,35 @@ class Replica(process):
 
             history.append(deepcopy(order_proof))
 
-            # sign and send the shuttle (request shuttle) to the next replica in chain
-            output_wrapper('Shuttle with slot number ' + str(slot_number) + ' for request id ' + str(request_id) + ' and Client ' + str(client_id) + ' is sent from ' + str(name) + ' to next replica.')
-            
+            # sign and send the shuttle (request shuttle) to the next replica
+            # in chain
+            output_wrapper('Shuttle with slot number ' + str(slot_number) + ' for request id ' + str(
+                request_id) + ' and Client ' + str(client_id) + ' is sent from ' + str(name) + ' to next replica.')
+
             if FailureActionType.invalid_order_sig in pending_failures and pending_failures[FailureActionType.invalid_order_sig] == 1:
                 output_wrapper('Executing failure scenario: {}'.format(
                     str(pending_failure_scenarios[FailureActionType.invalid_order_sig])))
-                output_wrapper('invalid_order_sig failure: Changed the signature of next outgoing order stmt in the shuttle to an invalid signature.')
-                signed_shuttle[0][3][-1] = corrupt(signed_shuttle[0][3][-1]) # corrupt order stmt
+                output_wrapper(
+                    'invalid_order_sig failure: Changed the signature of next outgoing order stmt in the shuttle to an invalid signature.')
+                # corrupt order stmt
+                signed_shuttle[0][3][-1] = corrupt(signed_shuttle[0][3][-1])
                 pending_failures[FailureActionType.invalid_order_sig] = 0
-                pending_failure_scenarios[FailureActionType.invalid_order_sig] = None
+                pending_failure_scenarios[
+                    FailureActionType.invalid_order_sig] = None
             elif FailureActionType.invalid_result_sig in pending_failures and pending_failures[FailureActionType.invalid_result_sig] == 1:
                 output_wrapper('Executing failure scenario: {}'.format(
                     str(pending_failure_scenarios[FailureActionType.invalid_result_sig])))
-                output_wrapper('invalid_result_sig failure: Changed the signature of next outgoing result stmt in the shuttle to an invalid signature.')
-                signed_shuttle[1][-1] = corrupt(signed_shuttle[1][-1]) # corrupt result stmt
+                output_wrapper(
+                    'invalid_result_sig failure: Changed the signature of next outgoing result stmt in the shuttle to an invalid signature.')
+                # corrupt result stmt
+                signed_shuttle[1][-1] = corrupt(signed_shuttle[1][-1])
                 pending_failures[FailureActionType.invalid_result_sig] = 0
-                pending_failure_scenarios[FailureActionType.invalid_result_sig] = None
-            
-            sign_and_send(('Request', type, self, client, request_id, client_id, client_args, [shuttle, signed_shuttle]), replicas.get(id + 1))
-            
+                pending_failure_scenarios[
+                    FailureActionType.invalid_result_sig] = None
+
+            sign_and_send(('Request', type, self, client, request_id, client_id, client_args, [
+                          shuttle, signed_shuttle]), replicas.get(id + 1))
+
             last_slot_number = slot_number
             if await(received(('Result_shuttle_' + str(request_id)))):
                 ongoing_request_id = None
@@ -340,100 +396,133 @@ class Replica(process):
             if checkpt_proof != None and slot_number > 0 and slot_number % checkpt_interval == 0:
                 checkpt_messages += 1
                 if validate_checkpoint(checkpt_proof):
-                    checkpt_proof.append([slot_number, calculate_hash(running_state)])
-                    signed_shuttle[2].append(sign_message([slot_number, calculate_hash(running_state)]))
+                    checkpt_proof.append(
+                        [slot_number, calculate_hash(running_state)])
+                    signed_shuttle[2].append(sign_message(
+                        [slot_number, calculate_hash(running_state)]))
                 else:
-                    output_wrapper('Checkpoint validation for slot number ' + str(slot_number) + ' has failed at ' + str(name) + '. Sending reconfiguration request.')
+                    output_wrapper('Checkpoint validation for slot number ' + str(slot_number) +
+                                   ' has failed at ' + str(name) + '. Sending reconfiguration request.')
                     send(('Reconfiguration', name, configuration), to=olympus)
                     return
 
-            # cache most recent result to aid during reconfiguration [new comments in project.txt]
+            # cache most recent result to aid during reconfiguration [new
+            # comments in project.txt]
             res_stmt = [(type, operation_args), calculate_hash(result)]
             most_recent_result[client_id] = [result, res_stmt, request_id]
 
-            # if there is a pending change_operation failure scenario to perform, do it.
+            # if there is a pending change_operation failure scenario to
+            # perform, do it.
             if FailureActionType.change_operation in pending_failures and pending_failures[
-                FailureActionType.change_operation] == 1:
+                    FailureActionType.change_operation] == 1:
                 output_wrapper('Executing failure scenario: {}'.format(
                     str(pending_failure_scenarios[FailureActionType.change_operation])))
                 type = 'get'
                 operation_args = ['x']
                 pending_failures[FailureActionType.change_operation] = 0
-                pending_failure_scenarios[FailureActionType.change_operation] = None
-            order_proof[3].append([slot_number, (type, operation_args), configuration])  # append to order_stmt
-            signed_shuttle[0][3].append(sign_message([slot_number, (type, operation_args), configuration]))
-            result_proof.append([(type, operation_args), calculate_hash(result)])  # append result stmt
-            signed_shuttle[1].append(sign_message([(type, operation_args), calculate_hash(result)]))
+                pending_failure_scenarios[
+                    FailureActionType.change_operation] = None
+            # append to order_stmt
+            order_proof[3].append(
+                [slot_number, (type, operation_args), configuration])
+            signed_shuttle[0][3].append(sign_message(
+                [slot_number, (type, operation_args), configuration]))
+            # append result stmt
+            result_proof.append(
+                [(type, operation_args), calculate_hash(result)])
+            signed_shuttle[1].append(sign_message(
+                [(type, operation_args), calculate_hash(result)]))
             shuttle = (order_proof, result_proof, checkpt_proof)
             history.append(deepcopy(order_proof))
-            # if tail, send result to client. Else, forward result to next replica in chain.
+            # if tail, send result to client. Else, forward result to next
+            # replica in chain.
             if is_tail():
                 result_shuttle = [result, result_proof]
                 result_shuttle_signed = [result, signed_shuttle[1]]
                 if FailureActionType.change_result in pending_failures and pending_failures[
-                    FailureActionType.change_result] == 1:
+                        FailureActionType.change_result] == 1:
                     output_wrapper('Executing failure scenario: {}'.format(
                         str(pending_failure_scenarios[FailureActionType.change_result])))
-                    output_wrapper('change_result failure: replica uses the hash of \'OK\' in the next outgoing result message to a client.')
+                    output_wrapper(
+                        'change_result failure: replica uses the hash of \'OK\' in the next outgoing result message to a client.')
                     op_t = result_shuttle[1][id][0]
                     result_shuttle[1][id] = [op_t, calculate_hash('OK')]
 
                 if FailureActionType.drop_result_stmt in pending_failures and pending_failures[
-                    FailureActionType.drop_result_stmt] == 1:
+                        FailureActionType.drop_result_stmt] == 1:
                     output_wrapper('Executing failure scenario: {}'.format(
                         str(pending_failure_scenarios[FailureActionType.drop_result_stmt])))
-                    output_wrapper('drop_result_stmt failure: omit the head\'s result statement from the result proof in the next outgoing result message to a client.')
+                    output_wrapper(
+                        'drop_result_stmt failure: omit the head\'s result statement from the result proof in the next outgoing result message to a client.')
                     result_t = result_shuttle[0]
                     result_shuttle = [result_t, result_shuttle[1][1:]]
 
                 if FailureActionType.invalid_result_sig in pending_failures and pending_failures[FailureActionType.invalid_result_sig] == 1:
                     output_wrapper('Executing failure scenario: {}'.format(
                         str(pending_failure_scenarios[FailureActionType.invalid_result_sig])))
-                    output_wrapper('invalid_result_sig failure: Changed the signature of result sent to the client to an invalid signature.')
-                    result_shuttle_signed[1][-1] = corrupt(result_shuttle_signed[1][-1]) # corrupt result stmt
+                    output_wrapper(
+                        'invalid_result_sig failure: Changed the signature of result sent to the client to an invalid signature.')
+                    # corrupt result stmt
+                    result_shuttle_signed[
+                        1][-1] = corrupt(result_shuttle_signed[1][-1])
                     pending_failures[FailureActionType.invalid_result_sig] = 0
-                    pending_failure_scenarios[FailureActionType.invalid_result_sig] = None
-                
-                sign_and_send(('Operation_result', request_id, [result_shuttle, result_shuttle_signed]), client)
+                    pending_failure_scenarios[
+                        FailureActionType.invalid_result_sig] = None
+
+                sign_and_send(('Operation_result', request_id, [
+                              result_shuttle, result_shuttle_signed]), client)
 
                 # we send a separate 'Operation_result_' message to client for tracking the completion of a
                 # particular request with this request_id. It is not possible for the client to wait for specific
                 # requests in any other way.
                 send(('Operation_result_' + str(request_id)), to=client)
 
-                # The tail sends a result_shuttle message to itself to initiate the result shuttle handler train
-                sign_and_send(('Result_shuttle', self, request_id, client_id, [result_shuttle, result_shuttle_signed]), tail)
+                # The tail sends a result_shuttle message to itself to initiate
+                # the result shuttle handler train
+                sign_and_send(('Result_shuttle', self, request_id, client_id, [
+                              result_shuttle, result_shuttle_signed]), tail)
                 send(('Result_shuttle_' + str(request_id)), to=tail)
                 if checkpt_proof != None and slot_number > 0 and slot_number % checkpt_interval == 0:
                     sign_and_send(('Checkpoint_proof', checkpt_proof), self)
                 last_slot_number = slot_number
             else:
-                output_wrapper('Shuttle with slot number ' + str(slot_number) + ' for request id ' + str(request_id) + ' and Client ' + str(client_id) + ' is sent from ' + str(name) + ' to next replica.')
+                output_wrapper('Shuttle with slot number ' + str(slot_number) + ' for request id ' + str(
+                    request_id) + ' and Client ' + str(client_id) + ' is sent from ' + str(name) + ' to next replica.')
                 if checkpt_proof != None and slot_number > 0 and slot_number % checkpt_interval == 0:
-                    output_wrapper('Checkpoint shuttle for slot number: ' + str(slot_number) + ' is at ' + str(name) + '. Forwarding it to next Replica.')
-                
+                    output_wrapper('Checkpoint shuttle for slot number: ' + str(
+                        slot_number) + ' is at ' + str(name) + '. Forwarding it to next Replica.')
+
                 if FailureActionType.invalid_order_sig in pending_failures and pending_failures[FailureActionType.invalid_order_sig] == 1:
                     output_wrapper('Executing failure scenario: {}'.format(
                         str(pending_failure_scenarios[FailureActionType.invalid_order_sig])))
-                    output_wrapper('invalid_order_sig failure: Changed the signature of next outgoing order stmt in the shuttle to an invalid signature.')
-                    signed_shuttle[0][3][-1] = corrupt(signed_shuttle[0][3][-1]) # corrupt order stmt
+                    output_wrapper(
+                        'invalid_order_sig failure: Changed the signature of next outgoing order stmt in the shuttle to an invalid signature.')
+                    # corrupt order stmt
+                    signed_shuttle[0][
+                        3][-1] = corrupt(signed_shuttle[0][3][-1])
                     pending_failures[FailureActionType.invalid_order_sig] = 0
-                    pending_failure_scenarios[FailureActionType.invalid_order_sig] = None
+                    pending_failure_scenarios[
+                        FailureActionType.invalid_order_sig] = None
                 elif FailureActionType.invalid_result_sig in pending_failures and pending_failures[FailureActionType.invalid_result_sig] == 1:
                     output_wrapper('Executing failure scenario: {}'.format(
                         str(pending_failure_scenarios[FailureActionType.invalid_result_sig])))
-                    output_wrapper('invalid_result_sig failure: Changed the signature of next outgoing result stmt in the shuttle to an invalid signature.')
-                    signed_shuttle[1][-1] = corrupt(signed_shuttle[1][-1]) # corrupt result stmt
+                    output_wrapper(
+                        'invalid_result_sig failure: Changed the signature of next outgoing result stmt in the shuttle to an invalid signature.')
+                    # corrupt result stmt
+                    signed_shuttle[1][-1] = corrupt(signed_shuttle[1][-1])
                     pending_failures[FailureActionType.invalid_result_sig] = 0
-                    pending_failure_scenarios[FailureActionType.invalid_result_sig] = None
-                
-                sign_and_send(('Request', type, self, client, request_id, client_id, client_args, [shuttle, signed_shuttle]), replicas.get(id + 1))
-                
+                    pending_failure_scenarios[
+                        FailureActionType.invalid_result_sig] = None
+
+                sign_and_send(('Request', type, self, client, request_id, client_id, client_args, [
+                              shuttle, signed_shuttle]), replicas.get(id + 1))
+
                 last_slot_number = slot_number
                 if await(received(('Result_shuttle_' + str(request_id)))):
                     pass
                 elif timeout(replica_timeout):
-                    output_wrapper(str(name) + ' has timed out waiting for the result shuttle of request id ' + str(request_id) + ' and slot number ' + str(slot_number) + ' from Client ' + str(client_id) + '. Sending reconfiguration request.')
+                    output_wrapper(str(name) + ' has timed out waiting for the result shuttle of request id ' + str(request_id) +
+                                   ' and slot number ' + str(slot_number) + ' from Client ' + str(client_id) + '. Sending reconfiguration request.')
                     send(('Reconfiguration', name, configuration), to=olympus)
                     return
 
@@ -450,14 +539,17 @@ class Replica(process):
     def receive(msg=(sender_id, 'Checkpoint_proof', args)):
         check_all_failures(None)
         # executing failures if it has been triggered
-        failure_list = [FailureActionType.crash, FailureActionType.sleep, FailureActionType.drop]
-        if exec_failures(failure_list) == 1: return
+        failure_list = [FailureActionType.crash,
+                        FailureActionType.sleep, FailureActionType.drop]
+        if exec_failures(failure_list) == 1:
+            return
 
         if FailureActionType.extra_op in pending_failures and pending_failures[FailureActionType.extra_op] == 1:
             output_wrapper('Executing failure scenario: {}'.format(
                 str(pending_failure_scenarios[FailureActionType.extra_op])))
-            update_running_state('put', ('a','a'))
-            output_wrapper('extra_op failure: Applying put(\'a\',\'a\') to the running state.')
+            update_running_state('put', ('a', 'a'))
+            output_wrapper(
+                'extra_op failure: Applying put(\'a\',\'a\') to the running state.')
             pending_failures[FailureActionType.extra_op] = 0
             pending_failure_scenarios[FailureActionType.extra_op] = None
 
@@ -466,61 +558,76 @@ class Replica(process):
                 output_wrapper('Executing failure scenario: {}'.format(
                     str(pending_failure_scenarios[FailureActionType.increment_slot])))
                 slot_number += 1
-                output_wrapper('increment_slot failure: Incrementing slot number at head by 1.')
+                output_wrapper(
+                    'increment_slot failure: Incrementing slot number at head by 1.')
                 pending_failures[FailureActionType.increment_slot] = 0
-                pending_failure_scenarios[FailureActionType.increment_slot] = None
+                pending_failure_scenarios[
+                    FailureActionType.increment_slot] = None
 
-        if not is_tail(): checkpt_proof_messages += 1
+        if not is_tail():
+            checkpt_proof_messages += 1
         # Verification of digital signature of replicas
         args = verify_data_with_key(args, replica_public_keys[sender_id])
         if args == None:
-            output_wrapper('Verification of message sent by Replica ' + str(sender_id) + ' has failed during checkpoint proof back the chain.')
+            output_wrapper('Verification of message sent by Replica ' +
+                           str(sender_id) + ' has failed during checkpoint proof back the chain.')
             send(('Reconfiguration', name, configuration), to=olympus)
             return
         s_n = args[0][0]
         if not validate_checkpoint_proof(args):
-            output_wrapper('Checkpoint proof validation for slot number ' + str(s_n) + ' back the chain has failed at ' + str(name) + '. Sending reconfiguration request.')
+            output_wrapper('Checkpoint proof validation for slot number ' + str(s_n) +
+                           ' back the chain has failed at ' + str(name) + '. Sending reconfiguration request.')
             send(('Reconfiguration', name, configuration), to=olympus)
             return
         checkpt_proof_state = args
         checkpoint = s_n
         history = history[checkpoint:]
-        output_wrapper('Truncating history at ' + str(name) + ' to validated checkpoint proof on the slot number ' + str(checkpoint) + '.')
+        output_wrapper('Truncating history at ' + str(name) +
+                       ' to validated checkpoint proof on the slot number ' + str(checkpoint) + '.')
         if not is_head():
-            output_wrapper('Checkpoint proof shuttle back the chain for slot number: ' + str(s_n) + ' is at ' + str(name) + '. Forwarding it to next Replica back the chain.')
+            output_wrapper('Checkpoint proof shuttle back the chain for slot number: ' + str(
+                s_n) + ' is at ' + str(name) + '. Forwarding it to next Replica back the chain.')
             if FailureActionType.drop_checkpt_stmts in pending_failures and pending_failures[FailureActionType.drop_checkpt_stmts] == 1:
                 output_wrapper('Executing failure scenario: {}'.format(
                     str(pending_failure_scenarios[FailureActionType.drop_checkpt_stmts])))
-                output_wrapper('drop_checkpt_stmts failure: Dropping checkpt stmts of first t + 1 replicas during next outgoing shuttle back the chain.')
+                output_wrapper(
+                    'drop_checkpt_stmts failure: Dropping checkpt stmts of first t + 1 replicas during next outgoing shuttle back the chain.')
                 num_failures = (len(replicas) - 1) // 2
-                sign_and_send(('Checkpoint_proof', args[num_failures + 1:]), replicas.get(id - 1))
+                sign_and_send(('Checkpoint_proof', args[
+                              num_failures + 1:]), replicas.get(id - 1))
                 pending_failures[FailureActionType.drop_checkpt_stmts] = 0
-                pending_failure_scenarios[FailureActionType.drop_checkpt_stmts] = None
+                pending_failure_scenarios[
+                    FailureActionType.drop_checkpt_stmts] = None
             else:
                 sign_and_send(('Checkpoint_proof', args), replicas.get(id - 1))
         else:
-            output_wrapper('Checkpointing is complete at checkpoint ' + str(checkpoint))
+            output_wrapper(
+                'Checkpointing is complete at checkpoint ' + str(checkpoint))
 
     def validate_checkpoint(checkpt_p):
-        if len(checkpt_p) == 0: return False
+        if len(checkpt_p) == 0:
+            return False
         checkpt = checkpt_p[0]
         if checkpt_p.count(checkpt) != len(checkpt_p) or checkpt[0] <= checkpoint:
             return False
         return True
 
     def validate_checkpoint_proof(checkpt_p):
-        if len(checkpt_p) == 0 or len(checkpt_p) != len(replicas): return False
+        if len(checkpt_p) == 0 or len(checkpt_p) != len(replicas):
+            return False
         checkpt = checkpt_p[0]
         if checkpt_p.count(checkpt) != len(checkpt_p) or checkpt[0] <= checkpoint:
             return False
         return True
 
-    # message handler for Result shuttle message received from the next replica in chain
+    # message handler for Result shuttle message received from the next
+    # replica in chain
     def receive(msg=(sender_id, 'Result_shuttle', request_from, request_id, client_id, r_s)):
         # Verification of signature of replicas sending result shuttles
         r_s = verify_data_with_key(r_s, replica_public_keys[sender_id])
         if r_s == None:
-            output_wrapper('Verification of message sent by Replica ' + str(sender_id) + ' has failed during result shuttle back the chain.')
+            output_wrapper('Verification of message sent by Replica ' +
+                           str(sender_id) + ' has failed during result shuttle back the chain.')
             send(('Reconfiguration', name, configuration), to=olympus)
             return
 
@@ -528,14 +635,17 @@ class Replica(process):
 
         check_all_failures(client_id)
         # executing failures if it has been triggered
-        failure_list = [FailureActionType.crash, FailureActionType.sleep, FailureActionType.drop]
-        if exec_failures(failure_list) == 1: return
+        failure_list = [FailureActionType.crash,
+                        FailureActionType.sleep, FailureActionType.drop]
+        if exec_failures(failure_list) == 1:
+            return
 
         if FailureActionType.extra_op in pending_failures and pending_failures[FailureActionType.extra_op] == 1:
             output_wrapper('Executing failure scenario: {}'.format(
                 str(pending_failure_scenarios[FailureActionType.extra_op])))
-            update_running_state('put', ('a','a'))
-            output_wrapper('extra_op failure: Applying put(\'a\',\'a\') to the running state.')
+            update_running_state('put', ('a', 'a'))
+            output_wrapper(
+                'extra_op failure: Applying put(\'a\',\'a\') to the running state.')
             pending_failures[FailureActionType.extra_op] = 0
             pending_failure_scenarios[FailureActionType.extra_op] = None
 
@@ -544,58 +654,72 @@ class Replica(process):
                 output_wrapper('Executing failure scenario: {}'.format(
                     str(pending_failure_scenarios[FailureActionType.increment_slot])))
                 slot_number += 1
-                output_wrapper('increment_slot failure: Incrementing slot number at head by 1.')
+                output_wrapper(
+                    'increment_slot failure: Incrementing slot number at head by 1.')
                 pending_failures[FailureActionType.increment_slot] = 0
-                pending_failure_scenarios[FailureActionType.increment_slot] = None
+                pending_failure_scenarios[
+                    FailureActionType.increment_slot] = None
 
         # mark result_shuttle failure trigger
         messages_result_shuttle[client_id] += 1
 
         if validate_result_shuttle(result_shuttle):
-            result_cache[(client_id, request_id)] = [result_shuttle, result_shuttle_signed]
+            result_cache[(client_id, request_id)] = [
+                result_shuttle, result_shuttle_signed]
             if not is_head():
                 if FailureActionType.change_result in pending_failures and pending_failures[FailureActionType.change_result] == 1:
                     output_wrapper('Executing failure scenario: {}'.format(
                         str(pending_failure_scenarios[FailureActionType.change_result])))
-                    output_wrapper('change_result failure: replica uses the hash of \'OK\' in the next outgoing result shuttle message.')
+                    output_wrapper(
+                        'change_result failure: replica uses the hash of \'OK\' in the next outgoing result shuttle message.')
                     op_t = result_shuttle[1][id][0]
                     result_shuttle[1][id] = [op_t, calculate_hash('OK')]
                     pending_failures[FailureActionType.change_result] = 0
-                    pending_failure_scenarios[FailureActionType.change_result] = None
+                    pending_failure_scenarios[
+                        FailureActionType.change_result] = None
                 if FailureActionType.drop_result_stmt in pending_failures and pending_failures[
-                    FailureActionType.drop_result_stmt] == 1:
+                        FailureActionType.drop_result_stmt] == 1:
                     output_wrapper('Executing failure scenario: {}'.format(
                         str(pending_failure_scenarios[FailureActionType.drop_result_stmt])))
-                    output_wrapper('drop_result_stmt failure: omit the head\'s result statement from the result proof in the next outgoing result shuttle message.')
+                    output_wrapper(
+                        'drop_result_stmt failure: omit the head\'s result statement from the result proof in the next outgoing result shuttle message.')
                     result_t = result_shuttle[0]
                     result_shuttle = [result_t, result_shuttle[1][1:]]
                     pending_failures[FailureActionType.drop_result_stmt] = 0
-                    pending_failure_scenarios[FailureActionType.drop_result_stmt] = None
-                sign_and_send(('Result_shuttle', self, request_id, client_id, [result_shuttle, result_shuttle_signed]), replicas.get(id - 1))
-                send(('Result_shuttle_' + str(request_id)), to=replicas.get(id - 1))
-            output_wrapper('Result shuttle for request id ' + str(request_id) + ' of Client ' + str(client_id) + ' is at ' + str(name) + '.')
+                    pending_failure_scenarios[
+                        FailureActionType.drop_result_stmt] = None
+                sign_and_send(('Result_shuttle', self, request_id, client_id, [
+                              result_shuttle, result_shuttle_signed]), replicas.get(id - 1))
+                send(('Result_shuttle_' + str(request_id)),
+                     to=replicas.get(id - 1))
+            output_wrapper('Result shuttle for request id ' + str(request_id) +
+                           ' of Client ' + str(client_id) + ' is at ' + str(name) + '.')
         else:
-            output_wrapper('Result shuttle sent by Replica ' + str(sender_id) + ' for request id ' + str(request_id) + ' of Client ' + str(client_id) + ' is not valid.')
+            output_wrapper('Result shuttle sent by Replica ' + str(sender_id) + ' for request id ' +
+                           str(request_id) + ' of Client ' + str(client_id) + ' is not valid.')
             send(('Reconfiguration', name, configuration), to=olympus)
             return
 
     # wedge statement received from olympus!
     # TODO check that it is Olympus' public key!
     def receive(msg=('wedge_request'), from_=olympus):
-        status = 2 # IMMUTABLE
+        status = 2  # IMMUTABLE
         output_wrapper(str(name) + ' is now IMMUTABLE.')
         output_wrapper('Received wedge request from Olympus')
 
         check_all_failures(None)
         # executing failures if it has been triggered
-        failure_list = [FailureActionType.crash, FailureActionType.sleep, FailureActionType.drop]
-        if exec_failures(failure_list) == 1: return
+        failure_list = [FailureActionType.crash,
+                        FailureActionType.sleep, FailureActionType.drop]
+        if exec_failures(failure_list) == 1:
+            return
 
         if FailureActionType.extra_op in pending_failures and pending_failures[FailureActionType.extra_op] == 1:
             output_wrapper('Executing failure scenario: {}'.format(
                 str(pending_failure_scenarios[FailureActionType.extra_op])))
-            update_running_state('put', ('a','a'))
-            output_wrapper('extra_op failure: Applying put(\'a\',\'a\') to the running state.')
+            update_running_state('put', ('a', 'a'))
+            output_wrapper(
+                'extra_op failure: Applying put(\'a\',\'a\') to the running state.')
             pending_failures[FailureActionType.extra_op] = 0
             pending_failure_scenarios[FailureActionType.extra_op] = None
 
@@ -604,37 +728,47 @@ class Replica(process):
                 output_wrapper('Executing failure scenario: {}'.format(
                     str(pending_failure_scenarios[FailureActionType.increment_slot])))
                 slot_number += 1
-                output_wrapper('increment_slot failure: Incrementing slot number at head by 1.')
+                output_wrapper(
+                    'increment_slot failure: Incrementing slot number at head by 1.')
                 pending_failures[FailureActionType.increment_slot] = 0
-                pending_failure_scenarios[FailureActionType.increment_slot] = None
+                pending_failure_scenarios[
+                    FailureActionType.increment_slot] = None
 
         history_to_send = deepcopy(history)
 
         if FailureActionType.truncate_history in pending_failures and pending_failures[FailureActionType.truncate_history] == 1:
             output_wrapper('Executing failure scenario: {}'.format(
                 str(pending_failure_scenarios[FailureActionType.truncate_history])))
-            output_wrapper('truncate_history failure: Omitting the last ' + str() + 'entries.')
-            params = pending_failure_scenarios[FailureActionType.truncate_history].action_operands
-            history_to_send = history_to_send[:len(history_to_send) - params[0]]
+            output_wrapper(
+                'truncate_history failure: Omitting the last ' + str() + 'entries.')
+            params = pending_failure_scenarios[
+                FailureActionType.truncate_history].action_operands
+            history_to_send = history_to_send[
+                :len(history_to_send) - params[0]]
             pending_failures[FailureActionType.truncate_history] = 0
-            pending_failure_scenarios[FailureActionType.truncate_history] = None
+            pending_failure_scenarios[
+                FailureActionType.truncate_history] = None
 
         wedge_requests_received += 1
-        send(('wedge', history_to_send, checkpt_proof_state, checkpoint, id), to=olympus)
+        send(('wedge', history_to_send, checkpt_proof_state,
+              checkpoint, id), to=olympus)
 
     # catch up statement received from olympus!
     # TODO check that it is Olympus' public key!
     def receive(msg=('catch_up', gap), from_=olympus):
         check_all_failures(None)
         # executing failures if it has been triggered
-        failure_list = [FailureActionType.crash, FailureActionType.sleep, FailureActionType.drop]
-        if exec_failures(failure_list) == 1: return
+        failure_list = [FailureActionType.crash,
+                        FailureActionType.sleep, FailureActionType.drop]
+        if exec_failures(failure_list) == 1:
+            return
 
         if FailureActionType.extra_op in pending_failures and pending_failures[FailureActionType.extra_op] == 1:
             output_wrapper('Executing failure scenario: {}'.format(
                 str(pending_failure_scenarios[FailureActionType.extra_op])))
-            update_running_state('put', ('a','a'))
-            output_wrapper('extra_op failure: Applying put(\'a\',\'a\') to the running state.')
+            update_running_state('put', ('a', 'a'))
+            output_wrapper(
+                'extra_op failure: Applying put(\'a\',\'a\') to the running state.')
             pending_failures[FailureActionType.extra_op] = 0
             pending_failure_scenarios[FailureActionType.extra_op] = None
 
@@ -643,9 +777,11 @@ class Replica(process):
                 output_wrapper('Executing failure scenario: {}'.format(
                     str(pending_failure_scenarios[FailureActionType.increment_slot])))
                 slot_number += 1
-                output_wrapper('increment_slot failure: Incrementing slot number at head by 1.')
+                output_wrapper(
+                    'increment_slot failure: Incrementing slot number at head by 1.')
                 pending_failures[FailureActionType.increment_slot] = 0
-                pending_failure_scenarios[FailureActionType.increment_slot] = None
+                pending_failure_scenarios[
+                    FailureActionType.increment_slot] = None
 
         catch_up_messages += 1
         for op_to_apply in gap:
@@ -654,24 +790,30 @@ class Replica(process):
             config = op_to_apply[2]
             result = update_running_state(type, args)
             request_id = op_to_apply[3]
-            # cache most recent result to aid during reconfiguration [new comments in project.txt]
+            # cache most recent result to aid during reconfiguration [new
+            # comments in project.txt]
             res_stmt = [(type, args), calculate_hash(result)]
-            most_recent_result[request_to_client[request_id]] = [result, res_stmt, request_id]
+            most_recent_result[request_to_client[request_id]] = [
+                result, res_stmt, request_id]
 
-        send(('caught_up', calculate_hash(running_state), id, most_recent_result), to=olympus)
+        send(('caught_up', calculate_hash(running_state),
+              id, most_recent_result), to=olympus)
 
     # get_running_state from olympus
     def receive(msg=('get_running_state'), from_=olympus):
         check_all_failures(None)
         # executing failures if it has been triggered
-        failure_list = [FailureActionType.crash, FailureActionType.sleep, FailureActionType.drop]
-        if exec_failures(failure_list) == 1: return
+        failure_list = [FailureActionType.crash,
+                        FailureActionType.sleep, FailureActionType.drop]
+        if exec_failures(failure_list) == 1:
+            return
 
         if FailureActionType.extra_op in pending_failures and pending_failures[FailureActionType.extra_op] == 1:
             output_wrapper('Executing failure scenario: {}'.format(
                 str(pending_failure_scenarios[FailureActionType.extra_op])))
-            update_running_state('put', ('a','a'))
-            output_wrapper('extra_op failure: Applying put(\'a\',\'a\') to the running state.')
+            update_running_state('put', ('a', 'a'))
+            output_wrapper(
+                'extra_op failure: Applying put(\'a\',\'a\') to the running state.')
             pending_failures[FailureActionType.extra_op] = 0
             pending_failure_scenarios[FailureActionType.extra_op] = None
 
@@ -680,11 +822,14 @@ class Replica(process):
                 output_wrapper('Executing failure scenario: {}'.format(
                     str(pending_failure_scenarios[FailureActionType.increment_slot])))
                 slot_number += 1
-                output_wrapper('increment_slot failure: Incrementing slot number at head by 1.')
+                output_wrapper(
+                    'increment_slot failure: Incrementing slot number at head by 1.')
                 pending_failures[FailureActionType.increment_slot] = 0
-                pending_failure_scenarios[FailureActionType.increment_slot] = None
+                pending_failure_scenarios[
+                    FailureActionType.increment_slot] = None
 
-        output_wrapper('Response to get_running_state sent to Olympus by ' + str(name) + '.')
+        output_wrapper(
+            'Response to get_running_state sent to Olympus by ' + str(name) + '.')
         get_running_state_messages += 1
         send(('response_get_running_state', id, running_state), to=olympus)
         send(('response_get_running_state_' + str(id)), to=olympus)
@@ -694,7 +839,8 @@ class Replica(process):
         send(('running_state', running_state), to=client)
         send(('running_state_' + str(requests_)), to=client)
 
-    # method to update running state in replica. It performs one out of 4 supported operations.
+    # method to update running state in replica. It performs one out of 4
+    # supported operations.
     def update_running_state(type, args):
         if type == 'put':
             if len(args) > 1:
@@ -710,7 +856,8 @@ class Replica(process):
             if len(args) > 1:
                 lower, upper = map(int, args[1].split(':'))
                 if args[0] in running_state and lower >= 0 and upper <= len(running_state[args[0]]):
-                    running_state[args[0]] = running_state[args[0]][lower:upper]
+                    running_state[args[0]] = running_state[
+                        args[0]][lower:upper]
                     return running_state[args[0]]
                 else:
                     return 'fail'
@@ -733,7 +880,8 @@ class Replica(process):
         order_proof, result_proof = shuttle
         slot_number, operation, configuration, order_stmt, request_id = order_proof
         if last_slot_number != slot_number - 1:
-            output_wrapper('Slot number inconsistency while validating the shuttle at ' + str(name) + '.')
+            output_wrapper(
+                'Slot number inconsistency while validating the shuttle at ' + str(name) + '.')
             return False
         for stmt in order_stmt:
             if stmt[0] != slot_number or stmt[1] != operation or stmt[2] != configuration:
@@ -762,18 +910,24 @@ class Replica(process):
 
     def sign_shuttle(s_shuttle):
         o_s, r_p, c_p = s_shuttle[0][3], s_shuttle[1], s_shuttle[2]
-        if o_s != None: o_s[-1] = sign_message(o_s[-1]) # sign order stmt
-        if r_p != None: r_p[-1] = sign_message(r_p[-1]) # sign result stmt
-        if c_p != None: c_p[-1] = sign_message(c_p[-1]) # sign checkpt stmt
+        if o_s != None:
+            o_s[-1] = sign_message(o_s[-1])  # sign order stmt
+        if r_p != None:
+            r_p[-1] = sign_message(r_p[-1])  # sign result stmt
+        if c_p != None:
+            c_p[-1] = sign_message(c_p[-1])  # sign checkpt stmt
         return s_shuttle
 
     def validate_signed_shuttle(s_shuttle):
         o_p, r_p, c_p = s_shuttle
         o_s = o_p[3]
         for i in range(len(o_s)):
-            if o_s != None and verify_data_with_key(o_s[i], replica_public_keys[i]) == None: return False
-            if r_p != None and verify_data_with_key(r_p[i], replica_public_keys[i]) == None: return False
-            if c_p != None and verify_data_with_key(c_p[i], replica_public_keys[i]) == None: return False
+            if o_s != None and verify_data_with_key(o_s[i], replica_public_keys[i]) == None:
+                return False
+            if r_p != None and verify_data_with_key(r_p[i], replica_public_keys[i]) == None:
+                return False
+            if c_p != None and verify_data_with_key(c_p[i], replica_public_keys[i]) == None:
+                return False
         return True
 
     # verify data with own public key and parse it
@@ -785,7 +939,8 @@ class Replica(process):
             return None
 
     # method that checks if a failure scenario is applicable with current parameters
-    # if it is, the caller will update the current failure scenario dict accordingly
+    # if it is, the caller will update the current failure scenario dict
+    # accordingly
     def check_failure(required_type, client_id):
         for i, failure in enumerate(replica_failures):
             oper = failure.operands
@@ -822,12 +977,14 @@ class Replica(process):
                         return (True, failure)
         return (False, None)
 
-    # checks for all failure triggers and updates the pending failure dict accordingly
+    # checks for all failure triggers and updates the pending failure dict
+    # accordingly
     def check_all_failures(client_id):
-        output_wrapper('Checking if any failure trigger conditions are satisfied.')
-        failure_trigger_types = [FailureType.client_request, FailureType.forwarded_request, FailureType.shuttle, 
-                                 FailureType.result_shuttle, FailureType.wedge_request, FailureType.new_configuration, 
-                                 FailureType.checkpoint, FailureType.completed_checkpoint, FailureType.get_running_state, 
+        output_wrapper(
+            'Checking if any failure trigger conditions are satisfied.')
+        failure_trigger_types = [FailureType.client_request, FailureType.forwarded_request, FailureType.shuttle,
+                                 FailureType.result_shuttle, FailureType.wedge_request, FailureType.new_configuration,
+                                 FailureType.checkpoint, FailureType.completed_checkpoint, FailureType.get_running_state,
                                  FailureType.catch_up]
         for each_trigger in failure_trigger_types:
             is_trigger, scenario = check_failure(each_trigger, client_id)
@@ -836,7 +993,7 @@ class Replica(process):
                 pending_failures[scenario.action_type] = 1
                 pending_failure_scenarios[scenario.action_type] = scenario
                 output_wrapper('Replica {}: Trigger {} failure for client_id: {}, and scenario: {}'.format(
-                        name, each_trigger, client_id, scenario.action_type))
+                    name, each_trigger, client_id, scenario.action_type))
 
     def exec_failures(failure_list):
         return_val = 0
@@ -844,14 +1001,17 @@ class Replica(process):
             if each_failure in pending_failures and pending_failures[each_failure] == 1:
                 output_wrapper('Executing failure scenario: {}'.format(
                     str(pending_failure_scenarios[each_failure])))
-                params = pending_failure_scenarios[each_failure].action_operands
+                params = pending_failure_scenarios[
+                    each_failure].action_operands
                 if each_failure == FailureActionType.crash:
                     crash()
                 elif each_failure == FailureActionType.sleep:
-                    output_wrapper('Sleep failure: Replica going to sleep for ' + str(params[0]) + ' milliseconds.')
+                    output_wrapper(
+                        'Sleep failure: Replica going to sleep for ' + str(params[0]) + ' milliseconds.')
                     sleep(params[0] / 1000)
                 elif each_failure == FailureActionType.drop:
-                    output_wrapper('Drop failure: Dropping the message that triggered the failure.')
+                    output_wrapper(
+                        'Drop failure: Dropping the message that triggered the failure.')
                     return_val = 1
             pending_failures[each_failure] = 0
             pending_failure_scenarios[each_failure] = None
@@ -868,6 +1028,7 @@ class Replica(process):
         newsigned = bytes(signedlist)
         return SignedMessage._from_parts(signed._signature, signed._message, newsigned)
 
-    # Utility method for logging, prepends process name and time to each log statement
+    # Utility method for logging, prepends process name and time to each log
+    # statement
     def output_wrapper(log):
         output('[TS: {}][{}]'.format(str(time()), name), log)

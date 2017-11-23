@@ -18,7 +18,10 @@ config(channel={'reliable', 'fifo'})
 # The client process. It is created by the main process
 # Setup inputs: reference to olympus, initial request_id index, client timeout, operation_list, and number of system
 # failures that are allowed
+
+
 class Client(process):
+
     def setup(client_id, olympus, request_id, client_timeout, operations, num_failures):
         self.name = 'Client ' + str(client_id)
         self.replicas = None
@@ -27,12 +30,14 @@ class Client(process):
         self.replica_public_keys = None
         self.olympus_public_key = None
         self.private_key = SigningKey.generate()
-        self.public_key = self.private_key.verify_key.encode(encoder=HexEncoder)
+        self.public_key = self.private_key.verify_key.encode(
+            encoder=HexEncoder)
         self.client_running_state = dict()
         self.client_running_state_sync = dict()
         self.requests_sent = 0
 
-    # Receive configuration message from Olympus: references to all replicas and head
+    # Receive configuration message from Olympus: references to all replicas
+    # and head
     def receive(msg=('Configuration', replicas_dict_, head_), from_=olympus):
         head_ = verify_data_with_key(head_, olympus_public_key)
         replicas_dict = replicas_dict_
@@ -43,16 +48,19 @@ class Client(process):
         output_wrapper(name + ' is configured with ' + str(head))
         send(('ACK', name), to=olympus)
 
-    # Receive keys message from Olympus: public keys of all replicas and Olympus
+    # Receive keys message from Olympus: public keys of all replicas and
+    # Olympus
     def receive(msg=('Keys', replica_public_keys_, olympus_public_key_), from_=olympus):
-        replica_public_keys = [VerifyKey(key, encoder=HexEncoder) for key in replica_public_keys_]
+        replica_public_keys = [
+            VerifyKey(key, encoder=HexEncoder) for key in replica_public_keys_]
         olympus_public_key = VerifyKey(olympus_public_key_, encoder=HexEncoder)
         output_wrapper('Received the public keys of replicas from Olympus')
         output_wrapper('Received the public key of Olympus.')
         send(('ACK', name), to=olympus)
 
     def receive(msg=(sender_id, 'Operation_result_error', request_id)):
-        output_wrapper('Result during reconfiguration: Received ERROR message for request id ' + str(request_id) + ' from Replica ' + str(sender_id) + '.')
+        output_wrapper('Result during reconfiguration: Received ERROR message for request id ' +
+                       str(request_id) + ' from Replica ' + str(sender_id) + '.')
 
     def receive(msg=('running_state', running_state)):
         client_running_state_sync = running_state
@@ -62,24 +70,29 @@ class Client(process):
         # Verification of signature
         r_s = verify_data_with_key(r_s, replica_public_keys[sender_id])
         if r_s == None:
-            output_wrapper('Signature verification of message sent by Replica ' + str(sender_id) + ' has failed.')
+            output_wrapper(
+                'Signature verification of message sent by Replica ' + str(sender_id) + ' has failed.')
             return
 
         result_shuttle, result_shuttle_signed = r_s
         if not validate_signature_result_stmt(result_shuttle_signed):
-            output_wrapper('Signature verification of result stmt sent by Replica ' + str(sender_id) + ' has failed.')
+            output_wrapper(
+                'Signature verification of result stmt sent by Replica ' + str(sender_id) + ' has failed.')
             output_wrapper('Misbehaviour detected in request id: {}! Sending reconfiguration request to Olympus'.format(
                 request_id))
             send(('Reconfiguration', name, r_s), to=olympus)
             return
 
         result, result_proof = result_shuttle
-        is_result__valid, is_reconfiguration_required = validate_result(result, result_proof)
+        is_result__valid, is_reconfiguration_required = validate_result(
+            result, result_proof)
         if is_result__valid:
             if result != 'fail' or result != '':
-                update_client_running_state(client_running_state_sync, result_proof[0][0][0], result_proof[0][0][1])
+                update_client_running_state(client_running_state_sync, result_proof[
+                                            0][0][0], result_proof[0][0][1])
                 # updating state from the tail response
-            output_wrapper('Result: {} received for request id: {}'.format(str(result), str(request_id)))
+            output_wrapper('Result: {} received for request id: {}'.format(
+                str(result), str(request_id)))
         if is_reconfiguration_required:
             # send reconfiguration request to Olympus with proof of misbehavior
             output_wrapper('Misbehaviour detected in request id: {}! Sending reconfiguration request to Olympus'.format(
@@ -90,9 +103,11 @@ class Client(process):
     def receive(msg=('Operation_result_reconfig', result_s), from_=olympus):
         result, result_stmt, request_id_ = result_s
         if result != 'fail' or result != '':
-            update_client_running_state(client_running_state_sync, result_stmt[0][0], result_stmt[0][1])
+            update_client_running_state(client_running_state_sync, result_stmt[
+                                        0][0], result_stmt[0][1])
             # updating state from the tail response
-        output_wrapper('Result from Olympus: {} received from Olympus during reconfiguration for request id: {}'.format(str(result), str(request_id_)))
+        output_wrapper('Result from Olympus: {} received from Olympus during reconfiguration for request id: {}'.format(
+            str(result), str(request_id_)))
 
     def sign_and_send(data, to_):
         data = list(data)
@@ -107,33 +122,42 @@ class Client(process):
             return None
 
     def run():
-        N = 2 # get configuration periodically for every Nth request
+        N = 2  # get configuration periodically for every Nth request
         for op_n, op in enumerate(operations):
             update_client_running_state(client_running_state, op[0], op[1])
             retry = 0
             while True:
-                # Checking for new configuration periodically every Nth and for last send request
+                # Checking for new configuration periodically every Nth and for
+                # last send request
                 if requests_sent % N == 0 or op_n == (len(operations) - 1):
-                    output_wrapper('Checking with Olympus for new configuration.')
-                    send(('Get_configuration', self, name, client_id, public_key, requests_sent), to=olympus)
-                    await(received(('Configuration_' + str(client_id) + '_' + str(requests_sent))))
+                    output_wrapper(
+                        'Checking with Olympus for new configuration.')
+                    send(('Get_configuration', self, name, client_id,
+                          public_key, requests_sent), to=olympus)
+                    await(
+                        received(('Configuration_' + str(client_id) + '_' + str(requests_sent))))
                 send_request(op[0], op[1], retry)
                 requests_sent += 1
                 if await(received(('Operation_result_' + str(request_id))) or received(('Operation_result_reconfig_' + str(request_id)))):
                     break
                 elif timeout(client_timeout):
-                    output_wrapper('Timeout: Retrying request id: {}, sending to all replicas'.format(str(request_id)))
+                    output_wrapper(
+                        'Timeout: Retrying request id: {}, sending to all replicas'.format(str(request_id)))
                     retry = 1
                 sleep(0.1)
-        output_wrapper('Local running state of client after the given set of operations: ' + str(client_running_state) + '.')
+        output_wrapper('Local running state of client after the given set of operations: ' +
+                       str(client_running_state) + '.')
         send(('get_running_state', self, requests_sent), to=head)
         await(received(('running_state_' + str(requests_sent))))
-        output_wrapper('\n\nRunning state at the server after the given set of operations: ' + str(dump_to(client_running_state_sync, sort_keys=True)) + '.\n\n')
+        output_wrapper('\n\nRunning state at the server after the given set of operations: ' +
+                       str(dump_to(client_running_state_sync, sort_keys=True)) + '.\n\n')
         if are_dicts_valid(client_running_state, client_running_state_sync):
-            output_wrapper('Assuming no conflicting keys from other clients:\n\nTest case passed! Actual and expected running states match.\n\n')
+            output_wrapper(
+                'Assuming no conflicting keys from other clients:\n\nTest case passed! Actual and expected running states match.\n\n')
         else:
-            output_wrapper('Assuming no conflicting keys from other clients:\n\nTest case failed! Actual and expected running states don\'t match\n\n')
-        
+            output_wrapper(
+                'Assuming no conflicting keys from other clients:\n\nTest case failed! Actual and expected running states don\'t match\n\n')
+
         await(received('Shutdown'))
 
     def update_client_running_state(running_state, type, args):
@@ -151,7 +175,8 @@ class Client(process):
             if len(args) > 1:
                 lower, upper = map(int, args[1].split(':'))
                 if args[0] in running_state and lower >= 0 and upper <= len(running_state[args[0]]):
-                    running_state[args[0]] = running_state[args[0]][lower:upper]
+                    running_state[args[0]] = running_state[
+                        args[0]][lower:upper]
                     return running_state[args[0]]
                 else:
                     return 'fail'
@@ -165,24 +190,31 @@ class Client(process):
 
     def send_request(type, args, retry):
         op_args = list(args)[:]
-        args = private_key.sign(dumps(args)) # sign the request
+        args = private_key.sign(dumps(args))  # sign the request
         if retry:
-            output_wrapper(str(name) + ' is sending ' + str(type) + ' request with args ' + str(op_args) + ' for request id ' + str(request_id) + ' in retry mode.')
+            output_wrapper(str(name) + ' is sending ' + str(type) + ' request with args ' +
+                           str(op_args) + ' for request id ' + str(request_id) + ' in retry mode.')
             for r in replicas:
-                send((None, 'Request', type, self, self, request_id, client_id, args, None), to=r)
+                send((None, 'Request', type, self, self,
+                      request_id, client_id, args, None), to=r)
         else:
             request_id += 1
-            output_wrapper(str(name) + ' is sending ' + str(type) + ' request with args ' + str(op_args) + ' for request id ' + str(request_id) + '.')
-            send((None, 'Request', type, self, self, request_id, client_id, args, None), to=head)
+            output_wrapper(str(name) + ' is sending ' + str(type) + ' request with args ' +
+                           str(op_args) + ' for request id ' + str(request_id) + '.')
+            send((None, 'Request', type, self, self,
+                  request_id, client_id, args, None), to=head)
 
-    # returns a tuple of booleans (is_valid_result_shuttle, send_reconfiguration_request)
+    # returns a tuple of booleans (is_valid_result_shuttle,
+    # send_reconfiguration_request)
     def validate_result(result, result_proof):
         if len(result_proof) < num_failures + 1:
-            output_wrapper('Number of result proofs received are less than the majority (failures + 1).')
+            output_wrapper(
+                'Number of result proofs received are less than the majority (failures + 1).')
             return (False, True)
 
         # ASSUMPTION: client checks all result proofs for validating correctness of response.
-        # Another approach may be to check that a majority of result proofs are the same as hash(tail_response)
+        # Another approach may be to check that a majority of result proofs are
+        # the same as hash(tail_response)
         majority = 0
         hash = calculate_hash(result)
         for i in result_proof:
@@ -205,7 +237,8 @@ class Client(process):
     def validate_signature_result_stmt(r_shuttle):
         r, r_p = r_shuttle
         for i in range(len(r_p)):
-            if r_p != None and verify_data_with_key(r_p[i], replica_public_keys[i]) == None: return False
+            if r_p != None and verify_data_with_key(r_p[i], replica_public_keys[i]) == None:
+                return False
         return True
 
     def output_wrapper(log):

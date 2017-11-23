@@ -1,6 +1,5 @@
-Increase recursion limit (for 900 requests) [Needs to be tested for RAFT] [TODO]
-PEP8 [TODO]
 Generate logs for each test case [TODO]
-
+Increase recursion limit (for 900 requests) [Needs to be tested for RAFT] [TODO]
 Exit program to calculate time [No simple way to do it, distalgo complications] [Use (time) Linux utility to time it]
+
 Documentation (testing.txt, README.txt) [Done, minor edits left] [Add final contents of dictionary and test passed in testing.txt]

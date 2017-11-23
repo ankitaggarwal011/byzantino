@@ -21,6 +21,8 @@ from time import time
 config(channel={'reliable', 'fifo'})
 
 # Utility method for parsing program arguments
+
+
 def parse_program_args(argv):
     inputfile = ''
     output_wrapperfile = ''
@@ -37,13 +39,16 @@ def parse_program_args(argv):
     return [inputfile, output_wrapperfile]
 
 # Main entry point
+
+
 def main():
     def output_wrapper(log):
         output('[Main][TS: {}]'.format(str(time())), log)
 
     # ignore the 1st argument because it will be the program binary path
     if len(sys.argv) < 2:
-        output_wrapper('Incorrect argument count. Must specify the input configuration file atleast')
+        output_wrapper(
+            'Incorrect argument count. Must specify the input configuration file atleast')
         return
 
     [infile, outfile] = parse_program_args(sys.argv[1:])
@@ -56,7 +61,8 @@ def main():
     client_config = ClientConfig(config_dict)
     replica_config = ReplicaConfig(config_dict)
 
-    output_wrapper('Running BCR simulation for test case: ' + global_config.test_case_name)
+    output_wrapper('Running BCR simulation for test case: ' +
+                   global_config.test_case_name)
     olympus = new(olympus_module.Olympus, args=(
         'Olympus', replica_config.num_replica, replica_config.num_failures, replica_config.failures, replica_config.head_timeout,
         replica_config.nonhead_timeout, replica_config.checkpt_interval), at='Node1')
@@ -64,9 +70,13 @@ def main():
     clients = dict()
 
     for i in range(client_config.num_client):
-        request_id_counter = i * 10000  # assuming each client will not perform more than 10000 operations in a single run
-        modified_ops = list(map(lambda o: (o.type.name, o.args_list), client_config.workloads[i]))
-        output_wrapper('Workload for client {} : {}'.format(str(i), str(modified_ops)))
+        # assuming each client will not perform more than 10000 operations in a
+        # single run
+        request_id_counter = i * 10000
+        modified_ops = list(
+            map(lambda o: (o.type.name, o.args_list), client_config.workloads[i]))
+        output_wrapper('Workload for client {} : {}'.format(
+            str(i), str(modified_ops)))
         client = new(client_module.Client, args=(
             i, olympus, request_id_counter - 1, client_config.client_timeout, modified_ops, client_config.num_failures), at='Node1')
         clients[i] = client
