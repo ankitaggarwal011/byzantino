@@ -16,4 +16,4 @@ workload[1] = put('name','darth'); append('name',' vader'); get('age')
 # configurations are numbered starting with 0.  replicas are numbered by
 # position in the chain, starting from 0.  replicas without a specified
 # failure scenario are failure-free.
-failures[0,1] = completed_checkpoint(1),drop()
+failures[0,1] = completed_checkpoint(1),extra_op()

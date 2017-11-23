@@ -1,0 +1,166 @@
+[2017-11-22 20:15:51,108] da.api<MainProcess>:INFO: <Node_:e7001> initialized at 127.0.0.1:(UdpTransport=31691, TcpTransport=25735).
+[2017-11-22 20:15:51,109] da.api<MainProcess>:INFO: Starting program <module 'bcr' from 'src/bcr.py'>...
+[2017-11-22 20:15:51,109] da.api<MainProcess>:INFO: Running iteration 1 ...
+[2017-11-22 20:15:51,109] da.api<MainProcess>:INFO: Waiting for remaining child processes to terminate...(Press "Ctrl-C" to force kill)
+[2017-11-22 20:15:51,112] bcr.Node_<Node_:e7001>:OUTPUT: [Main][TS: 1511399751.112546] Running BCR simulation for test case: failures_invalid_result_sig
+[2017-11-22 20:15:51,177] replica.Replica<Replica:08003>:OUTPUT: [TS: 1511399751.177206][Head] Replica failures: {}
+[2017-11-22 20:15:51,178] olympus.Olympus<Olympus:08002>:OUTPUT: [TS: 1511399751.178606][Olympus] Olympus created replica process: Replica 0
+[2017-11-22 20:15:51,179] olympus.Olympus<Olympus:08002>:OUTPUT: [TS: 1511399751.179656][Olympus] Olympus created keys for replica process: Replica 0. Public key: b'860b14d5c6544e99c4e4c2e10bf13dec2b0d9f46bfc623502614a2baf2f84f58'
+[2017-11-22 20:15:51,195] replica.Replica<Replica:08004>:OUTPUT: [TS: 1511399751.1949499][Replica 1] Replica failures: {}
+[2017-11-22 20:15:51,196] olympus.Olympus<Olympus:08002>:OUTPUT: [TS: 1511399751.1960268][Olympus] Olympus created replica process: Replica 1
+[2017-11-22 20:15:51,198] olympus.Olympus<Olympus:08002>:OUTPUT: [TS: 1511399751.198482][Olympus] Olympus created keys for replica process: Replica 1. Public key: b'32595e1acb519cef0ac5885ddd89f2ad9183c569e2487a2074a26bf66a7c6368'
+[2017-11-22 20:15:51,216] replica.Replica<Replica:08005>:OUTPUT: [TS: 1511399751.216053][Tail] Replica failures: [shuttle(0,0), invalid_result_sig()]
+[2017-11-22 20:15:51,218] olympus.Olympus<Olympus:08002>:OUTPUT: [TS: 1511399751.218087][Olympus] Olympus created replica process: Replica 2
+[2017-11-22 20:15:51,220] olympus.Olympus<Olympus:08002>:OUTPUT: [TS: 1511399751.220106][Olympus] Olympus created keys for replica process: Replica 2. Public key: b'6f7863419578b5268403dfbe5432a286ce0bb2c63edd38ab3c47450c5963c3da'
+[2017-11-22 20:15:51,223] bcr.Node_<Node_:e7001>:OUTPUT: [Main][TS: 1511399751.223918] Workload for client 0 : [('put', ['movie', 'star']), ('append', ['movie', ' wars']), ('get', ['movie']), ('get', ['test'])]
+[2017-11-22 20:15:51,224] replica.Replica<Replica:08003>:OUTPUT: [TS: 1511399751.224389][Head] A new replica (Head) is created.
+[2017-11-22 20:15:51,226] replica.Replica<Replica:08003>:OUTPUT: [TS: 1511399751.226677][Head] Checking if any failure trigger conditions are satisfied.
+[2017-11-22 20:15:51,226] replica.Replica<Replica:08004>:OUTPUT: [TS: 1511399751.22668][Replica 1] A new replica (Replica 1) is created.
+[2017-11-22 20:15:51,227] replica.Replica<Replica:08003>:OUTPUT: [TS: 1511399751.227286][Head] Head received replica references and public keys from Olympus
+[2017-11-22 20:15:51,228] replica.Replica<Replica:08003>:OUTPUT: [TS: 1511399751.228632][Head] Head has received its private key from Olympus.
+[2017-11-22 20:15:51,228] replica.Replica<Replica:08004>:OUTPUT: [TS: 1511399751.228766][Replica 1] Checking if any failure trigger conditions are satisfied.
+[2017-11-22 20:15:51,229] replica.Replica<Replica:08004>:OUTPUT: [TS: 1511399751.229291][Replica 1] Replica 1 received replica references and public keys from Olympus
+[2017-11-22 20:15:51,229] replica.Replica<Replica:08005>:OUTPUT: [TS: 1511399751.229731][Tail] A new replica (Tail) is created.
+[2017-11-22 20:15:51,232] replica.Replica<Replica:08004>:OUTPUT: [TS: 1511399751.232298][Replica 1] Replica 1 has received its private key from Olympus.
+[2017-11-22 20:15:51,233] replica.Replica<Replica:08005>:OUTPUT: [TS: 1511399751.233087][Tail] Checking if any failure trigger conditions are satisfied.
+[2017-11-22 20:15:51,234] replica.Replica<Replica:08005>:OUTPUT: [TS: 1511399751.234411][Tail] Tail received replica references and public keys from Olympus
+[2017-11-22 20:15:51,237] replica.Replica<Replica:08005>:OUTPUT: [TS: 1511399751.237262][Tail] Tail has received its private key from Olympus.
+[2017-11-22 20:15:51,242] client.Client<Client:08003>:OUTPUT: [TS: 1511399751.2420118][Client 0] Checking with Olympus for new configuration.
+[2017-11-22 20:15:51,242] da.api<MainProcess>:INFO: Main process terminated.
+[2017-11-22 20:15:51,244] client.Client<Client:08003>:OUTPUT: [TS: 1511399751.244847][Client 0] Received the public keys of replicas from Olympus
+[2017-11-22 20:15:51,245] client.Client<Client:08003>:OUTPUT: [TS: 1511399751.2455769][Client 0] Received the public key of Olympus.
+[2017-11-22 20:15:51,246] olympus.Olympus<Olympus:08002>:OUTPUT: [TS: 1511399751.2462158][Olympus] Received public key: b'f5f362632bc2a8ec70dbd92b7d7dd2c9f21e9612ac07dd37ac303781f7cdbdbb' from client: Client 0
+[2017-11-22 20:15:51,246] replica.Replica<Replica:08003>:OUTPUT: [TS: 1511399751.246473][Head] Head has received client public key: b'f5f362632bc2a8ec70dbd92b7d7dd2c9f21e9612ac07dd37ac303781f7cdbdbb' for client 0
+[2017-11-22 20:15:51,246] olympus.Olympus<Olympus:08002>:OUTPUT: [TS: 1511399751.246593][Olympus] Configuration sent to Client 0.
+[2017-11-22 20:15:51,246] replica.Replica<Replica:08004>:OUTPUT: [TS: 1511399751.246778][Replica 1] Replica 1 has received client public key: b'f5f362632bc2a8ec70dbd92b7d7dd2c9f21e9612ac07dd37ac303781f7cdbdbb' for client 0
+[2017-11-22 20:15:51,246] client.Client<Client:08003>:OUTPUT: [TS: 1511399751.2469041][Client 0] Client 0 is configured with <Replica:08003>
+[2017-11-22 20:15:51,248] client.Client<Client:08003>:OUTPUT: [TS: 1511399751.248113][Client 0] Client 0 is sending put request with args ['movie', 'star'] for request id 0.
+[2017-11-22 20:15:51,248] replica.Replica<Replica:08005>:OUTPUT: [TS: 1511399751.248478][Tail] Tail has received client public key: b'f5f362632bc2a8ec70dbd92b7d7dd2c9f21e9612ac07dd37ac303781f7cdbdbb' for client 0
+[2017-11-22 20:15:51,249] replica.Replica<Replica:08003>:OUTPUT: [TS: 1511399751.249884][Head] put request with request id 0 from <Client:08003> is received by Head.
+[2017-11-22 20:15:51,250] replica.Replica<Replica:08003>:OUTPUT: [TS: 1511399751.250222][Head] Head is in ACTIVE state.
+[2017-11-22 20:15:51,250] replica.Replica<Replica:08003>:OUTPUT: [TS: 1511399751.2505019][Head] Checking if any failure trigger conditions are satisfied.
+[2017-11-22 20:15:51,250] replica.Replica<Replica:08003>:OUTPUT: [TS: 1511399751.250954][Head] Request with id 0 from client 0 has been assigned to the slot number 1.
+[2017-11-22 20:15:51,251] replica.Replica<Replica:08003>:OUTPUT: [TS: 1511399751.251828][Head] Shuttle with slot number 1 for request id 0 and Client 0 is sent from Head to next replica.
+[2017-11-22 20:15:51,253] replica.Replica<Replica:08004>:OUTPUT: [TS: 1511399751.2537558][Replica 1] Replica 1 is in ACTIVE state.
+[2017-11-22 20:15:51,254] replica.Replica<Replica:08004>:OUTPUT: [TS: 1511399751.254138][Replica 1] Checking if any failure trigger conditions are satisfied.
+[2017-11-22 20:15:51,254] replica.Replica<Replica:08004>:OUTPUT: [TS: 1511399751.254744][Replica 1] Client request (with client's signature) forwarded by the head is validated. Head is not faulty.
+[2017-11-22 20:15:51,255] replica.Replica<Replica:08004>:OUTPUT: [TS: 1511399751.255649][Replica 1] Shuttle with slot number 1 for request id 0 and Client 0 is sent from Replica 1 to next replica.
+[2017-11-22 20:15:51,257] replica.Replica<Replica:08005>:OUTPUT: [TS: 1511399751.257736][Tail] Tail is in ACTIVE state.
+[2017-11-22 20:15:51,258] replica.Replica<Replica:08005>:OUTPUT: [TS: 1511399751.258079][Tail] Checking if any failure trigger conditions are satisfied.
+[2017-11-22 20:15:51,258] replica.Replica<Replica:08005>:OUTPUT: [TS: 1511399751.2584069][Tail] Replica Tail: Trigger FailureType.shuttle failure for client_id: 0, and scenario: FailureActionType.invalid_result_sig
+[2017-11-22 20:15:51,259] replica.Replica<Replica:08005>:OUTPUT: [TS: 1511399751.259001][Tail] Client request (with client's signature) forwarded by the head is validated. Head is not faulty.
+[2017-11-22 20:15:51,260] replica.Replica<Replica:08005>:OUTPUT: [TS: 1511399751.2602298][Tail] Executing failure scenario: shuttle(0,0), invalid_result_sig()
+[2017-11-22 20:15:51,260] replica.Replica<Replica:08005>:OUTPUT: [TS: 1511399751.260541][Tail] invalid_result_sig failure: Changed the signature of result sent to the client to an invalid signature.
+[2017-11-22 20:15:51,262] client.Client<Client:08003>:OUTPUT: [TS: 1511399751.262885][Client 0] Signature verification of result stmt sent by Replica 2 has failed.
+[2017-11-22 20:15:51,263] client.Client<Client:08003>:OUTPUT: [TS: 1511399751.263318][Client 0] Misbehaviour detected in request id: 0! Sending reconfiguration request to Olympus
+[2017-11-22 20:15:51,263] replica.Replica<Replica:08005>:OUTPUT: [TS: 1511399751.2633128][Tail] Checking if any failure trigger conditions are satisfied.
+[2017-11-22 20:15:51,264] client.Client<Client:08003>:OUTPUT: [TS: 1511399751.2642229][Client 0] Client 0 is sending append request with args ['movie', ' wars'] for request id 1.
+[2017-11-22 20:15:51,264] olympus.Olympus<Olympus:08002>:OUTPUT: [TS: 1511399751.2645419][Olympus] Reconfiguration request received from Client 0.
+[2017-11-22 20:15:51,265] olympus.Olympus<Olympus:08002>:ERROR: AttributeError("'bytes' object has no attribute 'verify'",) when calling handler '_Olympus_handler_1393' with '{'sender': 'Client 0', 'proof_of_misbehavior': [['OK', [[('put', ['movie', 'star']), b'565339bc4d33d72817b583024112eb7f5cdf3e5eef0252d6ec1b9c9a94e12bb3'], [('put', ['movie', 'star']), b'565339bc4d33d72817b583024112eb7f5cdf3e5eef0252d6ec1b9c9a94e12bb3'], [('put', ['movie', 'star']), b'565339bc4d33d72817b583024112eb7f5cdf3e5eef0252d6ec1b9c9a94e12bb3']]], ['OK', [b'\x8af\xc0\x86k\xb5 M\xe8\x16g\xa7U#\xd2Et\xa5LI\xac\xcfI\xb8\x93\xdaxBcDk\x80\x82\xf5\xb6w\xed\x0c\xe8\x81\xe0\xe0\x9f\xb7\xd2$\x17\x8f\xda\xb8\xc9\xf15\xbcg\x8dC\x11\xbb\x16\xd3v\xbf\x00\x80\x03]q\x00(X\x03\x00\x00\x00putq\x01]q\x02(X\x05\x00\x00\x00movieq\x03X\x04\x00\x00\x00starq\x04e\x86q\x05C@565339bc4d33d72817b583024112eb7f5cdf3e5eef0252d6ec1b9c9a94e12bb3q\x06e.', b'#[\x8b\x9f?\xe1f\xb9\xa6\\\x96\x97\xfb\xae\xb2\xedWZ8\x11?\x8f\xeb\xe5.&\xdf\xe4\xf0\x86\xe07\xb4H\xda`\x0b\xdcB\xda\x85U\xd1\x17<\xe2G\x12\xba\xbb\x9b\x9f\xb0/\xaaYJD \xa5\x8d 0\x00\x80\x03]q\x00(X\x03\x00\x00\x00putq\x01]q\x02(X\x05\x00\x00\x00movieq\x03X\x04\x00\x00\x00starq\x04e\x86q\x05C@565339bc4d33d72817b583024112eb7f5cdf3e5eef0252d6ec1b9c9a94e12bb3q\x06e.', b'i\xfc\x08\x1e3\xf2\xa9vW\x15b\xcb&\xbb\xc6\x0e\t[i\xb9\xe9f\x8e\x1d\xeb\xae\x8aDk\xec\xb2,\xa2.\xcaT\xfec\xd3\x8d\x8d\xb8z\x0e8\x16\xb2\xa7\xe3\xb09\xf647\xf6Y|\xb7\x88\xb00.\xeb\x0f\x80\x03]q\x00(X\x03\x00\x00\x00putq\x01]q\x02(X\x05\x00\x00\x00movieq\x03X\x04\x00\x00\x00starq\x04e\x86q\x05C@565339bc4d33d72817b583024112eb7f5cdf3e5eef0252d6ec1b9c9a94e12bb3q\x06e.']]]}': 'bytes' object has no attribute 'verify'
+[2017-11-22 20:15:51,265] replica.Replica<Replica:08005>:OUTPUT: [TS: 1511399751.265302][Tail] Result shuttle for request id 0 of Client 0 is at Tail.
+[2017-11-22 20:15:51,265] replica.Replica<Replica:08004>:OUTPUT: [TS: 1511399751.265909][Replica 1] Checking if any failure trigger conditions are satisfied.
+[2017-11-22 20:15:51,266] replica.Replica<Replica:08003>:OUTPUT: [TS: 1511399751.2660558][Head] append request with request id 1 from <Client:08003> is received by Head.
+[2017-11-22 20:15:51,266] replica.Replica<Replica:08003>:OUTPUT: [TS: 1511399751.266363][Head] Head is in ACTIVE state.
+[2017-11-22 20:15:51,266] replica.Replica<Replica:08003>:OUTPUT: [TS: 1511399751.2668018][Head] Checking if any failure trigger conditions are satisfied.
+[2017-11-22 20:15:51,267] replica.Replica<Replica:08003>:OUTPUT: [TS: 1511399751.267382][Head] Request with id 1 from client 0 has been assigned to the slot number 2.
+[2017-11-22 20:15:51,268] replica.Replica<Replica:08003>:OUTPUT: [TS: 1511399751.268439][Head] Shuttle with slot number 2 for request id 1 and Client 0 is sent from Head to next replica.
+[2017-11-22 20:15:51,268] replica.Replica<Replica:08004>:OUTPUT: [TS: 1511399751.268874][Replica 1] Result shuttle for request id 0 of Client 0 is at Replica 1.
+[2017-11-22 20:15:51,269] replica.Replica<Replica:08003>:OUTPUT: [TS: 1511399751.269873][Head] Checking if any failure trigger conditions are satisfied.
+[2017-11-22 20:15:51,270] replica.Replica<Replica:08004>:OUTPUT: [TS: 1511399751.270133][Replica 1] Replica 1 is in ACTIVE state.
+[2017-11-22 20:15:51,270] replica.Replica<Replica:08003>:OUTPUT: [TS: 1511399751.2703009][Head] Result shuttle for request id 0 of Client 0 is at Head.
+[2017-11-22 20:15:51,270] replica.Replica<Replica:08004>:OUTPUT: [TS: 1511399751.2705002][Replica 1] Checking if any failure trigger conditions are satisfied.
+[2017-11-22 20:15:51,271] replica.Replica<Replica:08004>:OUTPUT: [TS: 1511399751.271101][Replica 1] Client request (with client's signature) forwarded by the head is validated. Head is not faulty.
+[2017-11-22 20:15:51,271] replica.Replica<Replica:08004>:OUTPUT: [TS: 1511399751.271884][Replica 1] Shuttle with slot number 2 for request id 1 and Client 0 is sent from Replica 1 to next replica.
+[2017-11-22 20:15:51,273] replica.Replica<Replica:08005>:OUTPUT: [TS: 1511399751.273159][Tail] Tail is in ACTIVE state.
+[2017-11-22 20:15:51,273] replica.Replica<Replica:08005>:OUTPUT: [TS: 1511399751.2734861][Tail] Checking if any failure trigger conditions are satisfied.
+[2017-11-22 20:15:51,274] replica.Replica<Replica:08005>:OUTPUT: [TS: 1511399751.274082][Tail] Client request (with client's signature) forwarded by the head is validated. Head is not faulty.
+[2017-11-22 20:15:51,276] replica.Replica<Replica:08005>:OUTPUT: [TS: 1511399751.276775][Tail] Checking if any failure trigger conditions are satisfied.
+[2017-11-22 20:15:51,276] client.Client<Client:08003>:OUTPUT: [TS: 1511399751.2769332][Client 0] Number of correct result proofs received :3, required majority: 2
+[2017-11-22 20:15:51,277] client.Client<Client:08003>:OUTPUT: [TS: 1511399751.2773771][Client 0] Result: OK received for request id: 1
+[2017-11-22 20:15:51,278] replica.Replica<Replica:08005>:OUTPUT: [TS: 1511399751.278095][Tail] Result shuttle for request id 1 of Client 0 is at Tail.
+[2017-11-22 20:15:51,278] client.Client<Client:08003>:OUTPUT: [TS: 1511399751.278147][Client 0] Checking with Olympus for new configuration.
+[2017-11-22 20:15:51,278] replica.Replica<Replica:08004>:OUTPUT: [TS: 1511399751.2786298][Replica 1] Checking if any failure trigger conditions are satisfied.
+[2017-11-22 20:15:51,280] client.Client<Client:08003>:OUTPUT: [TS: 1511399751.2803469][Client 0] Received the public keys of replicas from Olympus
+[2017-11-22 20:15:51,280] replica.Replica<Replica:08004>:OUTPUT: [TS: 1511399751.2803252][Replica 1] Result shuttle for request id 1 of Client 0 is at Replica 1.
+[2017-11-22 20:15:51,280] client.Client<Client:08003>:OUTPUT: [TS: 1511399751.28073][Client 0] Received the public key of Olympus.
+[2017-11-22 20:15:51,281] olympus.Olympus<Olympus:08002>:OUTPUT: [TS: 1511399751.2817569][Olympus] Received public key: b'f5f362632bc2a8ec70dbd92b7d7dd2c9f21e9612ac07dd37ac303781f7cdbdbb' from client: Client 0
+[2017-11-22 20:15:51,282] olympus.Olympus<Olympus:08002>:OUTPUT: [TS: 1511399751.2822258][Olympus] Configuration sent to Client 0.
+[2017-11-22 20:15:51,284] replica.Replica<Replica:08005>:OUTPUT: [TS: 1511399751.2842581][Tail] Tail has received client public key: b'f5f362632bc2a8ec70dbd92b7d7dd2c9f21e9612ac07dd37ac303781f7cdbdbb' for client 0
+[2017-11-22 20:15:51,284] replica.Replica<Replica:08003>:OUTPUT: [TS: 1511399751.28434][Head] Checking if any failure trigger conditions are satisfied.
+[2017-11-22 20:15:51,284] replica.Replica<Replica:08003>:OUTPUT: [TS: 1511399751.284792][Head] Result shuttle for request id 1 of Client 0 is at Head.
+[2017-11-22 20:15:51,282] replica.Replica<Replica:08004>:OUTPUT: [TS: 1511399751.282497][Replica 1] Replica 1 has received client public key: b'f5f362632bc2a8ec70dbd92b7d7dd2c9f21e9612ac07dd37ac303781f7cdbdbb' for client 0
+[2017-11-22 20:15:51,282] client.Client<Client:08003>:OUTPUT: [TS: 1511399751.2823548][Client 0] Client 0 is configured with <Replica:08003>
+[2017-11-22 20:15:51,286] client.Client<Client:08003>:OUTPUT: [TS: 1511399751.286409][Client 0] Client 0 is sending get request with args ['movie'] for request id 2.
+[2017-11-22 20:15:51,286] replica.Replica<Replica:08003>:OUTPUT: [TS: 1511399751.286707][Head] Head has received client public key: b'f5f362632bc2a8ec70dbd92b7d7dd2c9f21e9612ac07dd37ac303781f7cdbdbb' for client 0
+[2017-11-22 20:15:51,288] replica.Replica<Replica:08003>:OUTPUT: [TS: 1511399751.28821][Head] get request with request id 2 from <Client:08003> is received by Head.
+[2017-11-22 20:15:51,288] replica.Replica<Replica:08003>:OUTPUT: [TS: 1511399751.288567][Head] Head is in ACTIVE state.
+[2017-11-22 20:15:51,288] replica.Replica<Replica:08003>:OUTPUT: [TS: 1511399751.288887][Head] Checking if any failure trigger conditions are satisfied.
+[2017-11-22 20:15:51,289] replica.Replica<Replica:08003>:OUTPUT: [TS: 1511399751.289461][Head] Request with id 2 from client 0 has been assigned to the slot number 3.
+[2017-11-22 20:15:51,289] replica.Replica<Replica:08003>:OUTPUT: [TS: 1511399751.289885][Head] Initiating checkpoint shuttle for slot number: 3.
+[2017-11-22 20:15:51,290] replica.Replica<Replica:08003>:OUTPUT: [TS: 1511399751.290817][Head] Shuttle with slot number 3 for request id 2 and Client 0 is sent from Head to next replica.
+[2017-11-22 20:15:51,292] replica.Replica<Replica:08004>:OUTPUT: [TS: 1511399751.292495][Replica 1] Replica 1 is in ACTIVE state.
+[2017-11-22 20:15:51,293] replica.Replica<Replica:08004>:OUTPUT: [TS: 1511399751.2931929][Replica 1] Checking if any failure trigger conditions are satisfied.
+[2017-11-22 20:15:51,294] replica.Replica<Replica:08004>:OUTPUT: [TS: 1511399751.294127][Replica 1] Client request (with client's signature) forwarded by the head is validated. Head is not faulty.
+[2017-11-22 20:15:51,295] replica.Replica<Replica:08004>:OUTPUT: [TS: 1511399751.2954319][Replica 1] Shuttle with slot number 3 for request id 2 and Client 0 is sent from Replica 1 to next replica.
+[2017-11-22 20:15:51,295] replica.Replica<Replica:08004>:OUTPUT: [TS: 1511399751.295725][Replica 1] Checkpoint shuttle for slot number: 3 is at Replica 1. Forwarding it to next Replica.
+[2017-11-22 20:15:51,296] replica.Replica<Replica:08005>:OUTPUT: [TS: 1511399751.2969348][Tail] Tail is in ACTIVE state.
+[2017-11-22 20:15:51,297] replica.Replica<Replica:08005>:OUTPUT: [TS: 1511399751.297249][Tail] Checking if any failure trigger conditions are satisfied.
+[2017-11-22 20:15:51,297] replica.Replica<Replica:08005>:OUTPUT: [TS: 1511399751.297921][Tail] Client request (with client's signature) forwarded by the head is validated. Head is not faulty.
+[2017-11-22 20:15:51,302] client.Client<Client:08003>:OUTPUT: [TS: 1511399751.3027499][Client 0] Number of correct result proofs received :3, required majority: 2
+[2017-11-22 20:15:51,303] client.Client<Client:08003>:OUTPUT: [TS: 1511399751.303395][Client 0] Result: star wars received for request id: 2
+[2017-11-22 20:15:51,303] replica.Replica<Replica:08005>:OUTPUT: [TS: 1511399751.3034081][Tail] Checking if any failure trigger conditions are satisfied.
+[2017-11-22 20:15:51,304] client.Client<Client:08003>:OUTPUT: [TS: 1511399751.304123][Client 0] Checking with Olympus for new configuration.
+[2017-11-22 20:15:51,304] replica.Replica<Replica:08005>:OUTPUT: [TS: 1511399751.304586][Tail] Result shuttle for request id 2 of Client 0 is at Tail.
+[2017-11-22 20:15:51,305] replica.Replica<Replica:08004>:OUTPUT: [TS: 1511399751.305373][Replica 1] Checking if any failure trigger conditions are satisfied.
+[2017-11-22 20:15:51,306] client.Client<Client:08003>:OUTPUT: [TS: 1511399751.3061912][Client 0] Received the public keys of replicas from Olympus
+[2017-11-22 20:15:51,306] client.Client<Client:08003>:OUTPUT: [TS: 1511399751.306685][Client 0] Received the public key of Olympus.
+[2017-11-22 20:15:51,307] replica.Replica<Replica:08004>:OUTPUT: [TS: 1511399751.307033][Replica 1] Result shuttle for request id 2 of Client 0 is at Replica 1.
+[2017-11-22 20:15:51,307] replica.Replica<Replica:08003>:OUTPUT: [TS: 1511399751.307453][Head] Checking if any failure trigger conditions are satisfied.
+[2017-11-22 20:15:51,308] replica.Replica<Replica:08003>:OUTPUT: [TS: 1511399751.3079948][Head] Result shuttle for request id 2 of Client 0 is at Head.
+[2017-11-22 20:15:51,308] client.Client<Client:08003>:OUTPUT: [TS: 1511399751.308883][Client 0] Client 0 is configured with <Replica:08003>
+[2017-11-22 20:15:51,309] olympus.Olympus<Olympus:08002>:OUTPUT: [TS: 1511399751.309][Olympus] Received public key: b'f5f362632bc2a8ec70dbd92b7d7dd2c9f21e9612ac07dd37ac303781f7cdbdbb' from client: Client 0
+[2017-11-22 20:15:51,305] replica.Replica<Replica:08005>:OUTPUT: [TS: 1511399751.3059359][Tail] Checking if any failure trigger conditions are satisfied.
+[2017-11-22 20:15:51,309] olympus.Olympus<Olympus:08002>:OUTPUT: [TS: 1511399751.309875][Olympus] Configuration sent to Client 0.
+[2017-11-22 20:15:51,310] replica.Replica<Replica:08003>:OUTPUT: [TS: 1511399751.310071][Head] Head has received client public key: b'f5f362632bc2a8ec70dbd92b7d7dd2c9f21e9612ac07dd37ac303781f7cdbdbb' for client 0
+[2017-11-22 20:15:51,310] replica.Replica<Replica:08004>:OUTPUT: [TS: 1511399751.310427][Replica 1] Replica 1 has received client public key: b'f5f362632bc2a8ec70dbd92b7d7dd2c9f21e9612ac07dd37ac303781f7cdbdbb' for client 0
+[2017-11-22 20:15:51,310] client.Client<Client:08003>:OUTPUT: [TS: 1511399751.310563][Client 0] Client 0 is sending get request with args ['test'] for request id 3.
+[2017-11-22 20:15:51,311] replica.Replica<Replica:08005>:OUTPUT: [TS: 1511399751.311094][Tail] Truncating history at Tail to validated checkpoint proof on the slot number 3.
+[2017-11-22 20:15:51,311] replica.Replica<Replica:08005>:OUTPUT: [TS: 1511399751.311859][Tail] Checkpoint proof shuttle back the chain for slot number: 3 is at Tail. Forwarding it to next Replica back the chain.
+[2017-11-22 20:15:51,311] replica.Replica<Replica:08003>:OUTPUT: [TS: 1511399751.311937][Head] get request with request id 3 from <Client:08003> is received by Head.
+[2017-11-22 20:15:51,312] replica.Replica<Replica:08003>:OUTPUT: [TS: 1511399751.312219][Head] Head is in ACTIVE state.
+[2017-11-22 20:15:51,312] replica.Replica<Replica:08003>:OUTPUT: [TS: 1511399751.312478][Head] Checking if any failure trigger conditions are satisfied.
+[2017-11-22 20:15:51,312] replica.Replica<Replica:08003>:OUTPUT: [TS: 1511399751.3129249][Head] Request with id 3 from client 0 has been assigned to the slot number 4.
+[2017-11-22 20:15:51,313] replica.Replica<Replica:08004>:OUTPUT: [TS: 1511399751.313281][Replica 1] Checking if any failure trigger conditions are satisfied.
+[2017-11-22 20:15:51,313] replica.Replica<Replica:08003>:OUTPUT: [TS: 1511399751.313568][Head] Shuttle with slot number 4 for request id 3 and Client 0 is sent from Head to next replica.
+[2017-11-22 20:15:51,313] replica.Replica<Replica:08005>:OUTPUT: [TS: 1511399751.313559][Tail] Tail has received client public key: b'f5f362632bc2a8ec70dbd92b7d7dd2c9f21e9612ac07dd37ac303781f7cdbdbb' for client 0
+[2017-11-22 20:15:51,313] replica.Replica<Replica:08004>:OUTPUT: [TS: 1511399751.313974][Replica 1] Truncating history at Replica 1 to validated checkpoint proof on the slot number 3.
+[2017-11-22 20:15:51,314] replica.Replica<Replica:08004>:OUTPUT: [TS: 1511399751.3144221][Replica 1] Checkpoint proof shuttle back the chain for slot number: 3 is at Replica 1. Forwarding it to next Replica back the chain.
+[2017-11-22 20:15:51,315] replica.Replica<Replica:08003>:OUTPUT: [TS: 1511399751.315663][Head] Checking if any failure trigger conditions are satisfied.
+[2017-11-22 20:15:51,315] replica.Replica<Replica:08004>:OUTPUT: [TS: 1511399751.315677][Replica 1] Replica 1 is in ACTIVE state.
+[2017-11-22 20:15:51,316] replica.Replica<Replica:08004>:OUTPUT: [TS: 1511399751.31599][Replica 1] Checking if any failure trigger conditions are satisfied.
+[2017-11-22 20:15:51,316] replica.Replica<Replica:08003>:OUTPUT: [TS: 1511399751.316183][Head] Truncating history at Head to validated checkpoint proof on the slot number 3.
+[2017-11-22 20:15:51,316] replica.Replica<Replica:08003>:OUTPUT: [TS: 1511399751.316451][Head] Checkpointing is complete at checkpoint 3
+[2017-11-22 20:15:51,316] replica.Replica<Replica:08004>:OUTPUT: [TS: 1511399751.316685][Replica 1] Client request (with client's signature) forwarded by the head is validated. Head is not faulty.
+[2017-11-22 20:15:51,317] replica.Replica<Replica:08004>:OUTPUT: [TS: 1511399751.317478][Replica 1] Shuttle with slot number 4 for request id 3 and Client 0 is sent from Replica 1 to next replica.
+[2017-11-22 20:15:51,318] replica.Replica<Replica:08005>:OUTPUT: [TS: 1511399751.318862][Tail] Tail is in ACTIVE state.
+[2017-11-22 20:15:51,319] replica.Replica<Replica:08005>:OUTPUT: [TS: 1511399751.3192399][Tail] Checking if any failure trigger conditions are satisfied.
+[2017-11-22 20:15:51,319] replica.Replica<Replica:08005>:OUTPUT: [TS: 1511399751.319934][Tail] Client request (with client's signature) forwarded by the head is validated. Head is not faulty.
+[2017-11-22 20:15:51,322] client.Client<Client:08003>:OUTPUT: [TS: 1511399751.322212][Client 0] Number of correct result proofs received :3, required majority: 2
+[2017-11-22 20:15:51,322] client.Client<Client:08003>:OUTPUT: [TS: 1511399751.3226][Client 0] Result:  received for request id: 3
+[2017-11-22 20:15:51,322] replica.Replica<Replica:08005>:OUTPUT: [TS: 1511399751.322643][Tail] Checking if any failure trigger conditions are satisfied.
+[2017-11-22 20:15:51,323] client.Client<Client:08003>:OUTPUT: [TS: 1511399751.32329][Client 0] Local running state of client after the given set of operations: {'movie': 'star wars'}.
+[2017-11-22 20:15:51,323] replica.Replica<Replica:08005>:OUTPUT: [TS: 1511399751.3237529][Tail] Result shuttle for request id 3 of Client 0 is at Tail.
+[2017-11-22 20:15:51,324] replica.Replica<Replica:08004>:OUTPUT: [TS: 1511399751.324374][Replica 1] Checking if any failure trigger conditions are satisfied.
+[2017-11-22 20:15:51,325] replica.Replica<Replica:08004>:OUTPUT: [TS: 1511399751.325705][Replica 1] Result shuttle for request id 3 of Client 0 is at Replica 1.
+[2017-11-22 20:15:51,326] client.Client<Client:08003>:OUTPUT: [TS: 1511399751.3265479][Client 0] 
+
+Running state at the server after the given set of operations: {"movie": "star wars"}.
+
+
+[2017-11-22 20:15:51,326] client.Client<Client:08003>:OUTPUT: [TS: 1511399751.326932][Client 0] Assuming no conflicting keys from other clients:
+
+Test case passed! Actual and expected running states match.
+
+
+[2017-11-22 20:15:51,327] replica.Replica<Replica:08003>:OUTPUT: [TS: 1511399751.327105][Head] Checking if any failure trigger conditions are satisfied.
+[2017-11-22 20:15:51,327] replica.Replica<Replica:08003>:OUTPUT: [TS: 1511399751.327425][Head] Result shuttle for request id 3 of Client 0 is at Head.

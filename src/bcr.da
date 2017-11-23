@@ -45,6 +45,7 @@ def main():
     def output_wrapper(log):
         output('[Main][TS: {}]'.format(str(time())), log)
 
+    # sys.setrecursionlimit(1024 * 1024 * 1024) # uncomment this for large workloads
     # ignore the 1st argument because it will be the program binary path
     if len(sys.argv) < 2:
         output_wrapper(
