@@ -50,8 +50,10 @@ e.g. time <python command>
 After the logs were printed, we just used Ctrl + C to end the execution and get the timing stats.
 
 RAFT2: ~10s
-BCR on single host: ~20s [approximately] [print output to stdout takes a lot of time]
-BCR on multiple host: ~16s [approximately] [print output to stdout takes a lot of time]
+BCR on single host: ~36s [approximately] [print output to stdout takes a lot of time]
+BCR on multiple host: ~40s [approximately] [print output to stdout takes a lot of time]
+
+Note: We were adding 0.1s sleep between each client request for stability, we subtracted that from total time taken by the program for more appropriate timing stats.
 
 Multi-Host Setup
 ================

@@ -116,8 +116,7 @@ Results of the test cases can be found in the logs/ directory.
 --  perform900 [from project.txt]
     For such a large workload, we increased the recursion limit of Python. In case of multi-host setup, we also had to increase the RAM given to the docker images.
 
-    Single-host Log file: perform900-log.txt
-    Multi-host Log file: perform900-multihost-log.txt
+    Log file: perform900-log.txt
 
     Command:-
     python3 -m da --logfile --logfilename=logs/perform900-log.txt --logfilelevel=info --message-buffer-size=96000 src/bcr.da -i config/perform900.txt
