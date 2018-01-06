@@ -793,8 +793,8 @@ class Replica(process):
             # cache most recent result to aid during reconfiguration [new
             # comments in project.txt]
             res_stmt = [(type, args), calculate_hash(result)]
-            most_recent_result[request_to_client[request_id]] = [
-                result, res_stmt, request_id]
+            if request_id in request_to_client:
+                most_recent_result[request_to_client[request_id]] = [result, res_stmt, request_id]
 
         send(('caught_up', calculate_hash(running_state),
               id, most_recent_result), to=olympus)
