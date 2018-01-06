@@ -9,16 +9,16 @@ The project was completed as a part of the graduate course [CSE 535 Asynchronous
 Byzantine-tolerant State Machine Replication (BSMR) is the only known generic approach to making applications (servers, routing daemons, and so on) tolerate arbitrary faults beyond crash failures in an asynchronous environment. Byzantine Chain Replication is a new class of highly reconfigurable Chain Replication protocols that are easily reconfigurable, do not require accurate failure detection, and are able to tolerate Byzantine failures.
 
 ## Platform
-[DistAlgo](https://github.com/DistAlgo/distalgo) version: 1.0.11  
-Python3 (CPython) version: 3.5.1, 3.6 (for multi-host on Docker)  
-Operating System: Windows 7, MAC OS  
-Hosts: Laptop (without VMs), Docker Images  
+- [DistAlgo](https://github.com/DistAlgo/distalgo) version: 1.0.11  
+- Python3 (CPython) version: 3.5.1, 3.6 (for multi-host on Docker)  
+- Operating System: Windows 7, MAC OS  
+- Hosts: Laptop (without VMs), Docker Images  
 
 ## Dependencies
-PyDistAlgo  
-PyNacl  
-Pickle [Pre-installed]  
-JSON [Pre-installed]  
+- PyDistAlgo  
+- PyNacl  
+- Pickle [Pre-installed]  
+- JSON [Pre-installed]  
 
 ```
 pip install --upgrade pydistalgo pynacl
@@ -37,8 +37,8 @@ python3 -m da src/bcr.da -i config/phase3/test_phase3.txt
 For large workloads, we increased the recursion limit of Python.
 
 For multi-node:  
-Node 1: Other Replicas, Client, Olympus  
-Node 2 : Head  
+- Node 1: Other Replicas, Client, Olympus  
+- Node 2 : Head Node  
 
 ```
 python3 -m da --logfile --logfilename=logs/simple-log.txt --logfilelevel=info --message-buffer-size=96000 -n Node1 -H <Node1's own IP> -R <Other node's IP> src/multihost/bcr.da -i config/phase3/simple.txt
@@ -54,23 +54,25 @@ We used two docker images (on Mac) with Python 3.6 and PyDistAlgo 1.0.11 to simu
 For large workloads, we increased the recursion limit of Python and RAM given to the docker images.  
 
 ## Code Structure
-Main entry: src/bcr.da  
-Implementation of the Replica: src/replica.da  
-Implementation of the Olympus: src/olympus.da  
-Implementation of the Client: src/client.da  
-Setting up configuration for the program and workload generation: src/config.py  
-Parsing the configuration file: src/read_config.py  
+- Main entry: src/bcr.da  
+- Implementation of the Replica: src/replica.da  
+- Implementation of the Olympus: src/olympus.da  
+- Implementation of the Client: src/client.da  
+- Setting up configuration for the program and workload generation: src/config.py  
+- Parsing the configuration file: src/read_config.py  
 
-Implementation for multi-node setup: Head on Node2, everything else on Node1  
-Main entry: src/multihost/bcr.da  
-Implementation of the Replica: src/multihost/replica.da  
-Implementation of the Olympus: src/multihost/olympus.da  
-Implementation of the Client: src/multihost/client.da  
-Setting up configuration for the program and workload generation: src/multihost/config.py  
-Parsing the configuration file: src/multihost/read_config.py  
+
+- Implementation for multi-node setup: Head on Node2, everything else on Node1  
+- Main entry: src/multihost/bcr.da  
+- Implementation of the Replica: src/multihost/replica.da  
+- Implementation of the Olympus: src/multihost/olympus.da  
+- Implementation of the Client: src/multihost/client.da  
+
+
+- Setting up configuration for the program and workload generation: src/multihost/config.py  
+- Parsing the configuration file: src/multihost/read_config.py  
 
 ## License
-
 [MIT License](https://github.com/ankitaggarwal011/byzantino/blob/master/LICENSE)
 
 ## Authors
