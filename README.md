@@ -54,6 +54,8 @@ We used two docker images (on Mac) with Python 3.6 and PyDistAlgo 1.0.11 to simu
 For large workloads, we increased the recursion limit of Python and RAM given to the docker images.  
 
 ## Code Structure
+
+### Single-node setup
 - Main entry: src/bcr.da  
 - Implementation of the Replica: src/replica.da  
 - Implementation of the Olympus: src/olympus.da  
@@ -61,14 +63,13 @@ For large workloads, we increased the recursion limit of Python and RAM given to
 - Setting up configuration for the program and workload generation: src/config.py  
 - Parsing the configuration file: src/read_config.py  
 
-
-- Implementation for multi-node setup: Head on Node2, everything else on Node1  
+### Multi-node setup
 - Main entry: src/multihost/bcr.da  
 - Implementation of the Replica: src/multihost/replica.da  
 - Implementation of the Olympus: src/multihost/olympus.da  
 - Implementation of the Client: src/multihost/client.da  
 
-
+### Configuration
 - Setting up configuration for the program and workload generation: src/multihost/config.py  
 - Parsing the configuration file: src/multihost/read_config.py  
 
